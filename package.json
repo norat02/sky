@@ -3,6 +3,9 @@
   "private": true,
   "version": "1.0.0",
   "type": "module",
+  "dependencies": {
+    "@supabase/supabase-js": "^2.49.8"
+  },
   "scripts": {
     "build": "node scripts/generate-config.mjs",
     "verify": "node scripts/verify.mjs"

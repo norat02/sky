@@ -299,7 +299,7 @@ var TINTS_EXTRA=[null,'rgba(209,160,105,.055)','rgba(122,138,148,.05)','rgba(196
 /* ═══ TRẠNG THÁI ═══ */
 var dpr=1,scale=1,cssW=0,cssH=0,worldW=0,worldH=720,groundY=0;
 var state='TITLE',timeR=0,freeze=0,speed=0,dist=0,nowMs=0,playT=0,dyingT=0,shakePhase=0,pausedFromVisibility=false;
-var score=0,best=+(store.get('chimse.best')||0),scoreSent=false,combo=0,comboT=0,authClient=null,authUser=null;
+var score=0,best=+(store.get('chimse.best')||0),scoreSent=false,combo=0,comboT=0,authClient=null,authUser=null,runTicket=null;
 var pipes=[],petals=[],parts=[],pops=[],stamp=null,coins=[],charms=[],streaks=[],birdTrail=[],stars=[];
 var shield=false,inv=0,petalWant=20;
 var shakeT=0,shakeDur=1,shakeAmp=0;
@@ -367,8 +367,10 @@ var DB={
     .catch(function(){DB.online=false;DB.client=null;authClient=null;setNet(false,'ngoại tuyến');updateAuthUI();refreshHomeLeaderboard();})
     .then(function(){DB.loading=false;if(!lbSc.classList.contains('hidden'))refreshFull();});
   },
+  accessToken:function(){if(!DB.client||!authUser)return Promise.reject(new Error('auth'));return DB.client.auth.getSession().then(function(r){var token=r.data&&r.data.session&&r.data.session.access_token;if(!token)throw new Error('auth');return token;});},
+  beginRun:function(){return DB.accessToken().then(function(token){return fetch('/api/run-ticket',{method:'POST',headers:{Authorization:'Bearer '+token,'Content-Type':'application/json'},body:'{}'});}).then(function(r){if(!r.ok)throw new Error('run ticket');return r.json();}).then(function(data){runTicket=data.ticket;return runTicket;});},
   refreshTop:function(){if(!DB.online||!DB.client)return Promise.resolve(null);return DB.client.from('scores').select('player_name,score,created_at').order('score',{ascending:false}).order('created_at',{ascending:true}).limit(10).then(function(r){if(r.error)throw r.error;DB.cache=(r.data||[]).map(function(x){return{name:x.player_name,score:x.score};});return DB.cache;}).catch(function(){return null;});},
-  submit:function(name,sc){if(!DB.client||!authUser)return Promise.reject(new Error('auth'));return DB.client.from('scores').insert({player_name:name,score:sc,user_id:authUser.id}).then(function(r){if(r.error)throw r.error;return DB.refreshTop();});}
+  submit:function(name,sc){if(!DB.client||!authUser||!runTicket)return Promise.reject(new Error('run'));return DB.accessToken().then(function(token){return fetch('/api/submit-score',{method:'POST',headers:{Authorization:'Bearer '+token,'Content-Type':'application/json'},body:JSON.stringify({name:name,score:sc,ticket:runTicket})});}).then(function(r){return r.json().then(function(data){if(!r.ok)throw new Error(data.error||'submit');return data.rows||[];});});}
 };
 
 var RK=['一','二','三','四','五','六','七','八','九','十'];
@@ -477,6 +479,7 @@ function startGame(){
   try{if(document.activeElement&&document.activeElement.blur)document.activeElement.blur();}catch(e){}
   pauseOverlay.classList.remove('show');pauseBtn.textContent='Ⅱ';pauseBtn.classList.add('show');
   applyChar();applyMap();rollRun();reset();state='READY';
+  if(authUser&&DB.online)DB.beginRun().catch(function(){runTicket=null;});
   titleSc.classList.add('hidden');overSc.classList.add('hidden');lbSc.classList.add('hidden');
   hud.classList.remove('hidden');hint.classList.remove('hidden');runTag.classList.remove('hidden');
 }
@@ -562,8 +565,9 @@ function sendScore(){
   if(!Number.isFinite(score)||score<0||score>100000){lbStatus.textContent='điểm không hợp lệ';return;}
   if(!DB.online){lbStatus.textContent='mất kết nối';return;}
   if(!authUser){lbStatus.textContent='hãy đăng nhập để ghi danh';openAuth();return;}
+  if(!runTicket){lbStatus.textContent='hãy bắt đầu ván mới sau khi đăng nhập';return;}
   sendBtn.disabled=true;lbStatus.textContent='đang gửi…';
-  withTimeout(DB.submit(name,score),9000).then(function(rows){scoreSent=true;store.set('chimse.name',name);nameRow.style.display='none';var rank=renderLb(miniLb,rows||DB.cache,5,name);lbStatus.textContent=rank>=0?('bạn đang hạng '+(rank+1)):'đã ghi danh — ngoài top 5';AU.coin();}).catch(function(){sendBtn.disabled=false;lbStatus.textContent='gửi lỗi — thử lại';});
+  withTimeout(DB.submit(name,score),9000).then(function(rows){scoreSent=true;runTicket=null;store.set('chimse.name',name);nameRow.style.display='none';var rank=renderLb(miniLb,rows||DB.cache,5,name);lbStatus.textContent=rank>=0?('bạn đang hạng '+(rank+1)):'đã ghi danh — ngoài top 5';AU.coin();}).catch(function(e){sendBtn.disabled=false;lbStatus.textContent=e&&e.message==='score_rate_exceeded'?'điểm vượt tốc độ hợp lệ':'gửi lỗi — thử lại';});
 }
 
 /* ═══ VẬT LÝ ═══ */

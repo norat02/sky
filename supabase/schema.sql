@@ -33,3 +33,16 @@ create policy "authenticated users can submit scores"
   );
 
 -- Không cấp policy UPDATE/DELETE: điểm đã ghi không thể bị sửa hoặc xóa từ client.
+
+-- Run ticket do Vercel Function tạo; client không được đọc hoặc sửa bảng này.
+create table if not exists public.score_runs (
+  run_id uuid primary key,
+  user_id uuid not null references auth.users(id) on delete cascade,
+  started_at timestamptz not null default now(),
+  submitted_at timestamptz
+);
+
+alter table public.score_runs enable row level security;
+-- Không tạo policy client cho score_runs; service_role của Vercel Function bypasses RLS.
+create index if not exists score_runs_user_started_idx
+  on public.score_runs (user_id, started_at desc);
