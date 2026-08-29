@@ -63,9 +63,18 @@ try {
   assert(localeOptions >= 100, `Expected at least 100 locale options, got ${localeOptions}`);
   assert(await page.locator('#languageSelect option[value="zh"]').count() === 1, 'Chinese locale option missing');
   assert(await page.locator('#languageSelect option[value="hi"]').count() === 1, 'Hindi locale option missing');
-  await page.locator('#languageSelect').selectOption('zh');
+  const assertRenderedLocale = async (code) => {
+    await page.locator('#languageSelect').selectOption(code);
+    const missing = await page.evaluate(() => [...document.querySelectorAll('[data-i18n],[data-i18n-placeholder]')].filter((el) => {
+      const key = el.getAttribute('data-i18n');
+      const placeholderKey = el.getAttribute('data-i18n-placeholder');
+      return key ? !el.textContent?.trim() : !el.getAttribute('placeholder')?.trim() || !placeholderKey;
+    }).map((el) => el.getAttribute('data-i18n') || el.getAttribute('data-i18n-placeholder')));
+    assert(missing.length === 0, `${code} has missing rendered translations: ${missing.join(', ')}`);
+  };
+  await assertRenderedLocale('zh');
   assert(await page.locator('[data-i18n="subtitle"]').textContent() === '樱花天空中的飞行', 'Chinese translation failed');
-  await page.locator('#languageSelect').selectOption('hi');
+  await assertRenderedLocale('hi');
   assert(await page.locator('[data-i18n="subtitle"]').textContent() === 'आकाश में एक उड़ान', 'Hindi translation failed');
   await page.locator('#languageSelect').selectOption('fr');
   assert(await page.locator('[data-i18n="title"]').textContent() === 'SKY BIRD', 'Locale fallback translation failed');
