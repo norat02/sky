@@ -205,6 +205,59 @@ Nếu dùng Google OAuth, thêm URL đầy đủ của trang admin, ví dụ `ht
 
 Mở `/admin` ở deployment mới và thử lần lượt bằng một tài khoản không có trong allowlist, một tài khoản có email trong `ADMIN_EMAILS`, và nếu có thể một tài khoản được cấp qua `app_metadata`. Kết quả đúng là tài khoản thường không được trả dữ liệu và endpoint `/api/admin-data` trả `403`; tài khoản admin thấy dashboard và endpoint trả `200`; request không có hoặc có Bearer token không hợp lệ trả `401`. Có thể xem chi tiết request trong **Vercel → Deployments → Functions/Runtime Logs**. Không ghi access token hoặc service role key vào log.
 
+### Cấu hình Google OAuth cho `/admin`
+
+Luồng đăng nhập Google của trang admin có hai loại URL khác nhau: Google nhận callback tại Supabase, còn Supabase quyết định URL cuối cùng mà người dùng được phép quay về. Cấu hình đủ cả hai nơi là bắt buộc. Tham khảo [Supabase Login with Google](https://supabase.com/docs/guides/auth/social-login/auth-google) và [Supabase Redirect URLs](https://supabase.com/docs/guides/auth/redirect-urls).
+
+#### 1. Tạo OAuth Client trên Google Cloud
+
+Mở [Google Auth Platform](https://console.cloud.google.com/auth/overview), chọn đúng Google Cloud project, cấu hình Branding/consent screen nếu Google yêu cầu, sau đó vào **Clients → Create client → Web application**. Lưu lại **Client ID** và **Client Secret**.
+
+Trong **Authorized JavaScript origins**, thêm origin không có path. Với production, dùng `https://your-domain.vercel.app`; với local, dùng đúng origin nơi bạn chạy web, ví dụ `http://127.0.0.1:4173` hoặc `http://localhost:3000`. Không nhập `/admin` vào JavaScript origin.
+
+Trong **Authorized redirect URIs**, không nhập URL trang admin. Hãy nhập callback của chính project Supabase:
+
+```text
+https://<project-ref>.supabase.co/auth/v1/callback
+```
+
+Có thể lấy callback URL này ngay tại trang Google provider trong Supabase Dashboard. Đây là điểm thường bị nhầm: Google redirect về Supabase callback trước, sau đó Supabase mới redirect tiếp về `/admin`.
+
+#### 2. Bật Google provider trong Supabase
+
+Vào **Supabase Dashboard → Authentication → Providers → Google**, bật Google, dán **Client ID** và **Client Secret** từ Google Cloud rồi lưu. Không commit Client Secret vào repository và không đặt nó trong `config.js`; secret này chỉ được lưu ở Supabase.
+
+#### 3. Cấu hình URL Configuration của Supabase
+
+Vào **Authentication → URL Configuration**. Đặt **Site URL** là URL gốc production, có dấu `/` cuối:
+
+```text
+https://your-domain.vercel.app/
+```
+
+Trong **Redirect URLs**, thêm các URL mà code admin thực sự gửi ở `redirectTo`:
+
+```text
+https://your-domain.vercel.app/admin
+https://your-domain.vercel.app/admin.html
+http://127.0.0.1:4173/admin
+http://localhost:3000/admin
+```
+
+`admin.html` nên được giữ lại nếu bạn có lúc mở URL đầy đủ thay vì URL clean `/admin`. Với Vercel Preview, có thể thêm wildcard theo team/account slug:
+
+```text
+https://*-<team-or-account-slug>.vercel.app/**
+```
+
+Trong production, ưu tiên URL cụ thể thay vì wildcard rộng. Redirect URL trong Supabase phải khớp allowlist; khác domain, khác path hoặc thiếu protocol đều có thể làm OAuth bị từ chối. Nếu dùng email confirmation hoặc password reset với `redirectTo`, kiểm tra thêm template email để dùng `{{ .RedirectTo }}` khi cần.
+
+#### 4. Kiểm tra flow trên trang admin
+
+Sau khi lưu cấu hình, redeploy Vercel để các biến môi trường mới có hiệu lực. Mở `https://your-domain.vercel.app/admin`, nhấn **Tiếp tục với Google**, hoàn tất consent và xác nhận trình duyệt quay lại đúng `/admin`. Sau khi quay lại, email phải xuất hiện ở góc phải và dashboard chỉ hiển thị nếu email đó có trong `ADMIN_EMAILS`, UUID có trong `ADMIN_USER_IDS`, hoặc user có `app_metadata` admin.
+
+Nếu gặp lỗi `redirect_uri_mismatch`, sửa **Authorized redirect URIs** trên Google Cloud về callback Supabase, không sửa thành `/admin`. Nếu gặp lỗi redirect không được phép từ Supabase, bổ sung URL `/admin` tương ứng trong **Authentication → URL Configuration**. Nếu đăng nhập thành công nhưng nhận `403`, kiểm tra email thực tế trong session, dấu cách trong `ADMIN_EMAILS`, environment của deployment và việc đã redeploy sau khi lưu biến.
+
 Service role key vẫn chỉ được đọc bởi Vercel Function; trình duyệt chỉ gửi access token của phiên Supabase. Các biến bắt buộc server-side gồm:
 
 ```text
@@ -213,3 +266,34 @@ SCORE_SIGNING_SECRET=...
 ADMIN_EMAILS=admin@example.com
 ADMIN_USER_IDS=
 ```
+
+
+## Playwright E2E cho trang admin
+
+Kịch bản [`e2e/admin.e2e.mjs`](e2e/admin.e2e.mjs) kiểm tra title, `noindex`, form email/mật khẩu, nút Google OAuth, liên kết quay lại game, responsive desktop/mobile và trạng thái `401` của `/api/admin-data` trên deployment từ xa. Khi chạy local, test tự khởi động static server và dùng `/admin.html`; khi chạy trên Vercel, test dùng URL clean `/admin`.
+
+Chạy smoke test local:
+
+```bash
+npm ci
+npm run build
+npm run test:e2e:admin
+```
+
+Chạy trên Vercel Preview hoặc Production:
+
+```bash
+ADMIN_E2E_BASE_URL=https://your-domain.vercel.app npm run test:e2e:admin
+```
+
+Để kiểm tra dashboard bằng một tài khoản admin test qua Email/Password, truyền biến môi trường ở shell hoặc CI secret, không commit chúng vào repository:
+
+```bash
+ADMIN_E2E_BASE_URL=https://your-domain.vercel.app \
+ADMIN_E2E_EMAIL=admin@example.com \
+ADMIN_E2E_PASSWORD='your-test-password' \
+ADMIN_E2E_EXPECT_ADMIN=1 \
+npm run test:e2e:admin
+```
+
+Test không in mật khẩu ra log. Nếu không truyền email/mật khẩu, test chỉ chạy smoke UI và kiểm tra unauthenticated API. Việc hoàn tất OAuth Google thực tế thường cần browser session/consent của người dùng; test vẫn kiểm tra nút OAuth và URL redirect phải được cấu hình theo phần Google OAuth bên trên.
