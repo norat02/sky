@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://norat02.github.io/sky/sitemap.xml

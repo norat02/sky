@@ -4,6 +4,13 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 <meta name="theme-color" content="#f0e7d3">
+<meta name="description" content="Chim Sẻ là game arcade bay qua những khung cảnh hoa anh đào, mùa thu, tuyết, đêm và mưa.">
+<link rel="canonical" href="https://norat02.github.io/sky/">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Chim Sẻ · 小鳥の旅">
+<meta property="og:description" content="Một chuyến bay arcade ngắn, thử thách phản xạ và ghi điểm qua nhiều khung cảnh.">
+<meta property="og:url" content="https://norat02.github.io/sky/">
+<meta name="twitter:card" content="summary">
 <title>Chim Sẻ · 小鳥の旅</title>
 <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2855538220391010"
      crossorigin="anonymous"></script>
@@ -23,6 +30,10 @@ input{-webkit-user-select:text;user-select:text}
 #score.pulse{animation:sp .35s ease-out}
 @keyframes sp{0%{transform:scale(1)}35%{transform:scale(1.22)}100%{transform:scale(1)}}
 #bestHud{margin-top:4px;font-size:12px;letter-spacing:.42em;text-transform:uppercase;color:var(--ink2)}
+#combo{margin-top:6px;min-height:16px;font-size:13px;letter-spacing:.2em;text-transform:uppercase;color:var(--red);opacity:0;transform:translateY(-4px);transition:opacity .2s,transform .2s}
+#combo.show{opacity:1;transform:translateY(0)}
+#combo.hot{font-weight:700;animation:comboPulse .6s ease-out}
+@keyframes comboPulse{50%{transform:scale(1.12)}100%{transform:scale(1)}}
 #runTag{position:fixed;top:118px;left:50%;transform:translateX(-50%);text-align:center;z-index:5;pointer-events:none;transition:opacity .35s}
 #runTag.hidden{opacity:0}
 #runNo{display:block;font-size:11px;letter-spacing:.42em;margin-right:-.42em;text-transform:uppercase;color:var(--ink2);margin-bottom:4px}
@@ -117,7 +128,7 @@ kbd{font-style:normal;border:1px solid var(--ink2);padding:1px 6px;font-size:11p
 <body>
 <canvas id="game"></canvas>
 <div id="netDot"><i></i><span id="netTxt">đang kết nối…</span></div>
-<div id="hud" class="hidden"><div id="score">0</div><div id="bestHud">kỷ lục · —</div></div>
+<div id="hud" class="hidden"><div id="score">0</div><div id="bestHud">kỷ lục · —</div><div id="combo" aria-live="polite"></div></div>
 <div id="runTag" class="hidden"><span id="runNo">ván 01</span><span id="runKj">霧朝</span><span id="runVn">sương sớm</span></div>
 <div id="evBanner"><span class="kanji" id="evKanji">風</span><div><b id="evName"></b><i id="evDesc"></i><div id="evBar"><i id="evBarI"></i></div></div></div>
 <div id="hint" class="hidden"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 14l7-7 7 7"/></svg><span>chạm để vỗ cánh</span></div>
@@ -171,7 +182,7 @@ function sm(a,dt){return 1-Math.exp(-a*dt);}
 var cv=document.getElementById('game');
 var ctx=cv.getContext('2d',{alpha:false});
 function $(id){return document.getElementById(id);}
-var hud=$('hud'),scoreEl=$('score'),bestHud=$('bestHud'),hint=$('hint');
+var hud=$('hud'),scoreEl=$('score'),bestHud=$('bestHud'),comboEl=$('combo'),hint=$('hint');
 var titleSc=$('titleScreen'),overSc=$('overScreen'),lbSc=$('lbScreen'),bestTitle=$('bestTitle');
 var finalScore=$('finalScore'),finalBest=$('finalBest'),newBestEl=$('newBest'),muteBtn=$('muteBtn');
 var netDot=$('netDot'),netTxt=$('netTxt');
@@ -255,7 +266,7 @@ var TINTS_EXTRA=[null,'rgba(209,160,105,.055)','rgba(122,138,148,.05)','rgba(196
 /* ═══ TRẠNG THÁI ═══ */
 var dpr=1,scale=1,cssW=0,cssH=0,worldW=0,worldH=720,groundY=0;
 var state='TITLE',timeR=0,freeze=0,speed=0,dist=0,nowMs=0,playT=0,dyingT=0,shakePhase=0;
-var score=0,best=+(store.get('chimse.best')||0),scoreSent=false;
+var score=0,best=+(store.get('chimse.best')||0),scoreSent=false,combo=0,comboT=0;
 var pipes=[],petals=[],parts=[],pops=[],stamp=null,coins=[],charms=[],streaks=[],birdTrail=[],stars=[];
 var shield=false,inv=0,petalWant=20;
 var shakeT=0,shakeDur=1,shakeAmp=0;
@@ -407,7 +418,7 @@ function reset(){
   EV.wind.on=false;EV.storm.on=false;EV.note=0;
   EV.nextWind=rand(11,17)/RUN.freq;EV.nextStorm=rand(18,28)/RUN.freq;EV.charmCd=rand(7,11)/RUN.freq;
   banner.on=false;evBanner.classList.remove('show');
-  score=0;scoreEl.textContent='0';speed=0;freeze=0;dist=0;
+  score=0;scoreEl.textContent='0';combo=0;comboT=0;updateCombo();speed=0;freeze=0;dist=0;
   bird.vy=0;bird.rot=0;bird.flapT=0;panelShown=false;isNewBest=false;
   gapHist.length=0;dirHist.length=0;runPipeN=0;pipeSp=330;lastCoinY=null;
   bestHud.textContent=best>0?'kỷ lục · '+best:'kỷ lục · —';
@@ -461,6 +472,7 @@ function pushPipe(x){
 
 function pulseScore(){scoreEl.classList.remove('pulse');void scoreEl.offsetWidth;scoreEl.classList.add('pulse');}
 function flash(rgb,a){flashRGB=rgb;flashA=a;}
+function updateCombo(){if(!comboEl)return;var mult=Math.min(4,1+Math.floor(combo/4));comboEl.textContent=combo>1?('combo '+combo+' · x'+mult):'';comboEl.classList.toggle('show',combo>1);comboEl.classList.toggle('hot',combo>=4);}
 function bumpScore(n,px,py,txt,color){var before=score;score+=n;scoreEl.textContent=score;pops.push({x:px,y:py,t:0,txt:txt||('+'+n),c:color||null});pops.push({x:px,y:py,t:0,ring:true,c:color||INK});pulseScore();if(Math.floor(score/10)>Math.floor(before/10)){stamp={t0:nowMs+110,val:Math.floor(score/10)*10};setTimeout(function(){AU.stampT();},110);shake(0.18,6);flash('199,62,58',0.1);}}
 function shake(d,a){shakeT=d;shakeDur=d;shakeAmp=a;}
 function showBanner(k,n,d,du){evK.textContent=k;evName.textContent=n;evDesc.textContent=d;banner.t=0;banner.dur=du;banner.on=true;evBanner.classList.add('show');}
@@ -519,7 +531,7 @@ function stepPhysics(dt){
     for(var i=0;i<pipes.length;i++)pipes[i].x-=speed*dt;
     while(pipes.length&&pipes[0].x<-150)pipes.shift();
     if(pipes.length===0)pushPipe(worldW+80);else{var l=pipes[pipes.length-1];if(l.x<=worldW+80-pipeSp)pushPipe(l.x+pipeSp);}
-    for(var j=0;j<pipes.length;j++){var p=pipes[j];if(!p.sc&&p.x+BASE.PW<bird.x){p.sc=true;var off=Math.abs(bird.y-p.gy);if(off<18){bumpScore(2,p.x+BASE.PW/2,p.gy,'HOÀN HẢO!',RED);flash('217,163,63',0.1);coinSparkle(p.x+BASE.PW/2,p.gy);AU.perfect();}else{bumpScore(1,p.x+BASE.PW/2,p.gy);AU.point(EV.note++);}for(var wp=0;wp<4;wp++)parts.push({x:p.x+BASE.PW/2,y:p.gy+rand(-25,25),vx:rand(-90,-20),vy:rand(-50,50),g:250,r:rand(1.5,3),t:0,tl:rand(0.2,0.4),c:'#c9bb98'});}}
+    for(var j=0;j<pipes.length;j++){var p=pipes[j];if(!p.sc&&p.x+BASE.PW<bird.x){p.sc=true;var off=Math.abs(bird.y-p.gy),perfect=off<18;combo++;comboT=3.6;updateCombo();var mult=Math.min(4,1+Math.floor(combo/4)),gain=(perfect?2:1)+(mult-1);if(perfect){bumpScore(gain,p.x+BASE.PW/2,p.gy,'HOÀN HẢO! x'+mult,RED);flash('217,163,63',0.1);coinSparkle(p.x+BASE.PW/2,p.gy);AU.perfect();}else{bumpScore(gain,p.x+BASE.PW/2,p.gy,mult>1?'COMBO x'+mult:'+'+gain);AU.point(EV.note++);}for(var wp=0;wp<4;wp++)parts.push({x:p.x+BASE.PW/2,y:p.gy+rand(-25,25),vx:rand(-90,-20),vy:rand(-50,50),g:250,r:rand(1.5,3),t:0,tl:rand(0.2,0.4),c:'#c9bb98'});}}
     var cR=CFG.R+22,cR2=cR*cR;
     for(var ci=coins.length-1;ci>=0;ci--){var c=coins[ci];c.x-=speed*dt;c.ph+=dt*c.spin;c.cy=c.y+Math.sin(c.ph*0.7)*6;if(c.x<-50){coins.splice(ci,1);continue;}var dx=c.x-bird.x,dy=c.cy-bird.y,d2=dx*dx+dy*dy;if(d2<cR2){coins.splice(ci,1);bumpScore(3,c.x,c.cy,'+3','#a67c1e');AU.coin();flash('217,163,63',0.08);coinSparkle(c.x,c.cy);}else if(d2<16900&&d2>1){var dd=Math.sqrt(d2);c.x-=dx/dd*300*dt;c.y-=dy/dd*300*dt;}}
     var hR=CFG.R+26,hR2=hR*hR;
@@ -538,6 +550,7 @@ function stepPhysics(dt){
 }
 
 function uiUpdate(dtr){
+  if(state==='PLAY'&&combo>0){comboT-=dtr;if(comboT<=0){combo=0;comboT=0;updateCombo();}}
   if(shakeT>0){shakeT-=dtr;if(shakeT<0)shakeT=0;shakePhase+=dtr*42;}
   if(flashA>0){flashA-=dtr*2;if(flashA<0)flashA=0;}
   if(banner.on){banner.t+=dtr;if(banner.t>banner.dur+0.6){banner.on=false;evBanner.classList.remove('show');}else evBarI.style.width=(clamp(1-banner.t/banner.dur,0,1)*100)+'%';}
