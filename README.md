@@ -88,6 +88,12 @@ Sau khi cập nhật schema, cần chạy [`supabase/schema.sql`](supabase/schem
 
 > Không có cơ chế nào chống gian lận tuyệt đối khi toàn bộ mô phỏng game chạy trong trình duyệt. Serverless Function này chặn giả mạo request cơ bản, replay ticket, gửi quá nhiều lần và điểm vượt tốc độ hợp lý. Muốn đạt mức chống gian lận cao hơn, cần chuyển trạng thái game hoặc xác thực replay sang server-authoritative.
 
+## Anti-cheat và khóa phiên
+
+Game có lớp bảo vệ phía client để chặn menu chuột phải, các phím tắt phổ biến mở DevTools, phát hiện chênh lệch kích thước viewport bất thường và khóa ngay phiên chơi khi phát hiện môi trường debug hoặc mã runtime bị thay đổi. Khi bị khóa, game chuyển sang trạng thái `LOCKED`, không cho bắt đầu ván mới hoặc vỗ cánh; người chơi cần đóng công cụ debug và tải lại trang. Đây chỉ là lớp phòng vệ bổ sung, không thay thế xác thực server-side.
+
+Leaderboard vẫn chỉ tin dữ liệu được Vercel Function xác thực bằng Supabase session, HMAC run ticket, giới hạn tốc độ, thời hạn và chống replay. Không có cơ chế chống hack tuyệt đối khi game chạy trong trình duyệt, vì người dùng có thể kiểm soát môi trường client. Các tín hiệu đáng ngờ không được dùng để tự động xóa tài khoản hoặc dữ liệu; nếu cần xử lý tài khoản, hãy ghi nhận sự kiện, khóa gửi điểm/quarantine và yêu cầu quản trị viên xem xét để tránh khóa nhầm và mất dữ liệu không thể hoàn tác.
+
 ## Bảo mật và mã hóa
 
 Website được phục vụ qua HTTPS bởi Vercel và Supabase, nên dữ liệu truyền giữa trình duyệt và các dịch vụ được mã hóa trong quá trình truyền. Không lưu mật khẩu, service-role key hoặc secret OAuth trong client. `SUPABASE_ANON_KEY` là public key và chỉ được dùng cùng Row Level Security; service-role key và `SCORE_SIGNING_SECRET` chỉ nằm trong Vercel Environment Variables.

@@ -37,10 +37,17 @@ const html = readFileSync(new URL('../index.html', import.meta.url), 'utf8');
 assert.match(html, /if\(ok===false\)throw new Error\('ad incomplete'\)/, 'revive must reject incomplete ads');
 assert.match(html, /RewardedSlotGrantedEvent|reward-granted|rewarded-ad/, 'rewarded-grant integration marker must exist');
 assert.match(html, /reviveUsed=true/, 'revive must be consumed after a successful grant');
+assert.match(html, /function securityLock\(reason\)/, 'anti-cheat security lock must exist');
+assert.match(html, /function antiCheatCheck\(\)/, 'DevTools detection must exist');
+assert.match(html, /e\.key==='F12'/, 'F12 DevTools shortcut must be blocked');
+assert.match(html, /state='LOCKED'/, 'suspicious activity must lock gameplay');
+assert.match(html, /if\(ANTI_CHEAT\.locked\)return/, 'locked sessions must not start or flap');
+assert.doesNotMatch(html, /deleteUser|auth\.admin\.deleteUser|deleteAccount/, 'client must not auto-delete accounts');
 assert.match(html, /sky-ad-blocked/, 'AdBlock fallback event must be handled');
 assert.doesNotMatch(html, /pendingScores:\s*cleanPending\(pendingScores\)/, 'backup must not export pending online scores');
 
 console.log('run ticket HMAC ownership/tamper checks: OK');
 console.log('Leaderboard score payload validation checks: OK');
 console.log('rewarded revive incomplete-ad/AdBlock guard checks: OK');
+console.log('anti-cheat DevTools lock and no-auto-delete checks: OK');
 console.log('backup excludes pending online scores: OK');

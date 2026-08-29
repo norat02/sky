@@ -182,6 +182,12 @@ kbd{font-style:normal;border:1px solid var(--ink2);padding:1px 6px;font-size:11p
 #reviveOverlay{position:fixed;inset:0;z-index:24;display:flex;align-items:center;justify-content:center;background:rgba(240,231,211,.5);opacity:0;visibility:hidden;pointer-events:none;transition:opacity .2s,visibility .2s}
 #reviveOverlay.show{opacity:1;visibility:visible;pointer-events:auto}
 #reviveOverlay .reviveCard{width:min(92vw,360px);background:var(--paper2);border:2px solid var(--ink);box-shadow:7px 7px 0 rgba(38,34,28,.2);padding:24px;text-align:center}
+#securityOverlay{position:fixed;inset:0;z-index:100;display:flex;align-items:center;justify-content:center;background:rgba(38,34,28,.92);color:#f7f0de;opacity:0;visibility:hidden;pointer-events:none;transition:opacity .2s,visibility .2s}
+#securityOverlay.show{opacity:1;visibility:visible;pointer-events:auto}
+#securityOverlay .securityCard{width:min(92vw,420px);padding:28px;text-align:center;border:2px solid #f7f0de;box-shadow:8px 8px 0 rgba(0,0,0,.28)}
+#securityOverlay svg{width:42px;height:42px;margin-bottom:12px;color:#f3c8d2}
+#securityOverlay h2{font-size:26px;margin-bottom:10px}
+#securityOverlay p{font-size:14px;line-height:1.5}
 #reviveOverlay h2{font-size:27px;margin-bottom:5px}
 #reviveOverlay p{font-size:14px;color:var(--ink2);font-style:italic}
 #reviveAdBox{min-height:82px;margin:14px 0;padding:16px 8px;border:1px dashed rgba(38,34,28,.45);display:flex;align-items:center;justify-content:center;font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--ink2)}
@@ -245,6 +251,7 @@ kbd{font-style:normal;border:1px solid var(--ink2);padding:1px 6px;font-size:11p
 <div id="pauseOverlay"><div class="pauseCard"><div class="kana">休止</div><h2 data-i18n="pauseTitle"> TẠM DỪNG</h2><p data-i18n="pauseHint">Nhấn P hoặc nút tiếp tục để bay lại</p><button class="btn solid" id="resumeBtn" data-i18n="resume">tiếp tục</button>
 </div></div>
 <div id="reviveOverlay"><div class="reviveCard"><div class="kana">再生</div><h2 data-i18n="reviveTitle">HỒI SINH?</h2><p data-i18n="reviveHint">Xem quảng cáo hợp lệ để tiếp tục ván này một lần.</p><div id="reviveAdBox" data-i18n="adArea">khu vực quảng cáo</div><button class="btn solid" id="reviveAdBtn" data-i18n="watchAd">xem quảng cáo</button><button class="btn ghost" id="reviveSkip" data-i18n="endFlight">kết thúc ván</button><div id="reviveStatus"></div></div></div>
+<div id="securityOverlay" role="alertdialog" aria-modal="true" aria-labelledby="securityTitle"><div class="securityCard"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3 4 6v5c0 5 3.4 8.4 8 10 4.6-1.6 8-5 8-10V6l-8-3z"/><path d="M12 8v4M12 16h.01"/></svg><h2 id="securityTitle">Phiên chơi đã bị khóa</h2><p id="securityMessage">Phát hiện môi trường không an toàn. Hãy đóng công cụ debug và tải lại trang.</p></div></div>
 <button id="muteBtn" aria-label="bật tắt âm thanh"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 5L6 9H2v6h4l5 4V5z"/><path class="w" d="M15.5 8.5a5 5 0 0 1 0 7"/><path class="w" d="M18.5 5.5a9.5 9.5 0 0 1 0 13"/><path class="x" d="M16 9l6 6M22 9l-6 6"/></svg></button>
 <script>
 window.addEventListener('error',function(e){
@@ -287,7 +294,7 @@ var localeSuggest=$('localeSuggest'),localeSuggestText=$('localeSuggestText'),lo
 var pauseBtn=$('pauseBtn'),pauseOverlay=$('pauseOverlay'),resumeBtn=$('resumeBtn');
 var reviveOverlay=$('reviveOverlay'),reviveAdBtn=$('reviveAdBtn'),reviveSkip=$('reviveSkip'),reviveAdBox=$('reviveAdBox'),reviveStatus=$('reviveStatus');
 var authModal=$('authModal'),authEmail=$('authEmail'),authPassword=$('authPassword'),authMsg=$('authMsg'),authState=$('authState'),authOpen=$('authOpen'),authLogout=$('authLogout');
-var finalScore=$('finalScore'),finalBest=$('finalBest'),newBestEl=$('newBest'),muteBtn=$('muteBtn');
+var finalScore=$('finalScore'),finalBest=$('finalBest'),newBestEl=$('newBest'),muteBtn=$('muteBtn'),securityOverlay=$('securityOverlay'),securityMessage=$('securityMessage');
 var netDot=$('netDot'),netTxt=$('netTxt');
 var evBanner=$('evBanner'),evK=$('evKanji'),evName=$('evName'),evDesc=$('evDesc'),evBarI=$('evBarI');
 var nameRow=$('nameRow'),nameInput=$('nameInput'),sendBtn=$('sendBtn');
@@ -603,7 +610,14 @@ function reset(){
   gapHist.length=0;dirHist.length=0;runPipeN=0;pipeSp=330;lastCoinY=null;
   bestHud.textContent=best>0?'kỷ lục · '+best:'kỷ lục · —';
 }
+var ANTI_CHEAT={locked:false,lastWidth:window.innerWidth,lastHeight:window.innerHeight};
+function securityLock(reason){if(ANTI_CHEAT.locked||window.__SKY_E2E__)return;ANTI_CHEAT.locked=true;state='LOCKED';if(securityMessage)securityMessage.textContent=reason==='devtools'?'Phát hiện DevTools hoặc công cụ debug đang mở. Hãy đóng công cụ này và tải lại trang.':'Phát hiện mã game hoặc môi trường chạy đã bị thay đổi. Phiên chơi đã bị khóa.';if(securityOverlay)securityOverlay.classList.add('show');}
+function antiCheatCheck(){if(window.__SKY_E2E__||ANTI_CHEAT.locked)return;var dw=Math.abs(window.outerWidth-window.innerWidth),dh=Math.abs(window.outerHeight-window.innerHeight);if(dw>180||dh>180)securityLock('devtools');}
+window.addEventListener('contextmenu',function(e){if(!window.__SKY_E2E__)e.preventDefault();});
+window.addEventListener('keydown',function(e){if(window.__SKY_E2E__)return;var k=(e.key||'').toLowerCase();if(e.key==='F12'||(e.ctrlKey&&e.shiftKey&&['i','j','c'].indexOf(k)>=0)||(e.ctrlKey&&k==='u')){e.preventDefault();securityLock('devtools');}});
+setInterval(antiCheatCheck,1200);
 function startGame(){
+  if(ANTI_CHEAT.locked)return;
   try{if(document.activeElement&&document.activeElement.blur)document.activeElement.blur();}catch(e){}
   pauseOverlay.classList.remove('show');pauseBtn.textContent='Ⅱ';pauseBtn.classList.add('show');
   applyChar();applyMap();rollRun();reset();state='READY';
@@ -624,6 +638,7 @@ function goTitle(){
 function doFlap(){bird.vy=CFG.FLAP;bird.flapT=0.3;bird.wingPh=0;bird.y+=CFG.FLAP*0.008;bird.rot=clamp(bird.rot-0.12,-0.42,1.32);AU.flap();flapPuff();}
 function setPaused(on){if(on&&state==='PLAY'){state='PAUSED';pauseOverlay.classList.add('show');pauseBtn.textContent='▶';}else if(!on&&state==='PAUSED'){state='PLAY';pauseOverlay.classList.remove('show');pauseBtn.textContent='Ⅱ';lastT=0;}}
 function tap(){
+  if(ANTI_CHEAT.locked)return;
   AU.unlock();
   if(state==='PAUSED'||state==='REVIVE')return;
   if(state==='TITLE'){startGame();return;}
