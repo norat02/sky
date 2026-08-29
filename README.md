@@ -311,3 +311,24 @@ npm run test:e2e:admin
 ```
 
 Test không in mật khẩu ra log. Nếu không truyền email/mật khẩu, test chỉ chạy smoke UI và kiểm tra unauthenticated API. Việc hoàn tất OAuth Google thực tế thường cần browser session/consent của người dùng; test vẫn kiểm tra nút OAuth và URL redirect phải được cấu hình theo phần Google OAuth bên trên.
+
+
+## Benchmark mã hóa backup
+
+Benchmark [`scripts/benchmark-backup.mjs`](scripts/benchmark-backup.mjs) chạy trực tiếp trong Chromium bằng Web Crypto, nên đo đúng luồng `encryptBackup`/`decryptBackup` của ứng dụng thay vì một bản mô phỏng Node.js. Mỗi lần đo bao gồm việc tạo và xác minh watermark 5 lớp; một vòng warm-up được loại khỏi thống kê. Payload mặc định là backup schema v2 với 24 bản ghi lịch sử.
+
+Chạy benchmark mặc định 20 vòng:
+
+```bash
+npm ci
+npm run build
+npm run benchmark:backup
+```
+
+Có thể thay đổi số vòng bằng biến môi trường:
+
+```bash
+BENCHMARK_ITERATIONS=50 npm run benchmark:backup
+```
+
+Kết quả in ra JSON gồm thời gian `average`, `median`, `p95`, `min`, `max` theo mili-giây cho cả mã hóa và giải mã, cùng kích thước ciphertext. `median` phản ánh vòng điển hình; `p95` dùng để nhận biết đuôi chậm do thiết bị hoặc scheduler trình duyệt. Kết quả phụ thuộc CPU, Chromium, tải máy và kích thước payload nên chỉ nên so sánh giữa các lần chạy cùng môi trường.

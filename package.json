@@ -12,7 +12,8 @@
     "test": "node scripts/test-flows.mjs && node scripts/test-security-rewarded.mjs && node scripts/test-admin-auth.mjs",
     "test:e2e": "node e2e/game.e2e.mjs",
     "test:e2e:admin": "node e2e/admin.e2e.mjs",
-    "test:e2e:backup": "node e2e/backup-watermark.e2e.mjs"
+    "test:e2e:backup": "node e2e/backup-watermark.e2e.mjs",
+    "benchmark:backup": "node scripts/benchmark-backup.mjs"
   },
   "devDependencies": {
     "playwright": "^1.62.1"
