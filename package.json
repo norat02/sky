@@ -9,6 +9,10 @@
   "scripts": {
     "build": "node scripts/generate-config.mjs",
     "verify": "node scripts/verify.mjs",
-    "test": "node scripts/test-flows.mjs"
+    "test": "node scripts/test-flows.mjs",
+    "test:e2e": "node e2e/game.e2e.mjs"
+  },
+  "devDependencies": {
+    "playwright": "^1.62.1"
   }
 }

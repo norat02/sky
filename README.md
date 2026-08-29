@@ -114,6 +114,22 @@ python3 -m http.server 3000
 
 Mở `http://localhost:3000/`. Không mở trực tiếp bằng `file://` nếu muốn kiểm thử OAuth, vì Supabase cần origin hợp lệ.
 
+## Rewarded ads và hồi sinh
+
+Tính năng hồi sinh dùng hook `window.SKY_REWARDED_AD.show()`. Với website, không tìm tùy chọn rewarded trong đoạn mã AdSense display thông thường. Rewarded web ads nên được cấu hình trong **Google Ad Manager** bằng Google Publisher Tag (GPT), tạo ad unit định dạng **Rewarded**, sau đó gọi hook này khi quảng cáo đã phát xong và provider xác nhận reward. Google yêu cầu tuân thủ chính sách rewarded ads và có consent phù hợp; không tự động coi việc mở hoặc đóng quảng cáo là đã xem xong. Xem ghi chú tại [`docs/google-rewarded-ad-notes.md`](docs/google-rewarded-ad-notes.md).
+
+## Kiểm thử E2E
+
+Bộ test [`e2e/game.e2e.mjs`](e2e/game.e2e.mjs) dùng Playwright với Chromium và mock Supabase/rewarded-ad provider, nên không sử dụng tài khoản production hoặc tạo dữ liệu thật. Test bao phủ mở Settings và đổi tiếng Nhật, đăng nhập email, bắt đầu chơi, gọi luồng game over, xem quảng cáo mock để hồi sinh, kết thúc ván, gửi điểm và tải Leaderboard online.
+
+Chạy bằng:
+
+```bash
+npm run test:e2e
+```
+
+Có thể chỉ định Chromium khác bằng `CHROMIUM_PATH=/path/to/chromium npm run test:e2e`. Khi kiểm thử production thật, cần dùng project Supabase staging, tài khoản test riêng, ad test unit của Google và tuyệt đối không click quảng cáo thật trong quá trình tự động hóa.
+
 ## Đa ngôn ngữ
 
 Game hỗ trợ `vi`, `en` và `ja`. Lần đầu mở game, ứng dụng ưu tiên mã quốc gia do Vercel cung cấp qua `/api/locale`, sau đó fallback sang `navigator.language`. Người chơi có thể mở **Cài đặt**, đổi ngôn ngữ thủ công và lựa chọn được lưu trong trình duyệt; lựa chọn thủ công được ưu tiên hơn tự động nhận diện IP.
