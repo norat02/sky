@@ -26,7 +26,14 @@ try {
     const watermarkHidden = !envelopeText.includes('watermark-final-v1') && !envelopeText.includes('sky-bird-watermark');
     const watermark = await hooks.createBackupWatermark(payload, envelope);
     const altered = { ...watermark, layers: [...watermark.layers.slice(0, 4), 'tampered'] };
-    return { ready: true, layerCount: watermark.layers.length, valid: await hooks.validateBackupWatermark(watermark, payload, envelope), altered: await hooks.validateBackupWatermark(altered, payload, envelope), roundTrip: decrypted.data.best === 7, decryptedHasFiveLayers, watermarkHidden };
+    const formatChecks = [
+      /^[0-9a-f]{64}$/.test(watermark.layers[0]),
+      /^[A-Za-z0-9_-]+$/.test(watermark.layers[1]),
+      /^r[A-Za-z0-9_-]+$/.test(watermark.layers[2]),
+      /^(?:[0-9a-f]{8}\.){7}[0-9a-f]{8}$/.test(watermark.layers[3]),
+      /^x[A-Za-z0-9_-]+z$/.test(watermark.layers[4])
+    ];
+    return { ready: true, layerCount: watermark.layers.length, valid: await hooks.validateBackupWatermark(watermark, payload, envelope), altered: await hooks.validateBackupWatermark(altered, payload, envelope), roundTrip: decrypted.data.best === 7, decryptedHasFiveLayers, watermarkHidden, formatChecks, distinctFormats: new Set([watermark.layers[0].match(/^[0-9a-f]+$/) ? 'hex' : 'other', watermark.layers[1].includes('=') ? 'padded' : 'base64url', watermark.layers[2].startsWith('r') ? 'reverse-base64url' : 'other', watermark.layers[3].includes('.') ? 'grouped-hex' : 'other', watermark.layers[4].startsWith('x') && watermark.layers[4].endsWith('z') ? 'tagged-base64url' : 'other']).size >= 4 };
   });
   assert(result.ready, 'backup watermark E2E hooks are missing');
   assert(result.layerCount === 5, 'backup watermark must contain five layers');
@@ -34,6 +41,8 @@ try {
   assert(result.roundTrip === true, 'encrypted backup roundtrip must preserve data');
   assert(result.decryptedHasFiveLayers === true, 'encrypted backup must contain five hidden watermark layers after decrypt');
   assert(result.watermarkHidden === true, 'watermark markers must not be visible in the encrypted envelope');
+  assert(result.formatChecks.every(Boolean), 'watermark layers must use the required opaque formats');
+  assert(result.distinctFormats === true, 'watermark layers must use at least four distinct formats');
   assert(result.altered === false, 'altered backup watermark must fail');
   console.log('backup watermark E2E: OK');
 } finally {
