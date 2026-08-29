@@ -168,3 +168,19 @@ Website cung cấp [`robots.txt`](robots.txt) và [`sitemap.xml`](sitemap.xml), 
 Loader AdSense không còn nằm trực tiếp trong phần `<head>` dưới dạng script bên thứ ba blocking. Bootstrap nhỏ chỉ tạo request sau `load` + idle delay hoặc tương tác người dùng. Provider Google Ad Manager/GPT nên gọi `window.SKY_ADS.loadGPT()` ngay trước khi mở rewarded ad, không tải GPT khi game chưa yêu cầu. Cách này giảm request và công việc main-thread ở lần render đầu, nhưng cần đo lại trên Preview/Production vì quảng cáo thật vẫn có thể ảnh hưởng TBT sau tương tác.
 
 Để tối ưu hiệu suất, nên đo cả Mobile và Desktop bằng PageSpeed Insights sau mỗi production deployment. Game hiện tải canvas và script inline, Google Fonts, Supabase module và AdSense; cần theo dõi LCP, INP và CLS, đặc biệt khi bật quảng cáo. Không tải Supabase hoặc quảng cáo trước khi cần nếu chế độ offline/initial render không yêu cầu. Giữ thumbnail và tài nguyên tĩnh có cache trên Vercel, hạn chế thêm thư viện JavaScript, dùng font fallback nhanh và tránh layout thay đổi khi modal/quảng cáo xuất hiện. Mục tiêu Core Web Vitals tham khảo là LCP ≤ 2,5 giây, INP < 200 ms và CLS < 0,1.
+
+
+## Khu vực quản trị
+
+Trang quản trị nằm tại [`/admin`](admin.html) và chỉ hiển thị dữ liệu sau khi tài khoản Supabase được xác thực. Dashboard hiện có thống kê tổng số điểm, số ván online, số ván đã nộp và kỷ lục hệ thống; bảng điểm gần đây hỗ trợ tìm theo tên hoặc user ID và không có thao tác xóa/sửa trực tiếp.
+
+Quyền quản trị được kiểm tra ở server-side trong [`api/admin-data.mjs`](api/admin-data.mjs). Tài khoản được cấp quyền nếu thỏa một trong các điều kiện sau: `user.app_metadata.role` là `admin`, `user.app_metadata.is_admin` là `true`, email có trong `ADMIN_EMAILS`, hoặc UUID có trong `ADMIN_USER_IDS`. Các danh sách nhiều giá trị phân tách bằng dấu phẩy.
+
+Trong Vercel, cấu hình thêm các biến sau cho môi trường cần dùng. Không đưa các biến này vào `config.js` hoặc bất kỳ mã trình duyệt nào:
+
+```text
+ADMIN_EMAILS=admin@example.com
+ADMIN_USER_IDS=
+```
+
+Sau khi đăng ký hoặc cấp quyền cho tài khoản Supabase, hãy đăng nhập tại `/admin`. Nếu dùng Google OAuth, cần thêm URL `/admin` của production và preview vào **Supabase → Authentication → URL Configuration**. Service role key vẫn chỉ được đọc bởi Vercel Function; trình duyệt chỉ gửi access token của phiên Supabase.

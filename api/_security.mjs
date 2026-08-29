@@ -30,6 +30,32 @@ export async function authenticate(req) {
   return { admin, user: data.user };
 }
 
+function envList(name) {
+  return String(process.env[name] || '')
+    .split(',')
+    .map((value) => value.trim().toLowerCase())
+    .filter(Boolean);
+}
+
+export function isAdminUser(user) {
+  if (!user) return false;
+  const appMetadata = user.app_metadata || {};
+  if (appMetadata.role === 'admin' || appMetadata.is_admin === true) return true;
+  const userIds = envList('ADMIN_USER_IDS');
+  const emails = envList('ADMIN_EMAILS');
+  return userIds.includes(String(user.id || '').toLowerCase())
+    || emails.includes(String(user.email || '').toLowerCase());
+}
+
+export function requireAdmin(session) {
+  if (!session || !isAdminUser(session.user)) {
+    const error = new Error('admin access required');
+    error.status = 403;
+    throw error;
+  }
+  return session;
+}
+
 function base64url(value) {
   return Buffer.from(value).toString('base64url');
 }

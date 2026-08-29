@@ -1,0 +1,293 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<meta name="theme-color" content="#f0e7d3">
+<title>Sky Bird — Khu vực quản trị</title>
+<script src="config.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant:ital,wght@0,500;0,600;0,700;1,600&family=Shippori+Mincho:wght@500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--paper:#f0e7d3;--paper2:#f7f0de;--ink:#26221c;--ink2:#665e50;--red:#c73e3a;--red-dark:#96312e;--line:rgba(38,34,28,.16);--green:#3f7d4e;--shadow:8px 8px 0 rgba(38,34,28,.12);--ease:cubic-bezier(.23,1,.32,1)}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;min-width:320px;background:var(--paper);color:var(--ink);font-family:'Cormorant',Georgia,serif;font-size:16px;line-height:1.35}
+a{color:inherit;text-decoration:none}
+button,input,select{font:inherit}
+button{cursor:pointer}
+button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid var(--red);outline-offset:3px}
+.hidden{display:none!important}
+.icon{display:inline-flex;width:18px;height:18px;align-items:center;justify-content:center;flex:none}
+.icon svg{width:100%;height:100%;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.admin-shell{display:grid;grid-template-columns:252px minmax(0,1fr);min-height:100vh}
+.sidebar{position:sticky;top:0;height:100vh;padding:28px 20px 22px;background:var(--ink);color:var(--paper2);display:flex;flex-direction:column;overflow-y:auto}
+.brand{display:flex;align-items:center;gap:12px;padding:0 10px 26px;border-bottom:1px solid rgba(247,240,222,.2)}
+.brand-mark{width:42px;height:42px;background:var(--red);color:var(--paper2);display:grid;place-items:center;font-family:'Shippori Mincho',serif;font-size:22px;transform:rotate(-6deg);box-shadow:3px 3px 0 rgba(0,0,0,.28)}
+.brand small{display:block;color:#ccbfa6;font-size:10px;letter-spacing:.25em;text-transform:uppercase}
+.brand strong{display:block;margin-top:2px;font-size:22px;letter-spacing:.08em}
+.nav-label{margin:28px 10px 8px;color:#a89e8a;font-size:10px;letter-spacing:.25em;text-transform:uppercase}
+.nav{display:grid;gap:4px}
+.nav a{display:flex;align-items:center;gap:11px;padding:11px 12px;color:#d8ccb2;font-size:15px;transition:background .18s var(--ease),color .18s var(--ease),transform .18s var(--ease)}
+.nav a:hover,.nav a.active{background:rgba(247,240,222,.12);color:var(--paper2);transform:translateX(2px)}
+.nav a.active{border-left:2px solid var(--red);padding-left:10px}
+.sidebar-note{margin-top:auto;padding:14px 12px;border-top:1px solid rgba(247,240,222,.2);color:#a89e8a;font-size:13px;font-style:italic}
+.sidebar-note b{display:block;color:#d8ccb2;font-style:normal;font-size:11px;letter-spacing:.17em;text-transform:uppercase;margin-bottom:5px}
+.main{min-width:0;padding:32px clamp(20px,4vw,56px) 56px}
+.main-inner{max-width:1300px;margin:0 auto}
+.topbar{display:flex;align-items:flex-start;justify-content:space-between;gap:22px;padding-bottom:28px;border-bottom:1px solid var(--line)}
+.eyebrow{color:var(--red);font-size:11px;font-weight:700;letter-spacing:.25em;text-transform:uppercase}
+h1{margin:7px 0 5px;font-size:clamp(34px,4vw,54px);line-height:1;letter-spacing:.04em}
+.lede{margin:0;color:var(--ink2);font-size:17px;font-style:italic}
+.top-actions{display:flex;align-items:center;gap:8px;flex-wrap:wrap;justify-content:flex-end}
+.user-chip{display:flex;align-items:center;gap:8px;padding:9px 12px;border:1px solid var(--line);background:rgba(247,240,222,.55);font-size:13px;color:var(--ink2);max-width:260px}
+.user-chip .dot{width:8px;height:8px;border-radius:50%;background:var(--green);flex:none}
+.user-chip span:last-child{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.button{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:40px;padding:9px 15px;border:2px solid var(--ink);background:transparent;color:var(--ink);font-weight:700;letter-spacing:.08em;font-size:12px;text-transform:uppercase;transition:transform .15s var(--ease),box-shadow .15s var(--ease),background .15s,color .15s}
+.button:hover{transform:translate(-2px,-2px);box-shadow:4px 4px 0 rgba(38,34,28,.18)}
+.button:active{transform:translate(1px,1px);box-shadow:none}
+.button.solid{background:var(--ink);color:var(--paper2);box-shadow:4px 4px 0 rgba(38,34,28,.18)}
+.button.solid:hover{background:var(--red);border-color:var(--red);box-shadow:5px 5px 0 rgba(38,34,28,.18)}
+.button.small{min-height:34px;padding:7px 11px;font-size:11px}
+.section{padding-top:30px}
+.section-head{display:flex;align-items:flex-end;justify-content:space-between;gap:18px;margin-bottom:13px}
+.section-head h2{margin:0;font-size:25px;letter-spacing:.08em}
+.section-head p{margin:3px 0 0;color:var(--ink2);font-style:italic;font-size:14px}
+.sync-status{color:var(--ink2);font-size:12px;font-style:italic;text-align:right;white-space:nowrap}
+.stats-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px}
+.stat-card{position:relative;min-height:150px;padding:20px;background:var(--paper2);border:1px solid var(--line);box-shadow:var(--shadow);overflow:hidden}
+.stat-card::after{content:'';position:absolute;right:-20px;bottom:-24px;width:82px;height:82px;border:1px solid rgba(199,62,58,.2);transform:rotate(45deg)}
+.stat-card .stat-label{color:var(--ink2);font-size:12px;letter-spacing:.15em;text-transform:uppercase}
+.stat-card .stat-value{margin-top:18px;font-size:clamp(30px,3vw,42px);font-weight:700;line-height:1;letter-spacing:.02em}
+.stat-card .stat-meta{margin-top:10px;color:var(--ink2);font-size:13px;font-style:italic}
+.stat-card.accent{background:var(--ink);color:var(--paper2)}
+.stat-card.accent .stat-label,.stat-card.accent .stat-meta{color:#cfc2a8}
+.stat-card.accent::after{border-color:rgba(247,240,222,.16)}
+.content-grid{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:18px;align-items:start}
+.card{background:var(--paper2);border:1px solid var(--line);box-shadow:var(--shadow)}
+.card-head{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:18px 20px 14px;border-bottom:1px solid var(--line)}
+.card-head h3{margin:0;font-size:21px;letter-spacing:.06em}
+.card-head p{margin:3px 0 0;color:var(--ink2);font-size:13px;font-style:italic}
+.filters{display:flex;gap:8px;align-items:center;flex-wrap:wrap;padding:14px 20px;border-bottom:1px solid var(--line)}
+.input{width:min(100%,260px);min-height:38px;padding:8px 11px;border:1px solid var(--line);background:var(--paper);color:var(--ink)}
+.select{min-height:38px;padding:8px 28px 8px 10px;border:1px solid var(--line);background:var(--paper);color:var(--ink)}
+.table-wrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse;min-width:650px}
+th,td{padding:12px 20px;text-align:left;border-bottom:1px solid var(--line);font-size:14px;white-space:nowrap}
+th{color:var(--ink2);font-size:10px;letter-spacing:.16em;text-transform:uppercase;font-weight:700}
+tbody tr{transition:background .15s}
+tbody tr:hover{background:rgba(240,231,211,.65)}
+td.score-cell{font-size:20px;font-weight:700;color:var(--red)}
+.player{display:flex;align-items:center;gap:9px}
+.player-initial{width:28px;height:28px;display:grid;place-items:center;background:var(--ink);color:var(--paper2);font-family:'Shippori Mincho',serif;font-size:14px;border-radius:50%}
+.mono{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11px;color:var(--ink2)}
+.empty-row{padding:32px 20px!important;text-align:center!important;color:var(--ink2);font-style:italic;white-space:normal}
+.side-card{padding:20px}
+.side-card h3{margin:0 0 8px;font-size:22px;letter-spacing:.06em}
+.side-card p{margin:0;color:var(--ink2);font-size:14px;font-style:italic}
+.side-list{display:grid;gap:11px;margin:20px 0 0;padding:0;list-style:none}
+.side-list li{display:flex;align-items:flex-start;gap:10px;padding-top:11px;border-top:1px solid var(--line);font-size:14px}
+.side-list .icon{color:var(--red);margin-top:1px}
+.notice{padding:12px 14px;border:1px solid rgba(199,62,58,.34);background:rgba(199,62,58,.08);color:var(--red-dark);font-size:14px}
+.notice.success{border-color:rgba(63,125,78,.32);background:rgba(63,125,78,.08);color:#2f633b}
+.notice strong{display:block;margin-bottom:3px;font-size:11px;letter-spacing:.15em;text-transform:uppercase}
+.login-shell{min-height:100vh;display:grid;place-items:center;padding:24px;background:radial-gradient(circle at 83% 18%,rgba(199,62,58,.09),transparent 28%),var(--paper)}
+.login-card{width:min(100%,480px);padding:clamp(26px,5vw,48px);background:var(--paper2);border:2px solid var(--ink);box-shadow:12px 12px 0 rgba(38,34,28,.13);text-align:center}
+.login-mark{width:62px;height:62px;margin:0 auto 20px;display:grid;place-items:center;background:var(--red);color:var(--paper2);font-family:'Shippori Mincho',serif;font-size:34px;transform:rotate(7deg);box-shadow:5px 5px 0 rgba(38,34,28,.2)}
+.login-card .eyebrow{font-size:10px}
+.login-card h1{font-size:clamp(32px,8vw,48px);margin-top:10px}
+.login-card .rule{display:flex;align-items:center;gap:8px;width:150px;margin:14px auto}
+.login-card .rule i{height:1px;background:var(--ink);opacity:.7;flex:1}
+.login-card .rule b{width:6px;height:6px;transform:rotate(45deg);background:var(--red)}
+.login-card .sub{margin:0;color:var(--ink2);font-size:16px;font-style:italic}
+.login-form{display:grid;gap:10px;margin-top:24px;text-align:left}
+.login-form label{color:var(--ink2);font-size:11px;letter-spacing:.14em;text-transform:uppercase}
+.login-form input{width:100%;min-height:44px;padding:10px 12px;border:2px solid var(--ink);background:var(--paper);color:var(--ink)}
+.login-form .button{width:100%;margin-top:4px}
+.login-actions{display:grid;gap:8px;margin-top:10px}
+.login-actions .button{width:100%}
+.login-message{min-height:20px;margin-top:14px;color:var(--ink2);font-size:13px;font-style:italic}
+.login-message.error{color:var(--red-dark)}
+.login-footer{margin-top:26px;padding-top:16px;border-top:1px solid var(--line);color:var(--ink2);font-size:13px}
+.login-footer a{color:var(--red-dark);font-weight:700;text-decoration:underline;text-underline-offset:3px}
+@media (max-width:1050px){.stats-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.content-grid{grid-template-columns:1fr}.side-card{min-height:0}}
+@media (max-width:760px){.admin-shell{display:block}.sidebar{position:relative;height:auto;padding:18px 16px}.brand{padding-bottom:16px}.nav-label{margin:16px 8px 6px}.nav{display:flex;overflow-x:auto;gap:5px;padding-bottom:2px}.nav a{white-space:nowrap}.sidebar-note{display:none}.main{padding:24px 16px 40px}.topbar{display:block}.top-actions{justify-content:flex-start;margin-top:18px}.sync-status{text-align:left;white-space:normal}.section-head{display:block}.sync-status{margin-top:5px}.stats-grid{gap:10px}.stat-card{min-height:132px;padding:16px}.stat-card .stat-value{margin-top:14px;font-size:30px}.card-head{display:block}.filters{padding:12px}.input{width:100%}th,td{padding-left:12px;padding-right:12px}}
+@media (max-width:460px){.stats-grid{grid-template-columns:1fr 1fr}.stat-card .stat-label{font-size:10px;letter-spacing:.1em}.stat-card .stat-value{font-size:26px}.user-chip{max-width:100%}}
+@media (prefers-reduced-motion:reduce){*,*:before,*:after{scroll-behavior:auto!important;transition-duration:.01ms!important;animation-duration:.01ms!important}}
+</style>
+</head>
+<body>
+<main id="loginView" class="login-shell">
+  <section class="login-card" aria-labelledby="loginTitle">
+    <div class="login-mark" aria-hidden="true">空</div>
+    <div class="eyebrow">Sky Bird / Control Room</div>
+    <h1 id="loginTitle">KHU VỰC QUẢN TRỊ</h1>
+    <div class="rule" aria-hidden="true"><i></i><b></b><i></i></div>
+    <p class="sub">Đăng nhập bằng tài khoản đã được cấp quyền quản trị.</p>
+    <form class="login-form" id="loginForm">
+      <label for="email">Email quản trị</label>
+      <input id="email" type="email" autocomplete="username" required placeholder="admin@example.com">
+      <label for="password">Mật khẩu</label>
+      <input id="password" type="password" autocomplete="current-password" required minlength="6" placeholder="••••••••">
+      <button class="button solid" type="submit" id="loginButton">Đăng nhập</button>
+    </form>
+    <div class="login-actions">
+      <button class="button" type="button" id="googleButton">Tiếp tục với Google</button>
+      <a class="button" href="/">Quay lại game</a>
+    </div>
+    <div class="login-message" id="loginMessage" role="status" aria-live="polite"></div>
+    <div class="login-footer">Trang này chỉ đọc dữ liệu quản trị. <a href="/">Mở Sky Bird</a></div>
+  </section>
+</main>
+
+<div id="appView" class="admin-shell hidden">
+  <aside class="sidebar">
+    <a class="brand" href="#overview" aria-label="Sky Bird admin, về tổng quan">
+      <span class="brand-mark" aria-hidden="true">空</span>
+      <span><small>Sky Bird</small><strong>Admin</strong></span>
+    </a>
+    <div class="nav-label">Điều hướng</div>
+    <nav class="nav" aria-label="Điều hướng quản trị">
+      <a href="#overview" class="active"><span class="icon" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg></span>Tổng quan</a>
+      <a href="#leaderboard"><span class="icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M6 20V10M12 20V4M18 20v-7"/><path d="M3 20h18"/></svg></span>Bảng điểm</a>
+      <a href="#security"><span class="icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 3 4 6v5c0 5 3.4 8.4 8 10 4.6-1.6 8-5 8-10V6l-8-3z"/><path d="m9 12 2 2 4-4"/></svg></span>An toàn dữ liệu</a>
+      <a href="/"><span class="icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M3 11.5 12 4l9 7.5"/><path d="M5.5 10.5V20h13v-9.5M9.5 20v-5h5v5"/></svg></span>Về trang game</a>
+    </nav>
+    <div class="sidebar-note"><b>Quyền truy cập</b>Chỉ tài khoản trong allowlist quản trị mới xem được dữ liệu Supabase.</div>
+  </aside>
+
+  <main class="main">
+    <div class="main-inner">
+      <header class="topbar">
+        <div>
+          <div class="eyebrow">Bảng điều khiển / Dữ liệu trực tuyến</div>
+          <h1>Khu vực quản trị</h1>
+          <p class="lede">Theo dõi vận hành và bảng điểm của Sky Bird.</p>
+        </div>
+        <div class="top-actions">
+          <div class="user-chip"><span class="dot" aria-hidden="true"></span><span id="userLabel">Đang xác thực…</span></div>
+          <button class="button small" type="button" id="refreshButton"><span class="icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M20 11a8 8 0 0 0-14.7-4L3 10"/><path d="M3 5v5h5"/><path d="M4 13a8 8 0 0 0 14.7 4L21 14"/><path d="M21 19v-5h-5"/></svg></span>Làm mới</button>
+          <button class="button small" type="button" id="logoutButton">Đăng xuất</button>
+        </div>
+      </header>
+
+      <div class="section hidden" id="accessDenied"><div class="notice"><strong>Không có quyền truy cập</strong>Tài khoản hiện tại chưa nằm trong danh sách quản trị viên. Hãy đăng xuất và dùng đúng tài khoản được cấu hình trong <code>ADMIN_EMAILS</code> hoặc <code>ADMIN_USER_IDS</code>.</div></div>
+
+      <section class="section" id="overview" aria-labelledby="overviewTitle">
+        <div class="section-head"><div><h2 id="overviewTitle">Tổng quan</h2><p>Bốn chỉ số chính được lấy trực tiếp từ Supabase.</p></div><div class="sync-status" id="syncStatus">Đang tải dữ liệu…</div></div>
+        <div class="stats-grid">
+          <article class="stat-card accent"><div class="stat-label">Tổng điểm</div><div class="stat-value" id="statScores">—</div><div class="stat-meta">bản ghi đã xác thực</div></article>
+          <article class="stat-card"><div class="stat-label">Ván online</div><div class="stat-value" id="statRuns">—</div><div class="stat-meta">run ticket đã tạo</div></article>
+          <article class="stat-card"><div class="stat-label">Đã ghi danh</div><div class="stat-value" id="statSubmitted">—</div><div class="stat-meta">ván đã nộp điểm</div></article>
+          <article class="stat-card"><div class="stat-label">Kỷ lục hệ thống</div><div class="stat-value" id="statTop">—</div><div class="stat-meta">điểm cao nhất hiện tại</div></article>
+        </div>
+      </section>
+
+      <section class="section" id="leaderboard" aria-labelledby="leaderboardTitle">
+        <div class="content-grid">
+          <article class="card">
+            <div class="card-head"><div><h3 id="leaderboardTitle">Điểm gần đây</h3><p>Bản ghi mới nhất trong bảng xếp hạng chính thức.</p></div></div>
+            <div class="filters"><label class="hidden" for="searchInput">Tìm người chơi</label><input class="input" id="searchInput" type="search" placeholder="Tìm theo tên hoặc user ID…"><label class="hidden" for="limitSelect">Số dòng</label><select class="select" id="limitSelect" aria-label="Số dòng hiển thị"><option value="25">25 dòng</option><option value="50">50 dòng</option><option value="100">100 dòng</option></select><span class="sync-status" id="tableStatus">—</span></div>
+            <div class="table-wrap"><table><thead><tr><th>Người chơi</th><th>Điểm</th><th>Thời gian</th><th>User ID</th></tr></thead><tbody id="scoresBody"><tr><td class="empty-row" colspan="4">Đang tải…</td></tr></tbody></table></div>
+          </article>
+          <aside class="card side-card" id="security">
+            <h3>An toàn dữ liệu</h3><p>Dashboard được thiết kế theo nguyên tắc chỉ đọc.</p>
+            <ul class="side-list">
+              <li><span class="icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 3 4 6v5c0 5 3.4 8.4 8 10 4.6-1.6 8-5 8-10V6l-8-3z"/><path d="M12 8v4M12 16h.01"/></svg></span><span><b>Server-side gate</b><br>API kiểm tra Bearer session trước khi trả dữ liệu.</span></li>
+              <li><span class="icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h10"/></svg></span><span><b>Không lộ secret</b><br>Service role key chỉ tồn tại trong Vercel Function.</span></li>
+              <li><span class="icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M5 4h14v16H5z"/><path d="M8 8h8M8 12h8M8 16h5"/></svg></span><span><b>Không xóa trực tiếp</b><br>Điểm đã xác thực không có thao tác xóa trên giao diện.</span></li>
+            </ul>
+          </aside>
+        </div>
+      </section>
+    </div>
+  </main>
+</div>
+<script>
+(function(){
+  'use strict';
+  var config=window.SKY_CONFIG||{};
+  var supabaseUrl=config.SUPABASE_URL||'';
+  var supabaseAnonKey=config.SUPABASE_ANON_KEY||'';
+  var client=null,session=null,rows=[];
+  var $=function(id){return document.getElementById(id);};
+  var loginView=$('loginView'),appView=$('appView'),loginForm=$('loginForm'),loginButton=$('loginButton'),googleButton=$('googleButton'),loginMessage=$('loginMessage'),userLabel=$('userLabel'),logoutButton=$('logoutButton'),refreshButton=$('refreshButton'),syncStatus=$('syncStatus'),tableStatus=$('tableStatus'),scoresBody=$('scoresBody'),searchInput=$('searchInput'),limitSelect=$('limitSelect'),accessDenied=$('accessDenied');
+  var numberFormat=new Intl.NumberFormat('vi-VN');
+  function setLoginMessage(text,isError){loginMessage.textContent=text||'';loginMessage.classList.toggle('error',!!isError);}
+  function setBusy(on){loginButton.disabled=on;googleButton.disabled=on;loginButton.textContent=on?'Đang xác thực…':'Đăng nhập';}
+  function showLogin(){loginView.classList.remove('hidden');appView.classList.add('hidden');}
+  function showApp(){loginView.classList.add('hidden');appView.classList.remove('hidden');}
+  function sessionToken(){return session&&session.access_token?session.access_token:'';}
+  function readableAuthError(error){var message=error&&error.message||'Không thể hoàn tất xác thực.';return message.replace('Invalid login credentials','Email hoặc mật khẩu không đúng.').replace('Email not confirmed','Email chưa được xác nhận.');}
+  function formatDate(value){if(!value)return'—';try{return new Intl.DateTimeFormat('vi-VN',{dateStyle:'medium',timeStyle:'short'}).format(new Date(value));}catch(error){return value;}}
+  function clearNode(node){while(node.firstChild)node.removeChild(node.firstChild);}
+  function renderRows(){
+    var query=(searchInput.value||'').trim().toLowerCase();
+    var limit=Number(limitSelect.value)||25;
+    var filtered=rows.filter(function(row){return String(row.player_name||'').toLowerCase().indexOf(query)>=0||String(row.user_id||'').toLowerCase().indexOf(query)>=0;}).slice(0,limit);
+    clearNode(scoresBody);
+    if(!filtered.length){var empty=document.createElement('tr'),cell=document.createElement('td');cell.className='empty-row';cell.colSpan=4;cell.textContent=rows.length?'Không tìm thấy bản ghi phù hợp.':'Chưa có điểm đã ghi danh.';empty.appendChild(cell);scoresBody.appendChild(empty);}
+    filtered.forEach(function(row){
+      var tr=document.createElement('tr'),playerCell=document.createElement('td'),player=document.createElement('div');player.className='player';var initial=document.createElement('span');initial.className='player-initial';initial.textContent=(String(row.player_name||'?').trim().charAt(0)||'?').toUpperCase();var name=document.createElement('span');name.textContent=String(row.player_name||'').slice(0,40);player.appendChild(initial);player.appendChild(name);playerCell.appendChild(player);
+      var score=document.createElement('td');score.className='score-cell';score.textContent=numberFormat.format(Number(row.score)||0);
+      var date=document.createElement('td');date.textContent=formatDate(row.created_at);
+      var uid=document.createElement('td'),uidText=String(row.user_id||'—');uid.className='mono';uid.title=uidText;uid.textContent=uidText.length>18?uidText.slice(0,8)+'…'+uidText.slice(-6):uidText;
+      tr.appendChild(playerCell);tr.appendChild(score);tr.appendChild(date);tr.appendChild(uid);scoresBody.appendChild(tr);
+    });
+    tableStatus.textContent=filtered.length+' / '+rows.length+' bản ghi';
+  }
+  function renderDashboard(payload){
+    var stats=payload.stats||{};
+    $('statScores').textContent=numberFormat.format(Number(stats.scoreCount)||0);
+    $('statRuns').textContent=numberFormat.format(Number(stats.runCount)||0);
+    $('statSubmitted').textContent=numberFormat.format(Number(stats.submittedRunCount)||0);
+    $('statTop').textContent=numberFormat.format(Number(stats.topScore)||0);
+    rows=Array.isArray(payload.scores)?payload.scores:[];
+    syncStatus.textContent='Cập nhật '+formatDate(payload.generatedAt);
+    renderRows();
+  }
+  async function loadDashboard(){
+    accessDenied.classList.add('hidden');
+    syncStatus.textContent='Đang tải dữ liệu…';
+    tableStatus.textContent='Đang tải…';
+    try{
+      var response=await fetch('/api/admin-data',{method:'GET',headers:{Authorization:'Bearer '+sessionToken(),Accept:'application/json'},cache:'no-store'});
+      var payload=await response.json().catch(function(){return{};});
+      if(response.status===401){await client.auth.signOut();setLoginMessage('Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.',true);return;}
+      if(response.status===403){accessDenied.classList.remove('hidden');syncStatus.textContent='Tài khoản chưa được cấp quyền';clearNode(scoresBody);var denied=document.createElement('tr'),deniedCell=document.createElement('td');deniedCell.className='empty-row';deniedCell.colSpan=4;deniedCell.textContent='Không thể hiển thị dữ liệu cho tài khoản này.';denied.appendChild(deniedCell);scoresBody.appendChild(denied);return;}
+      if(!response.ok)throw new Error(payload.error||'admin_data_failed');
+      renderDashboard(payload);
+    }catch(error){syncStatus.textContent='Không tải được dữ liệu';tableStatus.textContent='Lỗi kết nối';clearNode(scoresBody);var failed=document.createElement('tr'),failedCell=document.createElement('td');failedCell.className='empty-row';failedCell.colSpan=4;failedCell.textContent='Không thể tải dữ liệu. Hãy thử làm mới sau ít phút.';failed.appendChild(failedCell);scoresBody.appendChild(failed);}
+  }
+  async function handleSession(nextSession){
+    session=nextSession||null;
+    if(!session){userLabel.textContent='Chưa đăng nhập';showLogin();return;}
+    userLabel.textContent=session.user&&session.user.email||'Tài khoản Supabase';
+    showApp();
+    await loadDashboard();
+  }
+  async function boot(){
+    if(!supabaseUrl||!supabaseAnonKey){setLoginMessage('Trang admin cần SUPABASE_URL và SUPABASE_ANON_KEY ở client, cùng các biến admin ở server.',true);googleButton.disabled=true;loginButton.disabled=true;return;}
+    setLoginMessage('Đang kết nối Supabase…');
+    try{
+      var mod=await import('https://esm.sh/@supabase/supabase-js@2');
+      client=mod.createClient(supabaseUrl,supabaseAnonKey);
+      client.auth.onAuthStateChange(function(event,nextSession){if(event==='SIGNED_OUT'||nextSession)handleSession(nextSession);});
+      var result=await client.auth.getSession();
+      setLoginMessage('');
+      await handleSession(result.data&&result.data.session);
+    }catch(error){setLoginMessage('Không thể kết nối Supabase. Kiểm tra cấu hình client và thử lại.',true);}
+  }
+  loginForm.addEventListener('submit',async function(event){event.preventDefault();if(!client)return;setBusy(true);setLoginMessage('Đang xác thực…');try{var result=await client.auth.signInWithPassword({email:$('email').value.trim(),password:$('password').value});if(result.error)throw result.error;await handleSession(result.data&&result.data.session);}catch(error){setLoginMessage(readableAuthError(error),true);}finally{setBusy(false);}});
+  googleButton.addEventListener('click',async function(){if(!client)return;setBusy(true);setLoginMessage('Đang chuyển đến Google…');try{var result=await client.auth.signInWithOAuth({provider:'google',options:{redirectTo:window.location.origin+window.location.pathname}});if(result.error)throw result.error;}catch(error){setBusy(false);setLoginMessage(readableAuthError(error),true);}});
+  logoutButton.addEventListener('click',async function(){if(client)await client.auth.signOut();session=null;setLoginMessage('Đã đăng xuất.');showLogin();});
+  refreshButton.addEventListener('click',function(){if(session)loadDashboard();});
+  searchInput.addEventListener('input',renderRows);limitSelect.addEventListener('change',renderRows);
+  document.querySelectorAll('.nav a[href^="#"]').forEach(function(link){link.addEventListener('click',function(){document.querySelectorAll('.nav a').forEach(function(item){item.classList.remove('active');});link.classList.add('active');});});
+  boot();
+})();
+</script>
+</body>
+</html>
