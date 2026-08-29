@@ -1,73 +1,107 @@
-# Báo cáo Security Audit: Backup/Restore mã hóa
+# Báo cáo Security Audit: Hệ thống Backup/Restore mã hóa
 
 **Dự án:** Sky Bird (`norat02/sky`)
 
-**Phạm vi:** Luồng tạo backup JSON, mã hóa/giải mã, watermark 5 lớp, xác minh toàn vẹn, restore vào localStorage, test tự động, cấu hình CSP và dependency liên quan.
+**Phạm vi:** Backup JSON local, AES-GCM, PBKDF2, watermark 5 lớp, xác minh tamper, restore vào `localStorage`, test tự động, CSP và dependency trực tiếp liên quan.
 
-**Ngày audit:** 29/08/2026
+**Ngày kiểm tra:** 29/08/2026
 
-**Phương pháp:** Review mã nguồn tĩnh, kiểm tra cấu hình repository, chạy unit/E2E/attack simulation, kiểm tra dependency audit và đối chiếu với hướng dẫn OWASP/MDN. Đây là audit kỹ thuật có mục tiêu, không phải penetration test độc lập hoặc chứng nhận compliance.
+**Phương pháp:** Review mã nguồn tĩnh, kiểm tra cấu hình, chạy unit test, Playwright E2E, attack simulation và `npm audit`. Báo cáo này là audit kỹ thuật có mục tiêu; không phải penetration test độc lập, chứng nhận compliance hoặc cam kết chống lại máy đã bị chiếm quyền.
 
-## 1. Tóm tắt điều hành
+## 1. Kết luận điều hành
 
-Hệ thống hiện có nền tảng tốt cho backup cục bộ: dữ liệu được mã hóa bằng AES-256-GCM, khóa được dẫn xuất từ password bằng PBKDF2-HMAC-SHA-256 với salt ngẫu nhiên, ciphertext có authentication tag, và restore yêu cầu watermark 5 lớp hợp lệ. Các test hiện có mô phỏng cả việc sửa ciphertext, xóa watermark và sửa plaintext rồi mã hóa lại bằng AES-GCM hợp lệ.
+Hệ thống backup hiện đáp ứng tốt mục tiêu **bảo mật dữ liệu local trước file bị sửa hoặc sai mật khẩu**. Payload được mã hóa bằng AES-256-GCM, khóa được dẫn xuất từ password bằng PBKDF2-HMAC-SHA-256 với salt ngẫu nhiên, và restore yêu cầu watermark 5 lớp hợp lệ. Test tấn công đã xác nhận các trường hợp sửa ciphertext, xóa watermark và sửa plaintext rồi mã hóa lại bằng AES-GCM hợp lệ đều bị từ chối.
 
-Kết luận tổng thể là **có thể chấp nhận cho dữ liệu local không có yêu cầu compliance cao**, với điều kiện người dùng bảo vệ password backup và đội phát triển hiểu rõ rằng mã JavaScript phía client không thể giữ một secret tuyệt đối trước người có quyền điều khiển browser. Không phát hiện secret rõ ràng bị commit trong review hiện tại và `npm audit --omit=dev --audit-level=high` trả về 0 vulnerability.
+Đánh giá tổng thể: **Chấp nhận có điều kiện cho backup cá nhân offline**. Không phát hiện lỗi Critical/High trong phạm vi audit. Rủi ro còn lại chủ yếu là rủi ro kiến trúc client-side: JavaScript cùng origin có thể đọc localStorage, password có thể bị lấy khi người dùng nhập nếu browser/runtime bị kiểm soát, và watermark không phải một secret server-side.
 
-Rủi ro đáng chú ý nhất là mô hình client-side: XSS, extension độc hại hoặc malware trên máy người dùng có thể đọc localStorage, can thiệp vào runtime hoặc lấy password khi người dùng nhập. Watermark là cơ chế phát hiện sai format/tamper, không phải chữ ký mật mã server-side.
+> **Kết luận ngắn:** AES-GCM đang bảo vệ confidentiality và authenticated integrity đúng hướng; watermark bổ sung tamper-evidence; nhưng không thể biến mã JavaScript công khai thành một môi trường tin cậy tuyệt đối.
 
-## 2. Ma trận phát hiện
+## 2. Phạm vi tài sản và luồng được audit
 
-| ID | Phát hiện | Mức độ | Trạng thái | Khuyến nghị |
+Các tài sản cần bảo vệ gồm lịch sử ván, kỷ lục cá nhân, tên hiển thị, setting local, tính toàn vẹn của file backup và việc không ghi dữ liệu giả mạo vào localStorage khi restore.
+
+Luồng chính được kiểm tra là:
+
+```text
+local state
+    -> backupPayload()
+    -> createBackupWatermark()
+    -> AES-256-GCM encrypt
+    -> JSON envelope
+    -> password + decrypt
+    -> validateBackupWatermark()
+    -> validatedBackupObjects WeakSet
+    -> restoreBackupData()
+```
+
+Review xác nhận payload schema v2 không đưa `pendingScores`, run ticket hoặc dữ liệu có thể dùng để gửi điểm online vào backup. Service-role key, signing secret, OAuth secret và password không thuộc payload backup.
+
+## 3. Ma trận phát hiện
+
+| ID | Phát hiện | Mức độ | Trạng thái | Ảnh hưởng |
 |---|---|---:|---|---|
-| F-01 | Bảo mật backup phụ thuộc vào password người dùng và runtime client | Trung bình | Chấp nhận có điều kiện | Chính sách password, KDF calibration và hướng dẫn lưu password an toàn |
-| F-02 | Watermark không phải secret và không chống được người sửa JavaScript | Trung bình | Đã giảm thiểu | Nếu cần chống giả mạo mạnh, dùng server-side signature/key |
-| F-03 | localStorage/XSS là ranh giới tin cậy của ứng dụng | Trung bình | Chấp nhận có điều kiện | Giảm CSP `unsafe-inline`, self-host/pin dependency, kiểm thử XSS |
-| F-04 | Cơ chế WeakSet chỉ bảo vệ đường restore trong runtime hiện tại | Thấp | Đã triển khai | Giữ như defense-in-depth; không coi là cơ chế lưu trữ bền vững |
-| F-05 | CSP vẫn cho phép `unsafe-inline` và CDN script `esm.sh` | Thấp–Trung bình | Cần cải thiện | Chuyển script inline sang file hoặc nonce/hash, pin dependency |
-| F-06 | Backup phiên bản cũ không tương thích watermark mới | Thấp | Có chủ ý | Hiển thị migration message và xuất backup mới |
+| F-01 | Password là nguồn bí mật duy nhất ở phía client | Medium | Chấp nhận có điều kiện | Password yếu có thể bị brute-force; password mất thì không restore được |
+| F-02 | Watermark không phải secret mật mã | Medium | Đã giảm thiểu | Người có source/runtime có thể phân tích hoặc tái tạo logic client |
+| F-03 | `localStorage` và runtime browser không phải trust boundary | Medium | Chấp nhận có điều kiện | XSS/extension/malware có thể đọc dữ liệu hoặc can thiệp password/runtime |
+| F-04 | CSP còn `unsafe-inline` và phụ thuộc CDN module | Low–Medium | Cần cải thiện | Giảm hiệu quả của CSP và tăng supply-chain exposure |
+| F-05 | `WeakSet` bảo vệ đường restore trong runtime, không bảo vệ persistence | Low | Đã triển khai | Reload hoặc patch client có thể bỏ qua lớp defense-in-depth này |
+| F-06 | Backup cũ không có watermark mới sẽ bị từ chối | Low | Có chủ ý | Có thể gây nhầm là file hỏng nếu không có migration message |
 
-## 3. Phạm vi dữ liệu và tài sản cần bảo vệ
+Không có phát hiện Critical hoặc High trong phạm vi code và test được kiểm tra.
 
-Payload backup schema v2 chỉ nên chứa dữ liệu local cần thiết như kỷ lục, tên hiển thị, setting, nhân vật, map và lịch sử ván. Review xác nhận pipeline không đưa `pendingScores`, run ticket hoặc dữ liệu có thể dùng để gửi điểm online vào backup. Service-role key, signing secret, password và OAuth client secret không thuộc payload backup.
-
-Các tài sản chính gồm tính bí mật của lịch sử local, tính toàn vẹn của backup, tính đúng đắn của dữ liệu sau restore và khả năng không biến một file backup đã sửa thành dữ liệu hợp lệ được merge vào localStorage.
-
-## 4. Kiểm tra thiết kế mật mã
+## 4. Đánh giá mật mã
 
 ### 4.1 Điểm đạt
 
-Ứng dụng sử dụng AES-GCM với khóa 256 bit do Web Crypto API tạo và sử dụng IV 12 byte ngẫu nhiên cho mỗi lần encrypt. AES-GCM cung cấp cả confidentiality và authenticated integrity; nếu ciphertext, IV hoặc authentication tag không còn tương ứng, decrypt thất bại. Salt PBKDF2 cũng được sinh ngẫu nhiên và được lưu trong envelope vì salt không cần bí mật.
+Ứng dụng sử dụng AES-GCM với khóa 256 bit, IV 12 byte tạo ngẫu nhiên bằng `crypto.getRandomValues`, và ciphertext có authentication tag do Web Crypto quản lý. Authenticated encryption là lựa chọn phù hợp vì vừa bảo vệ confidentiality vừa phát hiện thay đổi dữ liệu [1]. OWASP cũng khuyến nghị AES với khóa đủ mạnh, authenticated mode như GCM/CCM và CSPRNG cho chức năng bảo mật [1].
 
-Khóa được dẫn xuất từ password bằng PBKDF2-HMAC-SHA-256 với 150.000 vòng lặp. Đây là lựa chọn phù hợp với Web Crypto hiện tại và làm tăng chi phí brute-force so với hash password một lần. OWASP khuyến nghị dùng thuật toán đối xứng mạnh, authenticated mode như GCM và nguồn ngẫu nhiên an toàn cho dữ liệu nhạy cảm [1]. MDN mô tả PBKDF2 là KDF phù hợp cho password entropy tương đối thấp và chi phí lặp làm tăng độ khó của dictionary attack [3].
+Khóa AES được dẫn xuất từ password bằng PBKDF2-HMAC-SHA-256 với 150.000 vòng lặp và salt ngẫu nhiên. PBKDF2 được thiết kế cho password material entropy tương đối thấp; chi phí lặp làm tăng chi phí dictionary attack [3]. Salt và IV được lưu trong envelope là bình thường vì chúng không cần giữ bí mật.
 
-### 4.2 Điểm cần lưu ý
+### 4.2 Rủi ro và khuyến nghị
 
-Không có KDF nào có thể bù cho password yếu. Vì password không được lưu, mất password đồng nghĩa mất khả năng giải mã. Nên bổ sung thông báo rõ về độ dài/tính ngẫu nhiên của password, cân nhắc benchmark để tăng số vòng theo thiết bị, hoặc chuyển sang Argon2id/scrypt nếu có một implementation được kiểm duyệt và tương thích browser. Không tự viết thuật toán mã hóa hoặc KDF mới.
+PBKDF2 không thể bù cho password yếu. Nên bổ sung password policy rõ ràng, khuyến nghị passphrase dài, không lưu password và cảnh báo rằng mất password đồng nghĩa mất backup. Nên tiếp tục dùng benchmark để calibrate số vòng theo thiết bị; nếu chuyển sang Argon2id/scrypt, chỉ dùng implementation browser đã được kiểm duyệt, không tự viết KDF.
 
-KDF và encryption hiện nằm trong JavaScript client. Người có quyền debug browser có thể hook API, lấy password tại thời điểm người dùng nhập hoặc thay đổi hàm restore. Đây là giới hạn kiến trúc chứ không phải lỗi AES-GCM.
+Backup được mã hóa ở client nên password có thể bị quan sát bởi mã độc, extension hoặc hook runtime tại thời điểm người dùng nhập. Đây là giới hạn kiến trúc, không phải lỗi của AES-GCM. Nếu yêu cầu bảo mật cao hơn, cần chuyển một phần trust sang server-side key management hoặc server-side signature.
 
 ## 5. Đánh giá watermark 5 lớp
 
-Watermark được tính từ payload lõi và context của envelope, sau đó trải qua năm dạng biểu diễn khác nhau: hex, Base64URL, biến đổi đảo chiều có tag, grouped-hex và Base64URL có tag. Watermark được đặt bên trong plaintext rồi mới mã hóa, nên envelope bên ngoài không hiển thị marker watermark.
+Watermark được tạo từ payload lõi và context của envelope. Năm lớp dùng các biểu diễn khác nhau: SHA-256 hex, Base64URL, biến đổi đảo chiều có tag, grouped-hex và Base64URL có tag. Watermark được đặt trong plaintext payload trước khi AES-GCM mã hóa; do đó JSON envelope bên ngoài chỉ chứa metadata, salt, IV và ciphertext.
 
-Cơ chế xác minh tái tạo toàn bộ watermark từ payload, salt và IV rồi so sánh từng lớp. Thiếu watermark, sai version, sai số lớp, thay đổi payload hoặc thay đổi một lớp đều bị từ chối. AES-GCM xử lý tamper ciphertext; watermark xử lý payload được mã hóa lại nhưng nội dung watermark không còn khớp.
+Khi decrypt, ứng dụng tái tạo watermark từ payload, salt và IV, sau đó so sánh đủ năm lớp. Thiếu watermark, sai version, sai số lớp, thay đổi payload hoặc thay đổi một lớp đều bị từ chối. Watermark giúp phát hiện payload được mã hóa lại nhưng không còn khớp; AES-GCM chịu trách nhiệm chính cho authenticated integrity của ciphertext.
 
-Điểm cần phân biệt là các dạng biến đổi này là **obfuscation/tamper evidence**, không phải secret. Vì mã nguồn client công khai, một tool có thể đọc công thức nếu có quyền đọc repository hoặc runtime. Muốn watermark không thể giả mạo trước người có password và quyền điều khiển client, cần một chữ ký HMAC/EdDSA với khóa chỉ có ở server; giải pháp đó sẽ làm backup phụ thuộc server và không còn restore offline hoàn toàn.
+Các biểu diễn nhiều lớp chỉ là **obfuscation và tamper-evidence**, không phải khóa bí mật. Vì source và JavaScript chạy phía client, người có quyền đọc source hoặc điều khiển browser vẫn có thể phân tích công thức. Nếu cần ngăn người có password tạo file giả, watermark phải được bổ sung HMAC/EdDSA bằng khóa chỉ tồn tại server-side; khi đó restore sẽ không còn offline hoàn toàn.
 
-## 6. Đánh giá restore và tự vô hiệu hóa
+## 6. Đánh giá restore và cơ chế vô hiệu hóa
 
-Restore hiện có hai lớp bảo vệ. Thứ nhất, `decryptBackup` phải giải mã AES-GCM và xác minh năm lớp watermark. Thứ hai, object chỉ được truyền vào `restoreBackupData` nếu đã được ghi nhận trong `WeakSet` sau một lần decrypt hợp lệ. Một object do tool tự tạo hoặc object đã sửa sau decrypt sẽ không qua được đường restore trực tiếp.
+Restore có hai lớp kiểm soát. `decryptBackup` phải vượt qua format validation, AES-GCM authentication và watermark validation. Sau đó object đã xác thực được đánh dấu trong `validatedBackupObjects`, một `WeakSet` chỉ tồn tại trong page runtime. `restoreBackupData` từ chối object không thuộc tập đã xác thực, kể cả khi object đó có hình dạng giống payload hợp lệ.
 
-Khi validation thất bại, code ném lỗi trước các thao tác ghi `best`, history, tên, setting, map hoặc character. Hành vi hiện tại là **vô hiệu hóa và từ chối restore**, không xóa file gốc. Đây là lựa chọn an toàn hơn “tự hủy” vì giữ lại bằng chứng và tránh mất dữ liệu không thể hoàn tác.
+Khi validation thất bại, exception xảy ra trước thao tác ghi `best`, history, name, mute, character hoặc map. Hành vi “tự hủy” hiện được triển khai an toàn dưới dạng **tự động vô hiệu hóa file và từ chối restore**, không xóa file gốc. Giữ file gốc giúp điều tra và tránh mất dữ liệu không thể hoàn tác.
 
-`WeakSet` chỉ tồn tại trong một page runtime. Nó không bảo vệ khỏi việc người dùng sửa cả ứng dụng hoặc reload với mã đã bị patch; vì vậy nó chỉ là defense-in-depth, không phải boundary bảo mật độc lập.
+`WeakSet` là defense-in-depth chứ không phải boundary độc lập. Nó không thể bảo vệ nếu attacker patch JavaScript trước khi chạy, thay thế bundle, hoặc kiểm soát toàn bộ browser runtime.
 
-## 7. Kịch bản tấn công đã kiểm tra
+## 7. Kịch bản tấn công đã kiểm thử
 
-Kịch bản [`e2e/backup-attack.e2e.mjs`](../e2e/backup-attack.e2e.mjs) mô phỏng tool ngoài có password hợp lệ. Tool giải mã payload, sửa điểm và lớp cuối watermark, sau đó mã hóa lại bằng AES-GCM hợp lệ. Decrypt của ứng dụng vẫn từ chối vì watermark không khớp. Test cũng xóa hoàn toàn watermark, sửa một byte ciphertext và gọi trực tiếp restore với object chưa được validation. Tất cả trường hợp đều bị chặn và localStorage không thay đổi.
+[`e2e/backup-attack.e2e.mjs`](../e2e/backup-attack.e2e.mjs) mô phỏng tool ngoài có password hợp lệ. Kịch bản giải mã backup, sửa điểm và lớp watermark cuối, rồi mã hóa lại bằng AES-GCM hợp lệ để kiểm tra riêng watermark; kết quả bị từ chối. Nó cũng xóa watermark hoàn toàn, sửa một byte ciphertext, gọi trực tiếp restore với object chưa xác thực và so sánh localStorage trước/sau.
 
-Các test đã chạy trong audit:
+| Kịch bản | Kết quả |
+|---|---|
+| Sửa payload và watermark rồi mã hóa lại hợp lệ | Bị `decryptBackup` từ chối |
+| Xóa toàn bộ watermark rồi mã hóa lại | Bị từ chối |
+| Sửa một byte ciphertext | AES-GCM từ chối |
+| Gọi thẳng restore bằng object do tool tạo | `WeakSet` từ chối |
+| File bị vô hiệu hóa | localStorage không thay đổi |
+
+## 8. Browser storage, CSP và dependency
+
+OWASP cảnh báo localStorage có thể được JavaScript cùng origin đọc hoặc sửa, và XSS có thể lấy dữ liệu trong storage [2]. Vì vậy localStorage chỉ nên chứa dữ liệu không được coi là trust boundary; password backup, service-role key và signing secret không được lưu tại đó. Session token cũng không nên được xem là an toàn nếu nằm trong localStorage [2].
+
+CSP hiện có các header tốt như `object-src 'none'`, `frame-ancestors 'none'`, `base-uri 'self'`, `X-Frame-Options: DENY`, `nosniff`, Referrer Policy và Permissions Policy. Tuy nhiên `script-src` vẫn có `unsafe-inline` và cho phép `https://esm.sh`. Khuyến nghị chuyển inline script sang file static hoặc CSP nonce/hash, pin dependency theo version/digest và self-host module quan trọng khi khả thi.
+
+`npm audit --omit=dev --audit-level=high` trong lần audit này trả về **0 vulnerabilities**. Đây là kết quả tại thời điểm kiểm tra, không thay thế việc audit dependency định kỳ.
+
+## 9. Bằng chứng kiểm thử
+
+Các lệnh sau đã chạy thành công:
 
 ```text
 npm run verify                    PASS
@@ -78,37 +112,23 @@ npm run test:e2e:backup:attack    PASS
 npm audit --omit=dev --audit-level=high   0 vulnerabilities
 ```
 
-## 8. Client storage, XSS và CSP
-
-Dữ liệu localStorage không nên được xem là ranh giới xác thực. OWASP cảnh báo JavaScript cùng origin có thể đọc hoặc sửa localStorage, và XSS có thể lấy toàn bộ dữ liệu tại đó [2]. Vì vậy password backup không được lưu vào localStorage; session identifier cũng không nên được coi là an toàn nếu bị lưu ở đó.
-
-Repository hiện có CSP với `object-src 'none'`, `frame-ancestors 'none'`, `base-uri 'self'`, `X-Frame-Options: DENY`, `nosniff`, Referrer Policy và Permissions Policy. Đây là các lớp phòng vệ tốt. Tuy nhiên CSP vẫn có `script-src 'unsafe-inline'` và cho phép tải module từ `https://esm.sh`; điều này làm giảm khả năng CSP ngăn một số lỗi injection và tạo phụ thuộc vào CDN bên ngoài.
-
-Khuyến nghị ưu tiên chuyển JavaScript inline sang file static, hoặc dùng CSP nonce/hash cho script cần thiết. Nên pin dependency theo version/digest và self-host thư viện quan trọng khi khả thi. Cần giữ E2E kiểm tra rằng password, service-role key và token không xuất hiện trong DOM, download filename, log hoặc error message.
-
-## 9. Quản lý lỗi và rò rỉ thông tin
-
-UI đang dùng thông báo tổng quát như “sai mật khẩu hoặc backup bị hỏng”, không tiết lộ watermark layer nào thất bại. Đây là lựa chọn phù hợp vì không giúp attacker phân biệt loại lỗi. Không nên log plaintext payload, password, key, ciphertext đầy đủ hoặc stack trace chứa input backup trong production.
-
-Nên bổ sung telemetry tối thiểu không chứa dữ liệu nhạy cảm nếu cần theo dõi tỷ lệ backup lỗi: chỉ ghi mã lỗi phân loại, kích thước file, version format và thời gian xử lý; không ghi nội dung file hoặc password.
-
 ## 10. Khuyến nghị theo ưu tiên
 
-| Ưu tiên | Hành động | Mục tiêu |
+| Ưu tiên | Khuyến nghị | Lý do |
 |---|---|---|
-| P0 | Không lưu password backup, service-role key hoặc signing secret ở client/localStorage | Bảo vệ secret căn bản |
-| P1 | Giảm `unsafe-inline`, pin/self-host module CDN và chạy kiểm thử XSS | Giảm rủi ro code injection đọc localStorage/password |
-| P1 | Thêm password policy rõ ràng và cảnh báo mất password | Giảm brute-force và mất dữ liệu do quên password |
-| P2 | Benchmark và calibrate PBKDF2; đánh giá Argon2id/scrypt đã được kiểm duyệt | Tăng chi phí dictionary attack |
-| P2 | Nếu cần chống giả mạo mạnh, thiết kế server-side signature | Không phụ thuộc secret trong client |
-| P2 | Thêm migration UX cho backup cũ không có watermark | Tránh người dùng tưởng file bị hỏng không lý do |
-| P3 | Chạy audit dependency định kỳ và kiểm tra integrity của CDN | Giảm supply-chain drift |
+| P0 | Không lưu password backup, service-role key hoặc signing secret ở client/localStorage | Giảm rủi ro lộ secret trực tiếp |
+| P1 | Giảm `unsafe-inline`, pin/self-host CDN module và thêm XSS regression tests | Giảm khả năng script lạ đọc localStorage/password |
+| P1 | Password policy và hướng dẫn passphrase dài | Giảm dictionary attack và mất quyền restore |
+| P2 | Calibrate PBKDF2 bằng benchmark, đánh giá KDF memory-hard đã được kiểm duyệt | Tăng chi phí brute-force |
+| P2 | Nếu cần chống giả mạo mạnh, thêm server-side signature/key | Không phụ thuộc vào secret nằm trong client |
+| P2 | Thêm migration UX cho backup cũ không có watermark | Giải thích rõ lý do file bị từ chối |
+| P3 | Chạy `npm audit` và kiểm tra CDN integrity định kỳ | Giảm supply-chain drift |
 
 ## 11. Kết luận
 
-Không phát hiện lỗi nghiêm trọng làm mất tác dụng AES-GCM hoặc cho phép file bị sửa đi qua pipeline restore trong phạm vi test hiện tại. Cơ chế watermark và attack simulation hoạt động đúng mục tiêu: file bị chỉnh sửa, thiếu watermark hoặc có watermark sai bị vô hiệu hóa và không ghi dữ liệu vào localStorage.
+Trong phạm vi audit, không phát hiện lỗi nghiêm trọng làm bypass AES-GCM hoặc cho phép backup bị chỉnh sửa đi qua pipeline restore. Attack simulation xác nhận file bị sửa, thiếu watermark hoặc có watermark sai đều bị vô hiệu hóa và không ghi dữ liệu vào localStorage.
 
-Rủi ro còn lại chủ yếu đến từ kiến trúc browser client: XSS, extension, malware hoặc người có quyền điều khiển runtime có thể quan sát password và sửa mã. Do đó, hệ thống phù hợp với backup cá nhân offline có password mạnh, nhưng không nên được mô tả là chống giả mạo tuyệt đối hoặc tương đương với một hệ thống backup có khóa server-side.
+Hệ thống phù hợp với backup cá nhân offline dùng password mạnh. Không nên mô tả nó là chống giả mạo tuyệt đối: một người kiểm soát browser hoặc mã JavaScript client vẫn có thể quan sát password, patch runtime hoặc tạo logic mới. Với yêu cầu bảo mật cao hơn, cần server-side key/signature và mô hình trust không phụ thuộc hoàn toàn vào client.
 
 ## Tài liệu tham chiếu
 
