@@ -44,7 +44,13 @@ await page.route('**/esm.sh/@supabase/supabase-js@2*', (route) => route.fulfill(
 }));
 await page.route('**/api/locale', (route) => route.fulfill({ contentType: 'application/json', body: JSON.stringify({ country: 'VN', locale: 'vi' }) }));
 await page.route('**/api/run-ticket', (route) => route.fulfill({ contentType: 'application/json', body: JSON.stringify({ ticket: 'e2e-ticket' }) }));
-await page.route('**/api/submit-score', (route) => route.fulfill({ contentType: 'application/json', body: JSON.stringify({ rows: [{ name: 'E2E Player', score: 42 }] }) }));
+await page.route('**/api/submit-score', async (route) => {
+  const payload = JSON.parse(route.request().postData() || '{}');
+  assert(payload.name === 'E2E Player', 'Leaderboard payload name was not sanitized');
+  assert(payload.score === 42, 'Leaderboard payload score was not validated');
+  assert(payload.ticket === 'e2e-ticket', 'Leaderboard payload must include the server run ticket');
+  await route.fulfill({ contentType: 'application/json', body: JSON.stringify({ rows: [{ name: 'E2E Player', score: 42 }] }) });
+});
 await page.addInitScript(() => { window.__SKY_E2E__ = true; window.SKY_REWARDED_AD = { show: () => Promise.resolve(true) }; });
 
 try {
@@ -53,6 +59,16 @@ try {
   await page.waitForSelector('#startBtn');
   console.log('E2E: settings/i18n');
   await page.locator('#settingsBtn').click();
+  const localeOptions = await page.locator('#languageSelect option').count();
+  assert(localeOptions >= 100, `Expected at least 100 locale options, got ${localeOptions}`);
+  assert(await page.locator('#languageSelect option[value="zh"]').count() === 1, 'Chinese locale option missing');
+  assert(await page.locator('#languageSelect option[value="hi"]').count() === 1, 'Hindi locale option missing');
+  await page.locator('#languageSelect').selectOption('zh');
+  assert(await page.locator('[data-i18n="subtitle"]').textContent() === '樱花天空中的飞行', 'Chinese translation failed');
+  await page.locator('#languageSelect').selectOption('hi');
+  assert(await page.locator('[data-i18n="subtitle"]').textContent() === 'आकाश में एक उड़ान', 'Hindi translation failed');
+  await page.locator('#languageSelect').selectOption('fr');
+  assert(await page.locator('[data-i18n="title"]').textContent() === 'SKY BIRD', 'Locale fallback translation failed');
   await page.locator('#languageSelect').selectOption('ja');
   await page.locator('#settingsClose').click();
   assert(await page.locator('#startBtn').textContent() === '飛び立つ', 'Japanese Settings translation failed');

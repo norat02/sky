@@ -133,7 +133,7 @@ Tính năng hồi sinh dùng hook `window.SKY_REWARDED_AD.show()`. AdSense đư�
 
 ## Kiểm thử E2E
 
-Bộ test [`e2e/game.e2e.mjs`](e2e/game.e2e.mjs) dùng Playwright với Chromium và mock Supabase/rewarded-ad provider, nên không sử dụng tài khoản production hoặc tạo dữ liệu thật. Test bao phủ mở Settings và đổi tiếng Nhật, đăng nhập email, bắt đầu chơi, quảng cáo trả về `false` không được hồi sinh, quảng cáo được cấp reward mới hồi sinh, kết thúc ván, gửi điểm và tải Leaderboard online. Bộ kiểm thử [`scripts/test-security-rewarded.mjs`](scripts/test-security-rewarded.mjs) kiểm tra HMAC run ticket, ticket khác người dùng, sửa payload, validation điểm/tên, AdBlock/incomplete-ad guard và việc backup không chứa hàng đợi điểm online.
+Bộ test [`e2e/game.e2e.mjs`](e2e/game.e2e.mjs) dùng Playwright với Chromium và mock Supabase/rewarded-ad provider, nên không sử dụng tài khoản production hoặc tạo dữ liệu thật. Test xác nhận Settings có ít nhất 100 locale, chọn được Trung/Hindi, locale chưa dịch có fallback, payload điểm gửi đúng run ticket và rewarded ad chưa hoàn tất không được hồi sinh. Test bao phủ mở Settings và đổi tiếng Nhật, đăng nhập email, bắt đầu chơi, quảng cáo trả về `false` không được hồi sinh, quảng cáo được cấp reward mới hồi sinh, kết thúc ván, gửi điểm và tải Leaderboard online. Bộ kiểm thử [`scripts/test-security-rewarded.mjs`](scripts/test-security-rewarded.mjs) kiểm tra HMAC run ticket, ticket khác người dùng, sửa payload, validation điểm/tên, AdBlock/incomplete-ad guard và việc backup không chứa hàng đợi điểm online.
 
 Chạy các kiểm tra logic bằng:
 
@@ -151,7 +151,7 @@ Có thể chỉ định Chromium khác bằng `CHROMIUM_PATH=/path/to/chromium n
 
 ## Đa ngôn ngữ
 
-Game hỗ trợ `vi`, `en` và `ja`. Lần đầu mở game, ứng dụng ưu tiên mã quốc gia do Vercel cung cấp qua `/api/locale`, sau đó fallback sang `navigator.language`. Người chơi có thể mở **Cài đặt**, đổi ngôn ngữ thủ công và lựa chọn được lưu trong trình duyệt; lựa chọn thủ công được ưu tiên hơn tự động nhận diện IP.
+Game có bản dịch đầy đủ cho `vi`, `en`, `ja`, `zh` (Trung giản thể) và `hi` (Hindi). Settings hiện cung cấp hơn 100 locale; các locale chưa có bản dịch biên tập riêng dùng bộ chuỗi tiếng Anh làm fallback, vẫn giữ đúng định dạng, phát hiện browser/IP và lựa chọn thủ công. Lần đầu mở game, ứng dụng ưu tiên mã quốc gia do Vercel cung cấp qua `/api/locale`, sau đó fallback sang `navigator.language`. Người chơi có thể mở **Cài đặt**, đổi ngôn ngữ thủ công và lựa chọn được lưu trong trình duyệt; lựa chọn thủ công được ưu tiên hơn tự động nhận diện IP. Các khóa localStorage cũ được giữ nguyên để không làm mất dữ liệu khi đổi thương hiệu hoặc locale.
 
 ## SEO
 
