@@ -1,4 +1,4 @@
-import { writeFileSync } from 'node:fs';
+import { readFileSync, writeFileSync } from 'node:fs';
 
 const siteUrl = (process.env.PUBLIC_SITE_URL || 'https://norat02.github.io/sky/').replace(/\/$/, '') + '/';
 const config = {
@@ -10,6 +10,8 @@ const config = {
 
 const js = `// Generated at build time. Do not commit this file.\nwindow.SKY_CONFIG = ${JSON.stringify(config, null, 2)};\n`;
 writeFileSync('config.js', js, 'utf8');
+const html = readFileSync('index.html', 'utf8').replaceAll('https://norat02.github.io/sky/', siteUrl);
+writeFileSync('index.html', html, 'utf8');
 writeFileSync('robots.txt', `User-agent: *\nAllow: /\nSitemap: ${siteUrl}sitemap.xml\n`, 'utf8');
 writeFileSync('sitemap.xml', `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n  <url><loc>${siteUrl}</loc><changefreq>weekly</changefreq><priority>1.0</priority></url>\n</urlset>\n`, 'utf8');
 console.log(`Supabase runtime config generated (${config.SUPABASE_URL ? 'configured' : 'offline fallback'}); SEO URL: ${siteUrl}`);

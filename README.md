@@ -136,4 +136,8 @@ Game hỗ trợ `vi`, `en` và `ja`. Lần đầu mở game, ứng dụng ưu ti
 
 ## SEO
 
-Website cung cấp [`robots.txt`](robots.txt) và [`sitemap.xml`](sitemap.xml), đồng thời khai báo description, keywords, robots directive, canonical URL, Open Graph metadata, Twitter Card và structured data `VideoGame` trong `index.html`. Khi deploy Vercel, đặt `PUBLIC_SITE_URL=https://domain-cua-ban.vercel.app/`; bước build sẽ sinh lại `config.js`, `robots.txt` và `sitemap.xml` theo domain đó. Không dùng domain mẫu khi deploy production.
+Website cung cấp [`robots.txt`](robots.txt) và [`sitemap.xml`](sitemap.xml), đồng thời khai báo description, keywords, robots directive, canonical URL, Open Graph metadata, Twitter Card, structured data `VideoGame` và [`og-image.png`](og-image.png) trong `index.html`. Khi deploy Vercel, đặt `PUBLIC_SITE_URL=https://domain-cua-ban.vercel.app/`; bước build sẽ sinh lại `config.js`, `robots.txt` và `sitemap.xml` theo domain đó, đồng thời thay URL tĩnh trong metadata OG/canonical. Không dùng domain mẫu khi deploy production.
+
+### PageSpeed
+
+Để tối ưu hiệu suất, nên đo cả Mobile và Desktop bằng PageSpeed Insights sau mỗi production deployment. Game hiện tải canvas và script inline, Google Fonts, Supabase module và AdSense; cần theo dõi LCP, INP và CLS, đặc biệt khi bật quảng cáo. Không tải Supabase hoặc quảng cáo trước khi cần nếu chế độ offline/initial render không yêu cầu. Giữ thumbnail và tài nguyên tĩnh có cache trên Vercel, hạn chế thêm thư viện JavaScript, dùng font fallback nhanh và tránh layout thay đổi khi modal/quảng cáo xuất hiện. Mục tiêu Core Web Vitals tham khảo là LCP ≤ 2,5 giây, INP < 200 ms và CLS < 0,1.
