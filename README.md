@@ -58,7 +58,7 @@ Màn hình chính hiển thị top 5 người chơi online và nút **Bảng thi
 
 ## Tính năng gameplay mới
 
-Game có nút **Tạm dừng/Tiếp tục** trong lúc bay, phím `P` để pause/resume và tự động tạm dừng khi người chơi chuyển tab hoặc ẩn trình duyệt. Cơ chế này ngăn game tiếp tục chạy ngoài ý muốn khi người chơi không nhìn thấy màn hình.
+Game có nút **Tạm dừng/Tiếp tục** trong lúc bay, phím `P` để pause/resume và tự động tạm dừng khi người chơi chuyển tab hoặc ẩn trình duyệt. Cơ chế này ngăn game tiếp tục chạy ngoài ý muốn khi người chơi không nhìn thấy màn hình. Khi vượt qua 8 cổng liên tiếp, người chơi nhận **mốc thưởng combo** và một lá chắn bảo hộ; cơ chế này tạo thêm mục tiêu chiến thuật bên cạnh việc chỉ giữ điểm số.
 
 Khi nhân vật chết, game có thể hiển thị một lượt **hồi sinh sau rewarded ad**. Mỗi ván chỉ được hồi sinh một lần. Code chỉ gọi `window.SKY_REWARDED_AD.show()` khi provider quảng cáo hợp lệ đã được tích hợp; nếu chưa có provider, nút bị khóa và game không giả nhận rằng người chơi đã xem quảng cáo. Google AdSense display thông thường không phải rewarded-ad API, vì vậy cần dùng một rewarded provider được phê duyệt hoặc Google Ad Manager rewarded inventory ở production.
 
@@ -136,4 +136,4 @@ Game hỗ trợ `vi`, `en` và `ja`. Lần đầu mở game, ứng dụng ưu ti
 
 ## SEO
 
-Website cung cấp [`robots.txt`](robots.txt) và [`sitemap.xml`](sitemap.xml), đồng thời khai báo description, canonical URL và Open Graph metadata trong `index.html`.
+Website cung cấp [`robots.txt`](robots.txt) và [`sitemap.xml`](sitemap.xml), đồng thời khai báo description, keywords, robots directive, canonical URL, Open Graph metadata, Twitter Card và structured data `VideoGame` trong `index.html`. Khi deploy Vercel, đặt `PUBLIC_SITE_URL=https://domain-cua-ban.vercel.app/`; bước build sẽ sinh lại `config.js`, `robots.txt` và `sitemap.xml` theo domain đó. Không dùng domain mẫu khi deploy production.

@@ -5,6 +5,12 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 <meta name="theme-color" content="#f0e7d3">
 <meta name="description" content="Chim Sẻ là game arcade bay qua những khung cảnh hoa anh đào, mùa thu, tuyết, đêm và mưa.">
+<meta name="keywords" content="game arcade, game chim, game bay, game trình duyệt, game HTML5">
+<meta name="robots" content="index,follow,max-image-preview:large">
+<meta name="author" content="Chim Sẻ">
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"VideoGame","name":"Chim Sẻ · 小鳥の旅","description":"Game arcade HTML5 phản xạ: điều khiển chim bay qua chướng ngại vật, thu thập vật phẩm và ghi điểm.","applicationCategory":"Game","genre":"Arcade","operatingSystem":"Web Browser","url":"https://norat02.github.io/sky/","inLanguage":["vi","en","ja"],"playMode":"SinglePlayer"}
+</script>
 <link rel="canonical" href="https://norat02.github.io/sky/">
 <meta property="og:type" content="website">
 <meta property="og:title" content="Chim Sẻ · 小鳥の旅">
@@ -230,8 +236,11 @@ window.addEventListener('error',function(e){
 'use strict';
 
 /* ═══ SUPABASE CONFIG (để trống = offline) ═══ */
+var SITE_URL=(window.SKY_CONFIG&&window.SKY_CONFIG.PUBLIC_SITE_URL)||(window.location.origin+window.location.pathname);
 var SUPABASE_URL=(window.SKY_CONFIG&&window.SKY_CONFIG.SUPABASE_URL)||'';
 var SUPABASE_ANON_KEY=(window.SKY_CONFIG&&window.SKY_CONFIG.SUPABASE_ANON_KEY)||'';
+var canonicalMeta=document.querySelector('link[rel="canonical"]');if(canonicalMeta)canonicalMeta.href=SITE_URL;
+var ogUrlMeta=document.querySelector('meta[property="og:url"]');if(ogUrlMeta)ogUrlMeta.content=SITE_URL;
 var SUPABASE_REDIRECT_URL=(window.SKY_CONFIG&&window.SKY_CONFIG.SUPABASE_REDIRECT_URL)||'';
 
 /* ═══ THAM SỐ CƠ BẢN ═══ */
@@ -678,7 +687,7 @@ function stepPhysics(dt){
     for(var i=0;i<pipes.length;i++)pipes[i].x-=speed*dt;
     while(pipes.length&&pipes[0].x<-150)pipes.shift();
     if(pipes.length===0)pushPipe(worldW+80);else{var l=pipes[pipes.length-1];if(l.x<=worldW+80-pipeSp)pushPipe(l.x+pipeSp);}
-    for(var j=0;j<pipes.length;j++){var p=pipes[j];if(!p.sc&&p.x+BASE.PW<bird.x){p.sc=true;var off=Math.abs(bird.y-p.gy),perfect=off<18;combo++;comboT=3.6;updateCombo();var mult=Math.min(4,1+Math.floor(combo/4)),gain=(perfect?2:1)+(mult-1);if(perfect){bumpScore(gain,p.x+BASE.PW/2,p.gy,'HOÀN HẢO! x'+mult,RED);flash('217,163,63',0.1);coinSparkle(p.x+BASE.PW/2,p.gy);AU.perfect();}else{bumpScore(gain,p.x+BASE.PW/2,p.gy,mult>1?'COMBO x'+mult:'+'+gain);AU.point(EV.note++);}for(var wp=0;wp<4;wp++)parts.push({x:p.x+BASE.PW/2,y:p.gy+rand(-25,25),vx:rand(-90,-20),vy:rand(-50,50),g:250,r:rand(1.5,3),t:0,tl:rand(0.2,0.4),c:'#c9bb98'});}}
+    for(var j=0;j<pipes.length;j++){var p=pipes[j];if(!p.sc&&p.x+BASE.PW<bird.x){p.sc=true;var off=Math.abs(bird.y-p.gy),perfect=off<18;combo++;comboT=3.6;updateCombo();var mult=Math.min(4,1+Math.floor(combo/4)),gain=(perfect?2:1)+(mult-1);if(combo%8===0){shield=true;showBanner('連続報酬','combo milestone','đạt mốc combo — nhận khiên bảo hộ',2.4);charmBurst();}if(perfect){bumpScore(gain,p.x+BASE.PW/2,p.gy,'HOÀN HẢO! x'+mult,RED);flash('217,163,63',0.1);coinSparkle(p.x+BASE.PW/2,p.gy);AU.perfect();}else{bumpScore(gain,p.x+BASE.PW/2,p.gy,mult>1?'COMBO x'+mult:'+'+gain);AU.point(EV.note++);}for(var wp=0;wp<4;wp++)parts.push({x:p.x+BASE.PW/2,y:p.gy+rand(-25,25),vx:rand(-90,-20),vy:rand(-50,50),g:250,r:rand(1.5,3),t:0,tl:rand(0.2,0.4),c:'#c9bb98'});}}
     var cR=CFG.R+22,cR2=cR*cR;
     for(var ci=coins.length-1;ci>=0;ci--){var c=coins[ci];c.x-=speed*dt;c.ph+=dt*c.spin;c.cy=c.y+Math.sin(c.ph*0.7)*6;if(c.x<-50){coins.splice(ci,1);continue;}var dx=c.x-bird.x,dy=c.cy-bird.y,d2=dx*dx+dy*dy;if(d2<cR2){coins.splice(ci,1);bumpScore(3,c.x,c.cy,'+3','#a67c1e');AU.coin();flash('217,163,63',0.08);coinSparkle(c.x,c.cy);}else if(d2<16900&&d2>1){var dd=Math.sqrt(d2);c.x-=dx/dd*300*dt;c.y-=dy/dd*300*dt;}}
     var hR=CFG.R+26,hR2=hR*hR;
