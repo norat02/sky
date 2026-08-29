@@ -128,6 +128,10 @@ kbd{font-style:normal;border:1px solid var(--ink2);padding:1px 6px;font-size:11p
 .lbRow.me .nm,.lbRow.me b{color:var(--red)}
 .lbEmpty{font-style:italic;font-size:13px;color:var(--ink2);padding:8px 0}
 .lbStatus{font-size:12px;color:var(--ink2);font-style:italic;margin-top:8px;min-height:16px}
+#homeLeaderboard{margin:12px auto 0;max-width:280px;padding-top:10px;border-top:1px solid rgba(38,34,28,.2)}
+#homeLeaderboard h3{font-size:12px;letter-spacing:.24em;text-transform:uppercase;font-weight:700}
+#homeLbStatus{font-size:11px;color:var(--ink2);font-style:italic;min-height:15px;margin-top:3px}
+#homeLeaderboard .lbWrap{margin-top:4px}
 #muteBtn{position:fixed;top:16px;right:16px;z-index:20;width:42px;height:42px;background:var(--paper2);border:2px solid var(--ink);color:var(--ink);display:flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:3px 3px 0 rgba(38,34,28,.15);transition:transform .15s,box-shadow .15s}
 #muteBtn:hover{transform:translate(-1px,-1px);box-shadow:4px 4px 0 rgba(38,34,28,.15)}
 #muteBtn:focus-visible{outline:2px solid var(--red);outline-offset:3px}
@@ -156,6 +160,7 @@ kbd{font-style:normal;border:1px solid var(--ink2);padding:1px 6px;font-size:11p
 <div class="selector"><div class="selLabel">chim</div><div class="selGrid" id="charGrid"></div></div>
 <div class="selector"><div class="selLabel">trời</div><div class="selGrid" id="mapGrid"></div></div>
 <div><button class="btn solid" id="startBtn">bắt đầu bay</button><br><button class="btn ghost" id="lbBtn">bảng thiên hạ</button></div>
+<div id="homeLeaderboard"><h3>bảng trực tuyến</h3><div class="lbWrap" id="homeLb"></div><div id="homeLbStatus">đang chuẩn bị…</div></div>
 <div class="keys"><kbd>SPACE</kbd>hoặc chạm màn hình</div>
 <div id="authPanel"><div id="authState">chơi offline — đăng nhập để lưu điểm online</div><button class="btn ghost" id="authOpen">đăng nhập</button><button class="btn ghost hidden" id="authLogout">đăng xuất</button></div>
 </div>
@@ -182,6 +187,7 @@ window.addEventListener('error',function(e){
 /* ═══ SUPABASE CONFIG (để trống = offline) ═══ */
 var SUPABASE_URL=(window.SKY_CONFIG&&window.SKY_CONFIG.SUPABASE_URL)||'';
 var SUPABASE_ANON_KEY=(window.SKY_CONFIG&&window.SKY_CONFIG.SUPABASE_ANON_KEY)||'';
+var SUPABASE_REDIRECT_URL=(window.SKY_CONFIG&&window.SKY_CONFIG.SUPABASE_REDIRECT_URL)||'';
 
 /* ═══ THAM SỐ CƠ BẢN ═══ */
 var BASE={GAP0:212,GAPSHRINK:0.75,GAPMIN:158,SPEED0:130,SPEEDGROW:0.7,SPEEDMAX:205,PW:62,GROUND:86,BIRD_XF:0.30};
@@ -204,7 +210,7 @@ var finalScore=$('finalScore'),finalBest=$('finalBest'),newBestEl=$('newBest'),m
 var netDot=$('netDot'),netTxt=$('netTxt');
 var evBanner=$('evBanner'),evK=$('evKanji'),evName=$('evName'),evDesc=$('evDesc'),evBarI=$('evBarI');
 var nameRow=$('nameRow'),nameInput=$('nameInput'),sendBtn=$('sendBtn');
-var miniLb=$('miniLb'),lbStatus=$('lbStatus'),fullLb=$('fullLb'),fullStatus=$('fullStatus');
+var miniLb=$('miniLb'),lbStatus=$('lbStatus'),fullLb=$('fullLb'),fullStatus=$('fullStatus'),homeLb=$('homeLb'),homeLbStatus=$('homeLbStatus');
 var runTag=$('runTag'),runNoEl=$('runNo'),runKjEl=$('runKj'),runVnEl=$('runVn');
 var overRunK=$('overRunKj'),overRunV=$('overRunVn'),runsTitle=$('runsTitle');
 var charGrid=$('charGrid'),mapGrid=$('mapGrid');
@@ -337,7 +343,7 @@ function authEmailAction(signup){
   var action=signup?authClient.auth.signUp({email:email,password:password}):authClient.auth.signInWithPassword({email:email,password:password});
   action.then(function(r){if(r.error)throw r.error;authMsg.textContent=signup&&!r.data.session?'hãy kiểm tra email để xác nhận tài khoản':'đăng nhập thành công';if(r.data.session)setTimeout(closeAuth,450);}).catch(function(e){authMsg.textContent=authMessage(e);});
 }
-function authGoogle(){if(!authClient){authMsg.textContent='chưa cấu hình Supabase — đang chơi offline';return;}authMsg.textContent='đang chuyển đến Google…';authClient.auth.signInWithOAuth({provider:'google',options:{redirectTo:window.location.href}}).then(function(r){if(r.error)throw r.error;}).catch(function(e){authMsg.textContent=authMessage(e);});}
+function authGoogle(){if(!authClient){authMsg.textContent='chưa cấu hình Supabase — đang chơi offline';return;}authMsg.textContent='đang chuyển đến Google…';var redirectTo=SUPABASE_REDIRECT_URL||(window.location.origin+window.location.pathname);authClient.auth.signInWithOAuth({provider:'google',options:{redirectTo:redirectTo}}).then(function(r){if(r.error)throw r.error;}).catch(function(e){authMsg.textContent=authMessage(e);});}
 var DB={
   online:false,loading:!!(SUPABASE_URL&&SUPABASE_ANON_KEY),client:null,cache:null,
   init:function(){
@@ -346,7 +352,8 @@ var DB={
     withTimeout(import('https://esm.sh/@supabase/supabase-js@2'),10000)
     .then(function(mod){if(!mod||typeof mod.createClient!=='function')throw new Error('supabase driver');DB.client=authClient=mod.createClient(SUPABASE_URL,SUPABASE_ANON_KEY);DB.client.auth.onAuthStateChange(function(event,session){authUser=session&&session.user||null;updateAuthUI();});return DB.client.auth.getSession();})
     .then(function(r){authUser=r.data&&r.data.session&&r.data.session.user||null;DB.online=true;setNet(true,'trực tuyến');updateAuthUI();return DB.refreshTop();})
-    .catch(function(){DB.online=false;DB.client=null;authClient=null;setNet(false,'ngoại tuyến');updateAuthUI();})
+    .then(function(){refreshHomeLeaderboard();})
+    .catch(function(){DB.online=false;DB.client=null;authClient=null;setNet(false,'ngoại tuyến');updateAuthUI();refreshHomeLeaderboard();})
     .then(function(){DB.loading=false;if(!lbSc.classList.contains('hidden'))refreshFull();});
   },
   refreshTop:function(){if(!DB.online||!DB.client)return Promise.resolve(null);return DB.client.from('scores').select('player_name,score,created_at').order('score',{ascending:false}).order('created_at',{ascending:true}).limit(10).then(function(r){if(r.error)throw r.error;DB.cache=(r.data||[]).map(function(x){return{name:x.player_name,score:x.score};});return DB.cache;}).catch(function(){return null;});},
@@ -365,6 +372,11 @@ function renderLb(el,rows,maxN,hl){
     var c=document.createElement('span');c.className='dots';var e=document.createElement('b');e.textContent=r.score;
     d.appendChild(a);d.appendChild(b);d.appendChild(c);d.appendChild(e);el.appendChild(d);}
   return rank;
+}
+function refreshHomeLeaderboard(){
+  if(!homeLb||!homeLbStatus)return;
+  if(!DB.online){renderLb(homeLb,DB.cache||[],5,null);homeLbStatus.textContent=SUPABASE_URL?'không thể tải bảng trực tuyến':'đang offline — bảng trực tuyến chưa khả dụng';return;}
+  homeLbStatus.textContent='đang tải…';DB.refreshTop().then(function(rows){renderLb(homeLb,rows||DB.cache||[],5,null);homeLbStatus.textContent=rows?'cập nhật trực tiếp từ Supabase':'không tải được bảng';});
 }
 function refreshFull(){
   if(!DB.online){renderLb(fullLb,DB.cache||[],10,null);fullStatus.textContent=SUPABASE_URL?'không kết nối được Supabase':'chưa cấu hình Supabase';return;}
@@ -460,6 +472,7 @@ function goTitle(){
   reset();state='TITLE';
   overSc.classList.add('hidden');lbSc.classList.add('hidden');hud.classList.add('hidden');hint.classList.add('hidden');runTag.classList.add('hidden');
   titleSc.classList.remove('hidden');
+  refreshHomeLeaderboard();
   bestTitle.textContent=best>0?'kỷ lục — '+best:'chưa có kỷ lục';
   runsTitle.textContent=RUN.total>0?('đã bay '+RUN.total+' ván'):'';
 }

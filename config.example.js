@@ -2,5 +2,7 @@
 // Không đặt service_role key ở trình duyệt; chỉ dùng public anon/publishable key.
 window.SKY_CONFIG = {
   SUPABASE_URL: 'https://your-project-ref.supabase.co',
-  SUPABASE_ANON_KEY: 'your-public-anon-key'
+  SUPABASE_ANON_KEY: 'your-public-anon-key',
+  // Tùy chọn; để trống để tự dùng domain Vercel hiện tại.
+  SUPABASE_REDIRECT_URL: 'https://your-production-domain.vercel.app/'
 };

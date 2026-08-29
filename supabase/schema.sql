@@ -7,6 +7,12 @@ create table if not exists public.scores (
   created_at timestamptz not null default now()
 );
 
+-- Migration an toàn nếu bảng scores đã tồn tại từ phiên bản Neon cũ.
+alter table public.scores
+  add column if not exists user_id uuid references auth.users(id) on delete set null;
+alter table public.scores
+  add column if not exists created_at timestamptz not null default now();
+
 alter table public.scores enable row level security;
 
 create index if not exists scores_score_created_idx
