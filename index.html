@@ -132,6 +132,9 @@ kbd{font-style:normal;border:1px solid var(--ink2);padding:1px 6px;font-size:11p
 #homeLeaderboard h3{font-size:12px;letter-spacing:.24em;text-transform:uppercase;font-weight:700}
 #homeLbStatus{font-size:11px;color:var(--ink2);font-style:italic;min-height:15px;margin-top:3px}
 #homeLeaderboard .lbWrap{margin-top:4px}
+#dataTools{margin-top:14px;padding-top:10px;border-top:1px solid rgba(38,34,28,.2)}
+#dataTools .btn{font-size:10px;padding:7px 10px;margin:2px}
+#dataMsg{min-height:15px;font-size:11px;color:var(--ink2);font-style:italic;margin-top:4px}
 #pauseBtn{position:fixed;top:16px;right:68px;z-index:20;width:42px;height:42px;background:var(--paper2);border:2px solid var(--ink);color:var(--ink);display:none;align-items:center;justify-content:center;cursor:pointer;box-shadow:3px 3px 0 rgba(38,34,28,.15);font:700 16px inherit}
 #pauseBtn.show{display:flex}
 #pauseBtn:hover{transform:translate(-1px,-1px);box-shadow:4px 4px 0 rgba(38,34,28,.15)}
@@ -169,6 +172,7 @@ kbd{font-style:normal;border:1px solid var(--ink2);padding:1px 6px;font-size:11p
 <div class="selector"><div class="selLabel">trời</div><div class="selGrid" id="mapGrid"></div></div>
 <div><button class="btn solid" id="startBtn">bắt đầu bay</button><br><button class="btn ghost" id="lbBtn">bảng thiên hạ</button></div>
 <div id="homeLeaderboard"><h3>bảng trực tuyến</h3><div class="lbWrap" id="homeLb"></div><div id="homeLbStatus">đang chuẩn bị…</div></div>
+<div id="dataTools"><div class="selLabel">dữ liệu người chơi</div><button class="btn ghost" id="exportBtn">xuất backup</button><button class="btn ghost" id="importBtn">nhập backup</button><input id="importFile" type="file" accept="application/json,.json" hidden><div id="dataMsg"></div></div>
 <div class="keys"><kbd>SPACE</kbd>hoặc chạm màn hình</div>
 <div id="authPanel"><div id="authState">chơi offline — đăng nhập để lưu điểm online</div><button class="btn ghost" id="authOpen">đăng nhập</button><button class="btn ghost hidden" id="authLogout">đăng xuất</button></div>
 </div>
@@ -222,6 +226,7 @@ var netDot=$('netDot'),netTxt=$('netTxt');
 var evBanner=$('evBanner'),evK=$('evKanji'),evName=$('evName'),evDesc=$('evDesc'),evBarI=$('evBarI');
 var nameRow=$('nameRow'),nameInput=$('nameInput'),sendBtn=$('sendBtn');
 var miniLb=$('miniLb'),lbStatus=$('lbStatus'),fullLb=$('fullLb'),fullStatus=$('fullStatus'),homeLb=$('homeLb'),homeLbStatus=$('homeLbStatus');
+var exportBtn=$('exportBtn'),importBtn=$('importBtn'),importFile=$('importFile'),dataMsg=$('dataMsg');
 var runTag=$('runTag'),runNoEl=$('runNo'),runKjEl=$('runKj'),runVnEl=$('runVn');
 var overRunK=$('overRunKj'),overRunV=$('overRunVn'),runsTitle=$('runsTitle');
 var charGrid=$('charGrid'),mapGrid=$('mapGrid');
@@ -236,6 +241,14 @@ function saveRunHistory(){runHistory=runHistory.slice(-24);writeJson(HISTORY_KEY
 function recordRun(scoreValue){runHistory.push({score:scoreValue,at:new Date().toISOString(),character:currentChar?currentChar.id:'tit',map:currentMap?currentMap.id:'sakura',synced:false});saveRunHistory();}
 function savePendingScore(item){pendingScores=pendingScores.filter(function(x){return x.ticket!==item.ticket;});pendingScores.push(item);pendingScores=pendingScores.slice(-10);writeJson(PENDING_KEY,pendingScores);}
 function removePendingScore(ticket){pendingScores=pendingScores.filter(function(x){return x.ticket!==ticket;});writeJson(PENDING_KEY,pendingScores);}
+var pendingRetryTimer=null;
+function schedulePendingRetry(){if(pendingRetryTimer||!pendingScores.length)return;pendingRetryTimer=setTimeout(function(){pendingRetryTimer=null;if(DB.online&&authUser)DB.flushPending();},30000);}
+function cleanHistory(value){if(!Array.isArray(value))return[];return value.filter(function(x){return x&&Number.isSafeInteger(x.score)&&x.score>=0&&x.score<=100000&&typeof x.at==='string';}).slice(-24).map(function(x){return{score:x.score,at:x.at.slice(0,40),character:typeof x.character==='string'?x.character.slice(0,24):'tit',map:typeof x.map==='string'?x.map.slice(0,24):'sakura',synced:!!x.synced};});}
+function cleanPending(value){if(!Array.isArray(value))return[];return value.filter(function(x){return x&&typeof x.ticket==='string'&&x.ticket.length>20&&x.ticket.length<2000&&typeof x.name==='string'&&Number.isSafeInteger(x.score)&&x.score>=0&&x.score<=100000;}).slice(-10).map(function(x){return{name:x.name.trim().slice(0,10),score:x.score,ticket:x.ticket,createdAt:Number.isSafeInteger(x.createdAt)?x.createdAt:Date.now()};});}
+function backupPayload(){return{app:'chim-se',schemaVersion:1,exportedAt:new Date().toISOString(),data:{best:Math.max(0,Math.min(100000,Number(best)||0)),name:(store.get('chimse.name')||'').slice(0,10),mute:store.get('chimse.mute')==='1',character:store.get('chimse.char')||'tit',map:store.get('chimse.map')||'sakura',history:cleanHistory(runHistory),pendingScores:cleanPending(pendingScores)}};}
+function showDataMessage(text){if(dataMsg)dataMsg.textContent=text;}
+function exportBackup(){var blob=new Blob([JSON.stringify(backupPayload(),null,2)],{type:'application/json'});var url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='chim-se-backup-'+new Date().toISOString().slice(0,10)+'.json';document.body.appendChild(a);a.click();a.remove();setTimeout(function(){URL.revokeObjectURL(url);},1000);showDataMessage('đã xuất backup dữ liệu');}
+function importBackupFile(file){if(!file)return;if(file.size>1024*1024){showDataMessage('file backup quá lớn');return;}var reader=new FileReader();reader.onload=function(){try{var parsed=JSON.parse(reader.result),data=parsed&&parsed.data;if(!parsed||parsed.app!=='chim-se'||parsed.schemaVersion!==1||!data)throw new Error('format');var importedBest=Number.isSafeInteger(data.best)?Math.max(0,Math.min(100000,data.best)):0;best=Math.max(best,importedBest);store.set('chimse.best',''+best);runHistory=cleanHistory(runHistory.concat(cleanHistory(data.history)));saveRunHistory();pendingScores=cleanPending(pendingScores.concat(cleanPending(data.pendingScores)));writeJson(PENDING_KEY,pendingScores);if(typeof data.name==='string'&&data.name.length<=10)store.set('chimse.name',data.name.trim());if(typeof data.mute==='boolean'){AU.setMute(data.mute);muteBtn.classList.toggle('muted',AU.muted);}if(typeof data.character==='string')store.set('chimse.char',data.character.slice(0,24));if(typeof data.map==='string')store.set('chimse.map',data.map.slice(0,24));bestTitle.textContent=best>0?'kỷ lục — '+best:'chưa có kỷ lục';buildSelectors();showDataMessage('đã nhập backup an toàn');if(DB.online&&authUser)DB.flushPending();}catch(e){showDataMessage('backup không hợp lệ');}};reader.onerror=function(){showDataMessage('không thể đọc backup');};reader.readAsText(file);}
 function pad2(n){var s=''+n;while(s.length<2)s='0'+s;return s;}
 
 /* ═══ RNG ═══ */
@@ -380,7 +393,7 @@ var DB={
   refreshTop:function(){if(!DB.online||!DB.client)return Promise.resolve(null);return DB.client.from('scores').select('player_name,score,created_at').order('score',{ascending:false}).order('created_at',{ascending:true}).limit(10).then(function(r){if(r.error)throw r.error;DB.cache=(r.data||[]).map(function(x){return{name:x.player_name,score:x.score};});return DB.cache;}).catch(function(){return null;});},
   submitPayload:function(item){return DB.accessToken().then(function(token){return fetch('/api/submit-score',{method:'POST',headers:{Authorization:'Bearer '+token,'Content-Type':'application/json'},body:JSON.stringify({name:item.name,score:item.score,ticket:item.ticket})});}).then(function(r){return r.json().then(function(data){if(!r.ok){var e=new Error(data.error||'submit');e.apiCode=data.error;e.retryable=r.status>=500||r.status===429;throw e;}return data.rows||[];});});},
   submit:function(name,sc){if(!DB.client||!authUser||!runTicket)return Promise.reject(new Error('run'));return DB.submitPayload({name:name,score:sc,ticket:runTicket});},
-  flushPending:function(){if(!DB.online||!authUser||!pendingScores.length)return Promise.resolve();var queue=pendingScores.slice();var next=Promise.resolve();queue.forEach(function(item){next=next.then(function(){if(!pendingScores.some(function(x){return x.ticket===item.ticket;}))return;return DB.submitPayload(item).then(function(){removePendingScore(item.ticket);}).catch(function(e){if(!e.retryable)removePendingScore(item.ticket);});});});return next;}
+  flushPending:function(){if(!DB.online||!authUser||!pendingScores.length)return Promise.resolve();var queue=pendingScores.slice();var next=Promise.resolve();queue.forEach(function(item){next=next.then(function(){if(!pendingScores.some(function(x){return x.ticket===item.ticket;}))return;return DB.submitPayload(item).then(function(){removePendingScore(item.ticket);}).catch(function(e){if(!e.retryable)removePendingScore(item.ticket);else schedulePendingRetry();});});});return next;}
 };
 
 var RK=['一','二','三','四','五','六','七','八','九','十'];
@@ -578,7 +591,7 @@ function sendScore(){
   if(!authUser){lbStatus.textContent='hãy đăng nhập để ghi danh';openAuth();return;}
   if(!runTicket){lbStatus.textContent='hãy bắt đầu ván mới sau khi đăng nhập';return;}
   sendBtn.disabled=true;lbStatus.textContent='đang gửi…';
-  withTimeout(DB.submit(name,score),9000).then(function(rows){scoreSent=true;runTicket=null;store.set('chimse.name',name);nameRow.style.display='none';var rank=renderLb(miniLb,rows||DB.cache,5,name);lbStatus.textContent=rank>=0?('bạn đang hạng '+(rank+1)):'đã ghi danh — ngoài top 5';AU.coin();}).catch(function(e){if(e&&(e.retryable||e.message==='timeout'))savePendingScore({name:name,score:score,ticket:runTicket,createdAt:Date.now()});sendBtn.disabled=false;lbStatus.textContent=e&&e.apiCode==='score_rate_exceeded'?'điểm vượt tốc độ hợp lệ':(e&&e.retryable?'đã lưu cục bộ — sẽ thử đồng bộ lại':'gửi lỗi — thử lại');});
+  withTimeout(DB.submit(name,score),9000).then(function(rows){scoreSent=true;runTicket=null;store.set('chimse.name',name);nameRow.style.display='none';var rank=renderLb(miniLb,rows||DB.cache,5,name);lbStatus.textContent=rank>=0?('bạn đang hạng '+(rank+1)):'đã ghi danh — ngoài top 5';AU.coin();}).catch(function(e){if(e&&(e.retryable||e.message==='timeout')){savePendingScore({name:name,score:score,ticket:runTicket,createdAt:Date.now()});schedulePendingRetry();}sendBtn.disabled=false;lbStatus.textContent=e&&e.apiCode==='score_rate_exceeded'?'điểm vượt tốc độ hợp lệ':(e&&e.retryable?'đã lưu cục bộ — sẽ thử đồng bộ lại':'gửi lỗi — thử lại');});
 }
 
 /* ═══ VẬT LÝ ═══ */
@@ -803,6 +816,9 @@ function closeLb(){lbSc.classList.add('hidden');if(titleSc.classList.contains('h
  $('emailSignup').addEventListener('click',function(){authEmailAction(true);});
  $('googleLogin').addEventListener('click',authGoogle);
  authModal.addEventListener('click',function(e){if(e.target===authModal)closeAuth();});
+ exportBtn.addEventListener('click',function(){exportBackup();});
+ importBtn.addEventListener('click',function(){importFile.click();});
+ importFile.addEventListener('change',function(e){importBackupFile(e.target.files&&e.target.files[0]);e.target.value='';});
  muteBtn.addEventListener('click',function(){AU.unlock();AU.setMute(!AU.muted);muteBtn.classList.toggle('muted',AU.muted);muteBtn.blur();});
 
 if(AU.muted)muteBtn.classList.add('muted');
