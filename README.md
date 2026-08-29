@@ -1,4 +1,4 @@
-# Chim Sẻ · 小鳥の旅
+# Sky Bird: Chuyến Bay Bầu Trời
 
 Game arcade HTML thuần chạy trên Vercel. Game luôn chơi được offline; khi có cấu hình Supabase hợp lệ, đăng nhập, bảng xếp hạng và ghi danh điểm sẽ hoạt động online.
 

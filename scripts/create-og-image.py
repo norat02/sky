@@ -16,8 +16,8 @@ try:
     sub_font = ImageFont.truetype('/usr/share/fonts/opentype/noto/NotoSansCJK-Medium.ttc', 32, index=0)
 except OSError:
     title_font = sub_font = ImageFont.load_default()
-draw.text((90, 120), 'CHIM SẺ', font=title_font, fill=ink)
-draw.text((94, 225), '小鳥の旅', font=sub_font, fill=red)
+draw.text((90, 120), 'SKY BIRD', font=title_font, fill=ink)
+draw.text((94, 225), 'CHUYẾN BAY BẦU TRỜI', font=sub_font, fill=red)
 draw.line((94, 285, 450, 285), fill=red, width=4)
 draw.text((94, 320), 'Arcade flight · Combo · Leaderboard', font=sub_font, fill=muted)
 # Minimal bird silhouette and flight trail.
