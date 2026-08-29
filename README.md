@@ -176,11 +176,40 @@ Trang quản trị nằm tại [`/admin`](admin.html) và chỉ hiển thị d�
 
 Quyền quản trị được kiểm tra ở server-side trong [`api/admin-data.mjs`](api/admin-data.mjs). Tài khoản được cấp quyền nếu thỏa một trong các điều kiện sau: `user.app_metadata.role` là `admin`, `user.app_metadata.is_admin` là `true`, email có trong `ADMIN_EMAILS`, hoặc UUID có trong `ADMIN_USER_IDS`. Các danh sách nhiều giá trị phân tách bằng dấu phẩy.
 
-Trong Vercel, cấu hình thêm các biến sau cho môi trường cần dùng. Không đưa các biến này vào `config.js` hoặc bất kỳ mã trình duyệt nào:
+### Cấu hình `ADMIN_EMAILS` trên Vercel
+
+`ADMIN_EMAILS` là biến **server-side**, không được thêm tiền tố `PUBLIC_` và không được đưa vào `config.js`. Vercel mã hóa biến môi trường khi lưu, nhưng giá trị vẫn có thể được xem bởi người có quyền truy cập project, vì vậy chỉ cấp quyền Vercel cần thiết cho thành viên quản trị. Tham khảo [Vercel Environment Variables](https://vercel.com/docs/environment-variables).
+
+1. Mở **Vercel Dashboard**, chọn đúng project đang deploy repository `norat02/sky`, sau đó vào **Settings → Environment Variables**.
+2. Nhập tên biến chính xác là `ADMIN_EMAILS`. Ở ô giá trị, nhập email đã tồn tại trong **Supabase → Authentication → Users**, ví dụ `admin@example.com`. Nếu có nhiều admin, phân tách bằng dấu phẩy, chẳng hạn `owner@example.com, moderator@example.com`.
+3. Chọn environment áp dụng. Chọn **Production** cho domain thật. Chọn thêm **Preview** nếu cần test trên deployment preview. Nếu hai môi trường dùng danh sách khác nhau, tạo giá trị riêng cho từng environment thay vì gộp tài khoản preview vào Production.
+4. Nhấn **Save**, sau đó tạo deployment mới bằng cách push commit mới lên nhánh production hoặc chọn **Redeploy** deployment. Thay đổi biến môi trường **không áp dụng ngược cho deployment cũ**; Vercel chỉ đưa giá trị mới vào deployment mới.
+5. Không đặt `ADMIN_EMAILS` trong `config.js`, `index.html`, `admin.html`, GitHub Actions log hoặc file public. Có thể cấu hình thêm `ADMIN_USER_IDS` bằng UUID Supabase nếu muốn phân quyền ổn định hơn email; khi dùng cả hai, chỉ cần một điều kiện khớp.
+
+Giá trị mẫu trong Vercel:
 
 ```text
 ADMIN_EMAILS=admin@example.com
 ADMIN_USER_IDS=
 ```
 
-Sau khi đăng ký hoặc cấp quyền cho tài khoản Supabase, hãy đăng nhập tại `/admin`. Nếu dùng Google OAuth, cần thêm URL `/admin` của production và preview vào **Supabase → Authentication → URL Configuration**. Service role key vẫn chỉ được đọc bởi Vercel Function; trình duyệt chỉ gửi access token của phiên Supabase.
+Để tránh lỗi do khoảng trắng, nên nhập theo dạng `admin@example.com,moderator@example.com`. Mã nguồn tự trim khoảng trắng và so sánh email không phân biệt hoa thường.
+
+### Cấu hình tài khoản trong Supabase
+
+Tạo hoặc xác nhận tài khoản tại **Authentication → Users** trước. Cách đơn giản nhất là dùng email trong `ADMIN_EMAILS`. Cách thay thế là dùng **user UUID** trong `ADMIN_USER_IDS`. Mã nguồn cũng chấp nhận `app_metadata.role = admin` hoặc `app_metadata.is_admin = true`; không dùng `user_metadata` để cấp quyền, vì metadata này có thể do người dùng tự chỉnh sửa. Nếu chỉnh `app_metadata`, hãy refresh phiên đăng nhập hoặc đăng xuất/đăng nhập lại để access token nhận claim mới.
+
+Nếu dùng Google OAuth, thêm URL đầy đủ của trang admin, ví dụ `https://your-domain.vercel.app/admin`, vào **Supabase → Authentication → URL Configuration → Redirect URLs**. Sau đó đăng nhập tại `/admin` và kiểm tra email hiển thị trên dashboard.
+
+### Checklist xác minh sau cấu hình
+
+Mở `/admin` ở deployment mới và thử lần lượt bằng một tài khoản không có trong allowlist, một tài khoản có email trong `ADMIN_EMAILS`, và nếu có thể một tài khoản được cấp qua `app_metadata`. Kết quả đúng là tài khoản thường không được trả dữ liệu và endpoint `/api/admin-data` trả `403`; tài khoản admin thấy dashboard và endpoint trả `200`; request không có hoặc có Bearer token không hợp lệ trả `401`. Có thể xem chi tiết request trong **Vercel → Deployments → Functions/Runtime Logs**. Không ghi access token hoặc service role key vào log.
+
+Service role key vẫn chỉ được đọc bởi Vercel Function; trình duyệt chỉ gửi access token của phiên Supabase. Các biến bắt buộc server-side gồm:
+
+```text
+SUPABASE_SERVICE_ROLE_KEY=...
+SCORE_SIGNING_SECRET=...
+ADMIN_EMAILS=admin@example.com
+ADMIN_USER_IDS=
+```
