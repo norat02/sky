@@ -89,9 +89,9 @@ Các biện pháp phía client không thể ngăn người dùng sửa JavaScrip
 
 ## Backup/Restore mã hóa
 
-Nút **Xuất backup** luôn tạo JSON envelope đã mã hóa bằng **AES-256-GCM**. Khóa được dẫn xuất từ mật khẩu người chơi bằng PBKDF2-HMAC-SHA-256 với salt ngẫu nhiên và 150.000 vòng lặp. Nút **Nhập backup** yêu cầu đúng mật khẩu; file bị sửa, sai schema hoặc sai mật khẩu sẽ bị từ chối. File backup tối đa 1 MB và dữ liệu sau giải mã vẫn được làm sạch trước khi merge.
+Nút **Xuất backup** luôn tạo JSON envelope đã mã hóa bằng **AES-256-GCM**. Khóa được dẫn xuất từ mật khẩu người chơi bằng PBKDF2-HMAC-SHA-256 với salt ngẫu nhiên và 150.000 vòng lặp. AES-GCM phát hiện file bị sửa, sai schema hoặc sai mật khẩu nên file hỏng sẽ bị từ chối. Từ schema backup v2, file chỉ chứa dữ liệu cá nhân và lịch sử cục bộ; **không xuất `pendingScores`, run ticket hoặc dữ liệu có thể dùng để gửi điểm online**. Khi restore, client cũng không nhập hàng đợi điểm từ file. File backup tối đa 1 MB và dữ liệu sau giải mã vẫn được làm sạch trước khi merge.
 
-Mật khẩu backup không được lưu và không thể khôi phục. Nếu mất mật khẩu, file backup không thể giải mã. Người chơi nên lưu file và mật khẩu ở hai nơi an toàn khác nhau.
+Mật khẩu backup không được lưu và không thể khôi phục. Nếu mất mật khẩu, file backup không thể giải mã. Người chơi nên lưu file và mật khẩu ở hai nơi an toàn khác nhau. Lưu ý rằng người dùng sở hữu mật khẩu vẫn có thể tự tạo một file backup hợp lệ với dữ liệu local mới; điều này không thể bị ngăn tuyệt đối trong ứng dụng chạy trên trình duyệt. Tuy nhiên, dữ liệu local không có quyền ghi vào Leaderboard: điểm online chỉ được chấp nhận khi Vercel Function kiểm tra Bearer session, run ticket HMAC, thời gian chạy, giới hạn điểm và trạng thái ticket chưa dùng.
 
 ## Luôn lưu dữ liệu
 
@@ -118,7 +118,7 @@ Mở `http://localhost:3000/`. Không mở trực tiếp bằng `file://` nếu 
 
 Hướng dẫn đầy đủ về custom domain, SSL/HTTPS trên Vercel và định dạng rewarded video nằm tại [`docs/vercel-domain-ssl-rewarded-video.md`](docs/vercel-domain-ssl-rewarded-video.md).
 
-Tính năng hồi sinh dùng hook `window.SKY_REWARDED_AD.show()`. AdSense được lazy-load sau khi trang ổn định, idle callback hoặc tương tác đầu tiên; GPT chỉ được tải khi provider rewarded gọi `window.SKY_ADS.loadGPT()`. Vì website, không tìm tùy chọn rewarded trong đoạn mã AdSense display thông thường. Rewarded web ads nên được cấu hình trong **Google Ad Manager** bằng Google Publisher Tag (GPT), tạo ad unit định dạng **Rewarded**, sau đó gọi hook này khi quảng cáo đã phát xong và provider xác nhận reward. Google yêu cầu tuân thủ chính sách rewarded ads và có consent phù hợp; không tự động coi việc mở hoặc đóng quảng cáo là đã xem xong. Xem ghi chú tại [`docs/google-rewarded-ad-notes.md`](docs/google-rewarded-ad-notes.md).
+Tính năng hồi sinh dùng hook `window.SKY_REWARDED_AD.show()`. AdSense được lazy-load sau khi trang ổn định, idle callback hoặc tương tác đầu tiên; GPT chỉ được tải khi provider rewarded gọi `window.SKY_ADS.loadGPT()`. **Mã cần lấy không phải mã định dạng video trong file JSON**, mà là **Ad unit path** của Google Ad Manager, thường có dạng `/123456789/sky_rewarded`. Vào Google Ad Manager → **Inventory → Ad units** → chọn hoặc tạo ad unit → sao chép trường **Ad unit path**. Chọn inventory/format **Rewarded**; nếu dùng GPT thì provider gọi `googletag.defineOutOfPageSlot(adUnitPath, googletag.enums.OutOfPageFormat.REWARDED)`. Sau đó gắn path vào code provider và chỉ gọi `window.SKY_REWARDED_AD.show()` sau khi có `RewardedSlotReadyEvent`; chỉ hồi sinh sau `RewardedSlotGrantedEvent`. AdSense display thông thường, Multiplex và In-article không cung cấp API rewarded. Cần cấu hình consent và tuân thủ chính sách của Google; không coi việc mở hoặc đóng quảng cáo là đã xem xong. Xem [`docs/google-rewarded-ad-notes.md`](docs/google-rewarded-ad-notes.md) và [`docs/vercel-domain-ssl-rewarded-video.md`](docs/vercel-domain-ssl-rewarded-video.md).
 
 ## Kiểm thử E2E
 
