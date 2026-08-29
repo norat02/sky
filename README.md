@@ -83,9 +83,15 @@ RLS trong [`supabase/schema.sql`](supabase/schema.sql) cho phép đọc Leaderbo
 
 Các biện pháp phía client không thể ngăn người dùng sửa JavaScript hoặc giả mạo điểm. Nếu Leaderboard cần chống gian lận nghiêm ngặt, cần thêm Vercel Function dùng secret server-side để xác thực kết quả hoặc hệ thống replay/server-authoritative; tuyệt đối không đưa service-role key vào `index.html`.
 
+## Luôn lưu dữ liệu
+
+Sau mỗi ván, kết quả được ghi ngay vào lịch sử cục bộ trong `localStorage` với tối đa 24 ván gần nhất. Khi một ván online đã có run ticket nhưng request ghi điểm gặp timeout, lỗi mạng hoặc lỗi server, điểm được đưa vào hàng đợi cục bộ tối đa 10 mục và tự retry khi mạng trở lại hoặc khi người dùng đăng nhập lại. Các lỗi xác thực, ticket hết hạn và payload không hợp lệ không được retry vô hạn.
+
+Kỷ lục cá nhân, tên hiển thị, cài đặt âm thanh, lịch sử ván và hàng đợi chờ đồng bộ được lưu cục bộ. Supabase lưu Leaderboard chính thức và các run online sau khi API server xác thực. Client không lưu service key, signing secret hoặc mật khẩu. `localStorage` không phải nơi lưu trữ chống xóa; nếu người dùng xóa dữ liệu trình duyệt, dùng chế độ riêng tư hoặc đổi thiết bị thì dữ liệu local có thể mất, còn dữ liệu đã đồng bộ lên Supabase vẫn được giữ.
+
 ## Online và offline
 
-Khi thiếu `SUPABASE_URL` hoặc `SUPABASE_ANON_KEY`, hoặc CDN/Supabase không truy cập được, game tự chuyển sang trạng thái **chơi cục bộ**. Kỷ lục cá nhân vẫn được lưu trong `localStorage`. Khi kết nối thành công, chỉ báo mạng hiển thị **trực tuyến**, Leaderboard được tải từ Supabase và các nút đăng nhập hoạt động.
+Khi thiếu `SUPABASE_URL` hoặc `SUPABASE_ANON_KEY`, hoặc CDN/Supabase không truy cập được, game tự chuyển sang trạng thái **chơi cục bộ**. Kỷ lục cá nhân và lịch sử ván vẫn được lưu trong `localStorage`. Khi kết nối thành công, chỉ báo mạng hiển thị **trực tuyến**, Leaderboard được tải từ Supabase và hàng đợi điểm hợp lệ sẽ được thử đồng bộ lại.
 
 ## Chạy cục bộ
 

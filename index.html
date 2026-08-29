@@ -228,6 +228,14 @@ var charGrid=$('charGrid'),mapGrid=$('mapGrid');
 
 /* ═══ STORE ═══ */
 var store={get:function(k){try{return localStorage.getItem(k)}catch(e){return null}},set:function(k,v){try{localStorage.setItem(k,v)}catch(e){}}};
+function readJson(key,fallback){try{var raw=store.get(key);var value=raw?JSON.parse(raw):fallback;return value===null?fallback:value;}catch(e){return fallback;}}
+function writeJson(key,value){try{store.set(key,JSON.stringify(value));}catch(e){}}
+var HISTORY_KEY='chimse.history',PENDING_KEY='chimse.pending-scores';
+var runHistory=readJson(HISTORY_KEY,[]),pendingScores=readJson(PENDING_KEY,[]);
+function saveRunHistory(){runHistory=runHistory.slice(-24);writeJson(HISTORY_KEY,runHistory);}
+function recordRun(scoreValue){runHistory.push({score:scoreValue,at:new Date().toISOString(),character:currentChar?currentChar.id:'tit',map:currentMap?currentMap.id:'sakura',synced:false});saveRunHistory();}
+function savePendingScore(item){pendingScores=pendingScores.filter(function(x){return x.ticket!==item.ticket;});pendingScores.push(item);pendingScores=pendingScores.slice(-10);writeJson(PENDING_KEY,pendingScores);}
+function removePendingScore(ticket){pendingScores=pendingScores.filter(function(x){return x.ticket!==ticket;});writeJson(PENDING_KEY,pendingScores);}
 function pad2(n){var s=''+n;while(s.length<2)s='0'+s;return s;}
 
 /* ═══ RNG ═══ */
@@ -362,7 +370,7 @@ var DB={
     setNet(false,'đang kết nối…');
     withTimeout(import('https://esm.sh/@supabase/supabase-js@2'),10000)
     .then(function(mod){if(!mod||typeof mod.createClient!=='function')throw new Error('supabase driver');DB.client=authClient=mod.createClient(SUPABASE_URL,SUPABASE_ANON_KEY);DB.client.auth.onAuthStateChange(function(event,session){authUser=session&&session.user||null;updateAuthUI();});return DB.client.auth.getSession();})
-    .then(function(r){authUser=r.data&&r.data.session&&r.data.session.user||null;DB.online=true;setNet(true,'trực tuyến');updateAuthUI();return DB.refreshTop();})
+    .then(function(r){authUser=r.data&&r.data.session&&r.data.session.user||null;DB.online=true;setNet(true,'trực tuyến');updateAuthUI();DB.flushPending();return DB.refreshTop();})
     .then(function(){refreshHomeLeaderboard();})
     .catch(function(){DB.online=false;DB.client=null;authClient=null;setNet(false,'ngoại tuyến');updateAuthUI();refreshHomeLeaderboard();})
     .then(function(){DB.loading=false;if(!lbSc.classList.contains('hidden'))refreshFull();});
@@ -370,7 +378,9 @@ var DB={
   accessToken:function(){if(!DB.client||!authUser)return Promise.reject(new Error('auth'));return DB.client.auth.getSession().then(function(r){var token=r.data&&r.data.session&&r.data.session.access_token;if(!token)throw new Error('auth');return token;});},
   beginRun:function(){return DB.accessToken().then(function(token){return fetch('/api/run-ticket',{method:'POST',headers:{Authorization:'Bearer '+token,'Content-Type':'application/json'},body:'{}'});}).then(function(r){if(!r.ok)throw new Error('run ticket');return r.json();}).then(function(data){runTicket=data.ticket;return runTicket;});},
   refreshTop:function(){if(!DB.online||!DB.client)return Promise.resolve(null);return DB.client.from('scores').select('player_name,score,created_at').order('score',{ascending:false}).order('created_at',{ascending:true}).limit(10).then(function(r){if(r.error)throw r.error;DB.cache=(r.data||[]).map(function(x){return{name:x.player_name,score:x.score};});return DB.cache;}).catch(function(){return null;});},
-  submit:function(name,sc){if(!DB.client||!authUser||!runTicket)return Promise.reject(new Error('run'));return DB.accessToken().then(function(token){return fetch('/api/submit-score',{method:'POST',headers:{Authorization:'Bearer '+token,'Content-Type':'application/json'},body:JSON.stringify({name:name,score:sc,ticket:runTicket})});}).then(function(r){return r.json().then(function(data){if(!r.ok)throw new Error(data.error||'submit');return data.rows||[];});});}
+  submitPayload:function(item){return DB.accessToken().then(function(token){return fetch('/api/submit-score',{method:'POST',headers:{Authorization:'Bearer '+token,'Content-Type':'application/json'},body:JSON.stringify({name:item.name,score:item.score,ticket:item.ticket})});}).then(function(r){return r.json().then(function(data){if(!r.ok){var e=new Error(data.error||'submit');e.apiCode=data.error;e.retryable=r.status>=500||r.status===429;throw e;}return data.rows||[];});});},
+  submit:function(name,sc){if(!DB.client||!authUser||!runTicket)return Promise.reject(new Error('run'));return DB.submitPayload({name:name,score:sc,ticket:runTicket});},
+  flushPending:function(){if(!DB.online||!authUser||!pendingScores.length)return Promise.resolve();var queue=pendingScores.slice();var next=Promise.resolve();queue.forEach(function(item){next=next.then(function(){if(!pendingScores.some(function(x){return x.ticket===item.ticket;}))return;return DB.submitPayload(item).then(function(){removePendingScore(item.ticket);}).catch(function(e){if(!e.retryable)removePendingScore(item.ticket);});});});return next;}
 };
 
 var RK=['一','二','三','四','五','六','七','八','九','十'];
@@ -479,6 +489,7 @@ function startGame(){
   try{if(document.activeElement&&document.activeElement.blur)document.activeElement.blur();}catch(e){}
   pauseOverlay.classList.remove('show');pauseBtn.textContent='Ⅱ';pauseBtn.classList.add('show');
   applyChar();applyMap();rollRun();reset();state='READY';
+  runTicket=null;
   if(authUser&&DB.online)DB.beginRun().catch(function(){runTicket=null;});
   titleSc.classList.add('hidden');overSc.classList.add('hidden');lbSc.classList.add('hidden');
   hud.classList.remove('hidden');hint.classList.remove('hidden');runTag.classList.remove('hidden');
@@ -548,7 +559,7 @@ function startDying(){if(state!=='PLAY')return;state='DYING';freeze=0.09;dyingT=
 function endGame(){state='OVER';pauseBtn.classList.remove('show');pauseOverlay.classList.remove('show');overAt=nowMs;shake(0.18,5);dust();AU.thud();prevRunFirstGap=firstGapThisRun;if(score>best){best=score;isNewBest=true;store.set('chimse.best',best);}}
 function showOver(){
   panelShown=true;scoreSent=false;
-  finalScore.textContent=score;finalBest.textContent=best;newBestEl.classList.toggle('hidden',!isNewBest);
+  finalScore.textContent=score;finalBest.textContent=best;newBestEl.classList.toggle('hidden',!isNewBest);recordRun(score);
   overRunK.textContent=RUN.kj;overRunV.textContent=currentChar.vn+' · '+currentMap.vn+' · ván '+RUN.total;
   hud.classList.add('hidden');overSc.classList.remove('hidden');
   nameRow.style.display='none';miniLb.innerHTML='';lbStatus.textContent='';
@@ -567,7 +578,7 @@ function sendScore(){
   if(!authUser){lbStatus.textContent='hãy đăng nhập để ghi danh';openAuth();return;}
   if(!runTicket){lbStatus.textContent='hãy bắt đầu ván mới sau khi đăng nhập';return;}
   sendBtn.disabled=true;lbStatus.textContent='đang gửi…';
-  withTimeout(DB.submit(name,score),9000).then(function(rows){scoreSent=true;runTicket=null;store.set('chimse.name',name);nameRow.style.display='none';var rank=renderLb(miniLb,rows||DB.cache,5,name);lbStatus.textContent=rank>=0?('bạn đang hạng '+(rank+1)):'đã ghi danh — ngoài top 5';AU.coin();}).catch(function(e){sendBtn.disabled=false;lbStatus.textContent=e&&e.message==='score_rate_exceeded'?'điểm vượt tốc độ hợp lệ':'gửi lỗi — thử lại';});
+  withTimeout(DB.submit(name,score),9000).then(function(rows){scoreSent=true;runTicket=null;store.set('chimse.name',name);nameRow.style.display='none';var rank=renderLb(miniLb,rows||DB.cache,5,name);lbStatus.textContent=rank>=0?('bạn đang hạng '+(rank+1)):'đã ghi danh — ngoài top 5';AU.coin();}).catch(function(e){if(e&&(e.retryable||e.message==='timeout'))savePendingScore({name:name,score:score,ticket:runTicket,createdAt:Date.now()});sendBtn.disabled=false;lbStatus.textContent=e&&e.apiCode==='score_rate_exceeded'?'điểm vượt tốc độ hợp lệ':(e&&e.retryable?'đã lưu cục bộ — sẽ thử đồng bộ lại':'gửi lỗi — thử lại');});
 }
 
 /* ═══ VẬT LÝ ═══ */
@@ -772,6 +783,7 @@ function frame(t){requestAnimationFrame(frame);if(!lastT)lastT=t;var dtr=Math.mi
 function handleTap(e){var t=e.target;if(t&&t.closest&&t.closest('button, input, .panel, .selCard, #evBanner, #authModal, .authBox, #pauseOverlay'))return;if(!lbSc.classList.contains('hidden'))return;tap();}
 if(window.PointerEvent){window.addEventListener('pointerdown',handleTap);}
 else{var lastSynth=0;var synth=function(e){var n=Date.now();if(n-lastSynth<400)return;lastSynth=n;handleTap(e);};window.addEventListener('touchstart',synth,{passive:true});window.addEventListener('mousedown',synth);}
+window.addEventListener('online',function(){if(DB.online&&authUser)DB.flushPending();else DB.init();});
 window.addEventListener('keydown',function(e){var ae=document.activeElement;if(ae&&(ae.tagName==='INPUT'||ae.tagName==='TEXTAREA')){if(e.key==='Enter'&&!overSc.classList.contains('hidden'))sendScore();return;}if(e.key==='Escape'&&!lbSc.classList.contains('hidden')){closeLb();return;}if(e.key==='p'||e.key==='P'){e.preventDefault();setPaused(state==='PLAY');return;}if((e.key==='r'||e.key==='R')&&state==='OVER'&&panelShown){AU.unlock();startGame();return;}if(e.code==='Space'||e.key===' '||e.code==='ArrowUp'){e.preventDefault();if(!e.repeat)tap();}});
 
 function closeLb(){lbSc.classList.add('hidden');if(titleSc.classList.contains('hidden')&&overSc.classList.contains('hidden'))titleSc.classList.remove('hidden');}
