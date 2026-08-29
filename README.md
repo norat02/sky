@@ -106,9 +106,13 @@ Các biện pháp phía client không thể ngăn người dùng sửa JavaScrip
 
 ## Backup/Restore mã hóa
 
-Nút **Xuất backup** luôn tạo JSON envelope đã mã hóa bằng **AES-256-GCM**. Khóa được dẫn xuất từ mật khẩu người chơi bằng PBKDF2-HMAC-SHA-256 với salt ngẫu nhiên và 150.000 vòng lặp. AES-GCM phát hiện file bị sửa, sai schema hoặc sai mật khẩu nên file hỏng sẽ bị từ chối. Từ schema backup v2, file chỉ chứa dữ liệu cá nhân và lịch sử cục bộ; **không xuất `pendingScores`, run ticket hoặc dữ liệu có thể dùng để gửi điểm online**. Khi restore, client cũng không nhập hàng đợi điểm từ file. File backup tối đa 1 MB và dữ liệu sau giải mã vẫn được làm sạch trước khi merge.
+Nút **Xuất backup** luôn tạo JSON envelope đã mã hóa bằng **AES-256-GCM**. Khóa được dẫn xuất từ mật khẩu người chơi bằng PBKDF2-HMAC-SHA-256 với salt ngẫu nhiên và 150.000 vòng lặp. Bên trong plaintext trước khi mã hóa, backup được gắn **watermark ẩn 5 lớp** bằng chuỗi SHA-256 liên kết với payload, salt, IV và định danh format. Vì watermark nằm bên trong ciphertext, người không có mật khẩu không thể đọc hoặc nhận biết nội dung watermark từ file JSON; envelope bên ngoài chỉ thấy metadata mã hóa và ciphertext.
 
-Mật khẩu backup không được lưu và không thể khôi phục. Nếu mất mật khẩu, file backup không thể giải mã. Người chơi nên lưu file và mật khẩu ở hai nơi an toàn khác nhau. Lưu ý rằng người dùng sở hữu mật khẩu vẫn có thể tự tạo một file backup hợp lệ với dữ liệu local mới; điều này không thể bị ngăn tuyệt đối trong ứng dụng chạy trên trình duyệt. Tuy nhiên, dữ liệu local không có quyền ghi vào Leaderboard: điểm online chỉ được chấp nhận khi Vercel Function kiểm tra Bearer session, run ticket HMAC, thời gian chạy, giới hạn điểm và trạng thái ticket chưa dùng.
+Khi giải mã, ứng dụng bắt buộc kiểm tra đủ 5 lớp và đối chiếu toàn bộ chuỗi watermark với payload cùng salt/IV của chính file đó. File thiếu watermark, watermark sai, sửa ciphertext, sai schema hoặc sai mật khẩu đều bị từ chối trước khi restore; không có dữ liệu nào được merge vào localStorage. Đây là thay đổi tương thích có chủ ý: backup cũ chưa có watermark 5 lớp sẽ không được restore, nên người chơi cần xuất lại backup sau khi nâng cấp.
+
+Từ schema backup v2, file chỉ chứa dữ liệu cá nhân và lịch sử cục bộ; **không xuất `pendingScores`, run ticket hoặc dữ liệu có thể dùng để gửi điểm online**. Khi restore, client cũng không nhập hàng đợi điểm từ file. File backup tối đa 1 MB và dữ liệu sau giải mã vẫn được làm sạch trước khi merge.
+
+Mật khẩu backup không được lưu và không thể khôi phục. Nếu mất mật khẩu, file backup không thể giải mã. Người chơi nên lưu file và mật khẩu ở hai nơi an toàn khác nhau. Watermark giúp phát hiện file không đúng format hoặc bị thay thế, nhưng không phải chữ ký chống chối bỏ: người sở hữu mật khẩu và mã chạy phía client vẫn có thể tự tạo một file mới hợp lệ. Watermark cũng không được dùng làm secret duy nhất. Dữ liệu local không có quyền ghi vào Leaderboard: điểm online chỉ được chấp nhận khi Vercel Function kiểm tra Bearer session, run ticket HMAC, thời gian chạy, giới hạn điểm và trạng thái ticket chưa dùng.
 
 ## Luôn lưu dữ liệu
 
@@ -119,6 +123,16 @@ Kỷ lục cá nhân, tên hiển thị, cài đặt âm thanh, lịch sử ván
 ## Online và offline
 
 Khi thiếu `SUPABASE_URL` hoặc `SUPABASE_ANON_KEY`, hoặc CDN/Supabase không truy cập được, game tự chuyển sang trạng thái **chơi cục bộ**. Kỷ lục cá nhân và lịch sử ván vẫn được lưu trong `localStorage`. Khi kết nối thành công, chỉ báo mạng hiển thị **trực tuyến**, Leaderboard được tải từ Supabase và hàng đợi điểm hợp lệ sẽ được thử đồng bộ lại.
+
+## Kiểm thử watermark backup
+
+Test unit kiểm tra roundtrip, sai mật khẩu, sửa ciphertext, thiếu watermark và watermark bị thay đổi. Test Playwright kiểm tra backup thực tế trong trình duyệt, xác nhận có đúng 5 lớp sau giải mã và các marker watermark không lộ ra trong envelope JSON:
+
+```bash
+npm test
+npm run build
+node e2e/backup-watermark.e2e.mjs
+```
 
 ## Chạy cục bộ
 
