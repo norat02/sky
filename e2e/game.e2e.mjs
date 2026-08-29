@@ -79,6 +79,12 @@ try {
   await page.locator('#languageSelect').selectOption('fr');
   assert(await page.locator('[data-i18n="title"]').textContent() === 'SKY BIRD', 'Locale fallback translation failed');
   await page.locator('#languageSelect').selectOption('ja');
+  assert(await page.locator('#mapGrid .selCard').count() >= 6, 'New map is missing from the map selector');
+  const newMapCard = page.locator('#mapGrid .selCard').last();
+  assert((await newMapCard.textContent()).includes('極光'), 'Aurora map card label is missing');
+  await newMapCard.evaluate((el) => el.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true })));
+  await page.waitForFunction(() => localStorage.getItem('chimse.map') === 'aurora');
+  assert(await page.evaluate(() => localStorage.getItem('chimse.map')) === 'aurora', 'New map selection was not persisted');
   await page.locator('#settingsClose').click();
   assert(await page.locator('#startBtn').textContent() === '飛び立つ', 'Japanese Settings translation failed');
 

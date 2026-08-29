@@ -9,6 +9,8 @@ assert(html.includes('signInWithOAuth'));
 assert(html.includes('signInWithPassword'));
 assert(html.includes('SUPABASE_REDIRECT_URL'));
 assert(html.includes('setPaused'));
+assert(html.includes("id:'aurora'"), 'Aurora map definition missing');
+assert(readFileSync('e2e/game.e2e.mjs', 'utf8').includes("localStorage.getItem('chimse.map')) === 'aurora'"), 'Playwright new-map coverage missing');
 assert(html.includes('pauseOverlay'));
 assert(html.includes('HISTORY_KEY'));
 assert(html.includes('PENDING_KEY'));
