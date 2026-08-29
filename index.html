@@ -615,6 +615,9 @@ function securityLock(reason){if(ANTI_CHEAT.locked||window.__SKY_E2E__)return;AN
 function antiCheatCheck(){if(window.__SKY_E2E__||ANTI_CHEAT.locked)return;var dw=Math.abs(window.outerWidth-window.innerWidth),dh=Math.abs(window.outerHeight-window.innerHeight);if(dw>180||dh>180)securityLock('devtools');}
 window.addEventListener('contextmenu',function(e){if(!window.__SKY_E2E__)e.preventDefault();});
 window.addEventListener('keydown',function(e){if(window.__SKY_E2E__)return;var k=(e.key||'').toLowerCase();if(e.key==='F12'||(e.ctrlKey&&e.shiftKey&&['i','j','c'].indexOf(k)>=0)||(e.ctrlKey&&k==='u')){e.preventDefault();securityLock('devtools');}});
+function allowedGameScript(node){if(!node||node.tagName!=='SCRIPT')return true;var id=node.id||'';var src=node.src||'';if(id==='sky-adsense-loader'||id==='sky-gpt-loader')return true;if(!src)return false;return src.indexOf(location.origin+'/')===0||src.indexOf('https://esm.sh/')===0;}
+function inspectInjectedNodes(records){if(window.__SKY_E2E__||ANTI_CHEAT.locked)return;for(var i=0;i<records.length;i++){for(var j=0;j<records[i].addedNodes.length;j++){var node=records[i].addedNodes[j];if(node.nodeType===1&&node.tagName==='SCRIPT'&&!allowedGameScript(node)){securityLock('tamper');return;}}}}
+if(window.MutationObserver)try{new MutationObserver(inspectInjectedNodes).observe(document.documentElement,{childList:true,subtree:true});}catch(e){}
 setInterval(antiCheatCheck,1200);
 function startGame(){
   if(ANTI_CHEAT.locked)return;

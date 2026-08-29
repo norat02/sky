@@ -39,6 +39,9 @@ assert.match(html, /RewardedSlotGrantedEvent|reward-granted|rewarded-ad/, 'rewar
 assert.match(html, /reviveUsed=true/, 'revive must be consumed after a successful grant');
 assert.match(html, /function securityLock\(reason\)/, 'anti-cheat security lock must exist');
 assert.match(html, /function antiCheatCheck\(\)/, 'DevTools detection must exist');
+assert.match(html, /function inspectInjectedNodes\(records\)/, 'DOM script injection guard must exist');
+assert.match(html, /function allowedGameScript\(node\)/, 'allowed script allowlist must exist');
+assert.match(html, /MutationObserver/, 'MutationObserver tamper guard must exist');
 assert.match(html, /e\.key==='F12'/, 'F12 DevTools shortcut must be blocked');
 assert.match(html, /state='LOCKED'/, 'suspicious activity must lock gameplay');
 assert.match(html, /if\(ANTI_CHEAT\.locked\)return/, 'locked sessions must not start or flap');
