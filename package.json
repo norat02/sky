@@ -8,6 +8,7 @@
   },
   "scripts": {
     "build": "node scripts/generate-config.mjs",
-    "verify": "node scripts/verify.mjs"
+    "verify": "node scripts/verify.mjs",
+    "test": "node scripts/test-flows.mjs"
   }
 }

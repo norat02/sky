@@ -58,6 +58,8 @@ Màn hình chính hiển thị top 5 người chơi online và nút **Bảng thi
 
 Game có nút **Tạm dừng/Tiếp tục** trong lúc bay, phím `P` để pause/resume và tự động tạm dừng khi người chơi chuyển tab hoặc ẩn trình duyệt. Cơ chế này ngăn game tiếp tục chạy ngoài ý muốn khi người chơi không nhìn thấy màn hình.
 
+Khi nhân vật chết, game có thể hiển thị một lượt **hồi sinh sau rewarded ad**. Mỗi ván chỉ được hồi sinh một lần. Code chỉ gọi `window.SKY_REWARDED_AD.show()` khi provider quảng cáo hợp lệ đã được tích hợp; nếu chưa có provider, nút bị khóa và game không giả nhận rằng người chơi đã xem quảng cáo. Google AdSense display thông thường không phải rewarded-ad API, vì vậy cần dùng một rewarded provider được phê duyệt hoặc Google Ad Manager rewarded inventory ở production.
+
 ## Xác thực điểm server-side
 
 Thư mục [`api/`](api/) chứa hai Vercel Serverless Functions. `run-ticket` xác thực Supabase access token rồi cấp một run ticket có chữ ký HMAC; `submit-score` xác thực lại JWT, kiểm tra ticket chưa hết hạn và chưa được dùng, giới hạn tần suất gửi, giới hạn tốc độ điểm theo thời gian chơi, khóa ticket một lần và chỉ sau đó mới ghi vào Supabase. `SUPABASE_SERVICE_ROLE_KEY` chỉ được đọc bên trong Function, không bao giờ được sinh vào `config.js`.
@@ -83,9 +85,15 @@ RLS trong [`supabase/schema.sql`](supabase/schema.sql) cho phép đọc Leaderbo
 
 Các biện pháp phía client không thể ngăn người dùng sửa JavaScript hoặc giả mạo điểm. Nếu Leaderboard cần chống gian lận nghiêm ngặt, cần thêm Vercel Function dùng secret server-side để xác thực kết quả hoặc hệ thống replay/server-authoritative; tuyệt đối không đưa service-role key vào `index.html`.
 
+## Backup/Restore mã hóa
+
+Nút **Xuất backup** luôn tạo JSON envelope đã mã hóa bằng **AES-256-GCM**. Khóa được dẫn xuất từ mật khẩu người chơi bằng PBKDF2-HMAC-SHA-256 với salt ngẫu nhiên và 150.000 vòng lặp. Nút **Nhập backup** yêu cầu đúng mật khẩu; file bị sửa, sai schema hoặc sai mật khẩu sẽ bị từ chối. File backup tối đa 1 MB và dữ liệu sau giải mã vẫn được làm sạch trước khi merge.
+
+Mật khẩu backup không được lưu và không thể khôi phục. Nếu mất mật khẩu, file backup không thể giải mã. Người chơi nên lưu file và mật khẩu ở hai nơi an toàn khác nhau.
+
 ## Luôn lưu dữ liệu
 
-Sau mỗi ván, kết quả được ghi ngay vào lịch sử cục bộ trong `localStorage` với tối đa 24 ván gần nhất. Khi một ván online đã có run ticket nhưng request ghi điểm gặp timeout, lỗi mạng hoặc lỗi server, điểm được đưa vào hàng đợi cục bộ tối đa 10 mục và tự retry khi mạng trở lại hoặc khi người dùng đăng nhập lại. Các lỗi xác thực, ticket hết hạn và payload không hợp lệ không được retry vô hạn.
+Sau mỗi ván, kết quả được ghi ngay vào lịch sử cục bộ trong `localStorage` với tối đa 24 ván gần nhất. Khi một ván online đã có run ticket nhưng request ghi điểm gặp timeout, lỗi mạng hoặc lỗi server, điểm được đưa vào hàng đợi cục bộ tối đa 10 mục và tự retry khi mạng trở lại, sau 30 giây nếu server tạm lỗi hoặc khi người dùng đăng nhập lại. Nếu server trả `run_already_used`, queue được xóa vì server đã khóa ticket; điều này tránh ghi trùng khi response thành công bị mất trên đường truyền. Các lỗi xác thực, ticket hết hạn và payload không hợp lệ không được retry vô hạn.
 
 Kỷ lục cá nhân, tên hiển thị, cài đặt âm thanh, lịch sử ván và hàng đợi chờ đồng bộ được lưu cục bộ. Supabase lưu Leaderboard chính thức và các run online sau khi API server xác thực. Client không lưu service key, signing secret hoặc mật khẩu. `localStorage` không phải nơi lưu trữ chống xóa; nếu người dùng xóa dữ liệu trình duyệt, dùng chế độ riêng tư hoặc đổi thiết bị thì dữ liệu local có thể mất, còn dữ liệu đã đồng bộ lên Supabase vẫn được giữ.
 

@@ -143,6 +143,14 @@ kbd{font-style:normal;border:1px solid var(--ink2);padding:1px 6px;font-size:11p
 #pauseOverlay .pauseCard{background:var(--paper2);border:2px solid var(--ink);box-shadow:7px 7px 0 rgba(38,34,28,.2);padding:24px 32px;text-align:center}
 #pauseOverlay h2{font-size:28px;margin-bottom:8px}
 #pauseOverlay p{font-size:14px;color:var(--ink2);font-style:italic}
+#reviveOverlay{position:fixed;inset:0;z-index:24;display:flex;align-items:center;justify-content:center;background:rgba(240,231,211,.5);opacity:0;visibility:hidden;pointer-events:none;transition:opacity .2s,visibility .2s}
+#reviveOverlay.show{opacity:1;visibility:visible;pointer-events:auto}
+#reviveOverlay .reviveCard{width:min(92vw,360px);background:var(--paper2);border:2px solid var(--ink);box-shadow:7px 7px 0 rgba(38,34,28,.2);padding:24px;text-align:center}
+#reviveOverlay h2{font-size:27px;margin-bottom:5px}
+#reviveOverlay p{font-size:14px;color:var(--ink2);font-style:italic}
+#reviveAdBox{min-height:82px;margin:14px 0;padding:16px 8px;border:1px dashed rgba(38,34,28,.45);display:flex;align-items:center;justify-content:center;font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--ink2)}
+#reviveStatus{min-height:18px;margin-top:8px;font-size:12px;color:var(--ink2);font-style:italic}
+#reviveSkip{margin-left:5px}
 #muteBtn{position:fixed;top:16px;right:16px;z-index:20;width:42px;height:42px;background:var(--paper2);border:2px solid var(--ink);color:var(--ink);display:flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:3px 3px 0 rgba(38,34,28,.15);transition:transform .15s,box-shadow .15s}
 #muteBtn:hover{transform:translate(-1px,-1px);box-shadow:4px 4px 0 rgba(38,34,28,.15)}
 #muteBtn:focus-visible{outline:2px solid var(--red);outline-offset:3px}
@@ -186,6 +194,7 @@ kbd{font-style:normal;border:1px solid var(--ink2);padding:1px 6px;font-size:11p
 </div>
 <button id="pauseBtn" aria-label="tạm dừng game">Ⅱ</button>
 <div id="pauseOverlay"><div class="pauseCard"><div class="kana">休止</div><h2>TẠM DỪNG</h2><p>Nhấn P hoặc nút tiếp tục để bay lại</p><button class="btn solid" id="resumeBtn">tiếp tục</button></div></div>
+<div id="reviveOverlay"><div class="reviveCard"><div class="kana">再生</div><h2>HỒI SINH?</h2><p>Xem quảng cáo hợp lệ để tiếp tục ván này một lần.</p><div id="reviveAdBox">khu vực quảng cáo</div><button class="btn solid" id="reviveAdBtn">xem quảng cáo</button><button class="btn ghost" id="reviveSkip">kết thúc ván</button><div id="reviveStatus"></div></div></div>
 <button id="muteBtn" aria-label="bật tắt âm thanh"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 5L6 9H2v6h4l5 4V5z"/><path class="w" d="M15.5 8.5a5 5 0 0 1 0 7"/><path class="w" d="M18.5 5.5a9.5 9.5 0 0 1 0 13"/><path class="x" d="M16 9l6 6M22 9l-6 6"/></svg></button>
 <script>
 window.addEventListener('error',function(e){
@@ -220,6 +229,7 @@ function $(id){return document.getElementById(id);}
 var hud=$('hud'),scoreEl=$('score'),bestHud=$('bestHud'),comboEl=$('combo'),hint=$('hint');
 var titleSc=$('titleScreen'),overSc=$('overScreen'),lbSc=$('lbScreen'),bestTitle=$('bestTitle');
 var pauseBtn=$('pauseBtn'),pauseOverlay=$('pauseOverlay'),resumeBtn=$('resumeBtn');
+var reviveOverlay=$('reviveOverlay'),reviveAdBtn=$('reviveAdBtn'),reviveSkip=$('reviveSkip'),reviveAdBox=$('reviveAdBox'),reviveStatus=$('reviveStatus');
 var authModal=$('authModal'),authEmail=$('authEmail'),authPassword=$('authPassword'),authMsg=$('authMsg'),authState=$('authState'),authOpen=$('authOpen'),authLogout=$('authLogout');
 var finalScore=$('finalScore'),finalBest=$('finalBest'),newBestEl=$('newBest'),muteBtn=$('muteBtn');
 var netDot=$('netDot'),netTxt=$('netTxt');
@@ -247,8 +257,14 @@ function cleanHistory(value){if(!Array.isArray(value))return[];return value.filt
 function cleanPending(value){if(!Array.isArray(value))return[];return value.filter(function(x){return x&&typeof x.ticket==='string'&&x.ticket.length>20&&x.ticket.length<2000&&typeof x.name==='string'&&Number.isSafeInteger(x.score)&&x.score>=0&&x.score<=100000;}).slice(-10).map(function(x){return{name:x.name.trim().slice(0,10),score:x.score,ticket:x.ticket,createdAt:Number.isSafeInteger(x.createdAt)?x.createdAt:Date.now()};});}
 function backupPayload(){return{app:'chim-se',schemaVersion:1,exportedAt:new Date().toISOString(),data:{best:Math.max(0,Math.min(100000,Number(best)||0)),name:(store.get('chimse.name')||'').slice(0,10),mute:store.get('chimse.mute')==='1',character:store.get('chimse.char')||'tit',map:store.get('chimse.map')||'sakura',history:cleanHistory(runHistory),pendingScores:cleanPending(pendingScores)}};}
 function showDataMessage(text){if(dataMsg)dataMsg.textContent=text;}
-function exportBackup(){var blob=new Blob([JSON.stringify(backupPayload(),null,2)],{type:'application/json'});var url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='chim-se-backup-'+new Date().toISOString().slice(0,10)+'.json';document.body.appendChild(a);a.click();a.remove();setTimeout(function(){URL.revokeObjectURL(url);},1000);showDataMessage('đã xuất backup dữ liệu');}
-function importBackupFile(file){if(!file)return;if(file.size>1024*1024){showDataMessage('file backup quá lớn');return;}var reader=new FileReader();reader.onload=function(){try{var parsed=JSON.parse(reader.result),data=parsed&&parsed.data;if(!parsed||parsed.app!=='chim-se'||parsed.schemaVersion!==1||!data)throw new Error('format');var importedBest=Number.isSafeInteger(data.best)?Math.max(0,Math.min(100000,data.best)):0;best=Math.max(best,importedBest);store.set('chimse.best',''+best);runHistory=cleanHistory(runHistory.concat(cleanHistory(data.history)));saveRunHistory();pendingScores=cleanPending(pendingScores.concat(cleanPending(data.pendingScores)));writeJson(PENDING_KEY,pendingScores);if(typeof data.name==='string'&&data.name.length<=10)store.set('chimse.name',data.name.trim());if(typeof data.mute==='boolean'){AU.setMute(data.mute);muteBtn.classList.toggle('muted',AU.muted);}if(typeof data.character==='string')store.set('chimse.char',data.character.slice(0,24));if(typeof data.map==='string')store.set('chimse.map',data.map.slice(0,24));bestTitle.textContent=best>0?'kỷ lục — '+best:'chưa có kỷ lục';buildSelectors();showDataMessage('đã nhập backup an toàn');if(DB.online&&authUser)DB.flushPending();}catch(e){showDataMessage('backup không hợp lệ');}};reader.onerror=function(){showDataMessage('không thể đọc backup');};reader.readAsText(file);}
+function bytesB64(bytes){var s='';for(var i=0;i<bytes.length;i+=0x8000)s+=String.fromCharCode.apply(null,bytes.subarray(i,i+0x8000));return btoa(s);}
+function b64Bytes(value){var raw=atob(value),out=new Uint8Array(raw.length);for(var i=0;i<raw.length;i++)out[i]=raw.charCodeAt(i);return out;}
+function deriveBackupKey(pass,salt,usage){return window.crypto.subtle.importKey('raw',new TextEncoder().encode(pass),'PBKDF2',false,['deriveKey']).then(function(base){return window.crypto.subtle.deriveKey({name:'PBKDF2',salt:salt,iterations:150000,hash:'SHA-256'},base,{name:'AES-GCM',length:256},false,[usage]);});}
+function encryptBackup(payload,pass){var salt=window.crypto.getRandomValues(new Uint8Array(16)),iv=window.crypto.getRandomValues(new Uint8Array(12));return deriveBackupKey(pass,salt,'encrypt').then(function(key){return window.crypto.subtle.encrypt({name:'AES-GCM',iv:iv},key,new TextEncoder().encode(JSON.stringify(payload))).then(function(cipher){return{app:'chim-se-encrypted-backup',schemaVersion:1,algorithm:'AES-256-GCM',kdf:'PBKDF2-SHA-256',iterations:150000,salt:bytesB64(salt),iv:bytesB64(iv),ciphertext:bytesB64(new Uint8Array(cipher))};});});}
+function decryptBackup(envelope,pass){if(!envelope||envelope.app!=='chim-se-encrypted-backup'||envelope.schemaVersion!==1||envelope.algorithm!=='AES-256-GCM'||envelope.kdf!=='PBKDF2-SHA-256'||envelope.iterations!==150000)throw new Error('format');var salt=b64Bytes(envelope.salt),iv=b64Bytes(envelope.iv),cipher=b64Bytes(envelope.ciphertext);return deriveBackupKey(pass,salt,'decrypt').then(function(key){return window.crypto.subtle.decrypt({name:'AES-GCM',iv:iv},key,cipher).then(function(clear){return JSON.parse(new TextDecoder().decode(clear));});});}
+function exportBackup(){var pass=window.prompt('Đặt mật khẩu backup (ít nhất 8 ký tự):');if(!pass||pass.length<8){showDataMessage('mật khẩu backup phải từ 8 ký tự');return;}showDataMessage('đang mã hóa backup…');encryptBackup(backupPayload(),pass).then(function(envelope){var blob=new Blob([JSON.stringify(envelope)],{type:'application/json'});var url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='chim-se-backup-encrypted-'+new Date().toISOString().slice(0,10)+'.json';document.body.appendChild(a);a.click();a.remove();setTimeout(function(){URL.revokeObjectURL(url);},1000);showDataMessage('đã xuất backup mã hóa AES-256-GCM');}).catch(function(){showDataMessage('không thể mã hóa backup');});}
+function restoreBackupData(data){if(!data||data.app!=='chim-se'||data.schemaVersion!==1||!data.data)throw new Error('format');var value=data.data,importedBest=Number.isSafeInteger(value.best)?Math.max(0,Math.min(100000,value.best)):0;best=Math.max(best,importedBest);store.set('chimse.best',''+best);runHistory=cleanHistory(runHistory.concat(cleanHistory(value.history)));saveRunHistory();pendingScores=cleanPending(pendingScores.concat(cleanPending(value.pendingScores)));writeJson(PENDING_KEY,pendingScores);if(typeof value.name==='string'&&value.name.length<=10)store.set('chimse.name',value.name.trim());if(typeof value.mute==='boolean'){AU.setMute(value.mute);muteBtn.classList.toggle('muted',AU.muted);}if(typeof value.character==='string')store.set('chimse.char',value.character.slice(0,24));if(typeof value.map==='string')store.set('chimse.map',value.map.slice(0,24));bestTitle.textContent=best>0?'kỷ lục — '+best:'chưa có kỷ lục';buildSelectors();showDataMessage('đã nhập và giải mã backup an toàn');if(DB.online&&authUser)DB.flushPending();}
+function importBackupFile(file){if(!file)return;if(file.size>1024*1024){showDataMessage('file backup quá lớn');return;}var pass=window.prompt('Nhập mật khẩu backup:');if(!pass){showDataMessage('đã hủy nhập backup');return;}var reader=new FileReader();reader.onload=function(){try{var envelope=JSON.parse(reader.result);decryptBackup(envelope,pass).then(function(data){restoreBackupData(data);}).catch(function(){showDataMessage('sai mật khẩu hoặc backup bị hỏng');});}catch(e){showDataMessage('backup không hợp lệ');}};reader.onerror=function(){showDataMessage('không thể đọc backup');};reader.readAsText(file);}
 function pad2(n){var s=''+n;while(s.length<2)s='0'+s;return s;}
 
 /* ═══ RNG ═══ */
@@ -319,7 +335,7 @@ var TINTS_EXTRA=[null,'rgba(209,160,105,.055)','rgba(122,138,148,.05)','rgba(196
 
 /* ═══ TRẠNG THÁI ═══ */
 var dpr=1,scale=1,cssW=0,cssH=0,worldW=0,worldH=720,groundY=0;
-var state='TITLE',timeR=0,freeze=0,speed=0,dist=0,nowMs=0,playT=0,dyingT=0,shakePhase=0,pausedFromVisibility=false;
+var state='TITLE',timeR=0,freeze=0,speed=0,dist=0,nowMs=0,playT=0,dyingT=0,shakePhase=0,pausedFromVisibility=false,reviveUsed=false,reviveBusy=false;
 var score=0,best=+(store.get('chimse.best')||0),scoreSent=false,combo=0,comboT=0,authClient=null,authUser=null,runTicket=null;
 var pipes=[],petals=[],parts=[],pops=[],stamp=null,coins=[],charms=[],streaks=[],birdTrail=[],stars=[];
 var shield=false,inv=0,petalWant=20;
@@ -489,7 +505,7 @@ function rollRun(){
 /* ═══ LUỒNG GAME ═══ */
 function reset(){
   pipes.length=0;parts.length=0;pops.length=0;stamp=null;coins.length=0;charms.length=0;streaks.length=0;birdTrail.length=0;
-  shield=false;inv=0;playT=0;scoreSent=false;dyingT=0;flashA=0;
+  shield=false;inv=0;playT=0;scoreSent=false;dyingT=0;flashA=0;reviveUsed=false;reviveBusy=false;reviveOverlay.classList.remove('show');
   EV.wind.on=false;EV.storm.on=false;EV.note=0;
   EV.nextWind=rand(11,17)/RUN.freq;EV.nextStorm=rand(18,28)/RUN.freq;EV.charmCd=rand(7,11)/RUN.freq;
   banner.on=false;evBanner.classList.remove('show');
@@ -520,7 +536,7 @@ function doFlap(){bird.vy=CFG.FLAP;bird.flapT=0.3;bird.wingPh=0;bird.y+=CFG.FLAP
 function setPaused(on){if(on&&state==='PLAY'){state='PAUSED';pauseOverlay.classList.add('show');pauseBtn.textContent='▶';}else if(!on&&state==='PAUSED'){state='PLAY';pauseOverlay.classList.remove('show');pauseBtn.textContent='Ⅱ';lastT=0;}}
 function tap(){
   AU.unlock();
-  if(state==='PAUSED')return;
+  if(state==='PAUSED'||state==='REVIVE')return;
   if(state==='TITLE'){startGame();return;}
   if(state==='READY'){state='PLAY';doFlap();hint.classList.add('hidden');runTag.classList.add('hidden');return;}
   if(state==='PLAY'){doFlap();return;}
@@ -569,7 +585,11 @@ function coinSparkle(x,y){for(var i=0;i<8;i++)parts.push({x:x,y:y,vx:rand(-200,2
 function cr(cx,cy,r,x,y,w,h){var nx=clamp(cx,x,x+w),ny=clamp(cy,y,y+h);var dx=cx-nx,dy=cy-ny;return dx*dx+dy*dy<r*r;}
 function hitPipes(){for(var i=0;i<pipes.length;i++){var p=pipes[i];if(p.x-20>bird.x+CFG.R||p.x+BASE.PW+20<bird.x-CFG.R)continue;var tB=p.gy-p.gap/2,bT=p.gy+p.gap/2;if(cr(bird.x,bird.y,CFG.R,p.x-15,bT-8,BASE.PW+30,34))return true;if(cr(bird.x,bird.y,CFG.R,p.x-15,tB-27,BASE.PW+30,34))return true;if(cr(bird.x,bird.y,CFG.R,p.x,bT+27,BASE.PW,groundY-bT-18))return true;if(cr(bird.x,bird.y,CFG.R,p.x,-90,BASE.PW,tB-27+90))return true;}return false;}
 function startDying(){if(state!=='PLAY')return;state='DYING';freeze=0.09;dyingT=0;shake(0.3,9);splat(bird.x,bird.y);AU.hit();AU.fall();speed=0;bird.vy=Math.min(bird.vy,-240);}
-function endGame(){state='OVER';pauseBtn.classList.remove('show');pauseOverlay.classList.remove('show');overAt=nowMs;shake(0.18,5);dust();AU.thud();prevRunFirstGap=firstGapThisRun;if(score>best){best=score;isNewBest=true;store.set('chimse.best',best);}}
+function offerRevive(){state='REVIVE';pauseBtn.classList.remove('show');pauseOverlay.classList.remove('show');reviveBusy=false;var ready=window.SKY_REWARDED_AD&&typeof window.SKY_REWARDED_AD.show==='function';reviveAdBtn.disabled=!ready;reviveAdBtn.textContent=ready?'xem quảng cáo':'chưa cấu hình quảng cáo';reviveStatus.textContent=ready?'bạn còn một cơ hội trong ván này':'cần cấu hình rewarded-ad provider để hồi sinh';reviveOverlay.classList.add('show');}
+function finishGame(){state='OVER';reviveOverlay.classList.remove('show');pauseBtn.classList.remove('show');pauseOverlay.classList.remove('show');overAt=nowMs;shake(0.18,5);dust();AU.thud();prevRunFirstGap=firstGapThisRun;if(score>best){best=score;isNewBest=true;store.set('chimse.best',best);}}
+function endGame(){if(!reviveUsed){offerRevive();return;}finishGame();}
+function reviveBird(){reviveUsed=true;reviveBusy=false;reviveOverlay.classList.remove('show');pauseBtn.classList.add('show');bird.y=groundY-CFG.R-145;bird.vy=-360;bird.rot=-0.3;inv=2.8;freeze=0.1;state='PLAY';lastT=0;showBanner('再生','hồi sinh','miễn nhiễm trong chốc lát',2.2);AU.charm();}
+function watchReviveAd(){if(reviveBusy||reviveUsed)return;var ad=window.SKY_REWARDED_AD;if(!ad||typeof ad.show!=='function'){reviveStatus.textContent='chưa có rewarded-ad provider';return;}reviveBusy=true;reviveAdBtn.disabled=true;reviveSkip.disabled=true;reviveStatus.textContent='đang tải quảng cáo…';Promise.resolve().then(function(){return ad.show();}).then(function(ok){if(ok===false)throw new Error('ad incomplete');reviveBird();}).catch(function(){reviveBusy=false;reviveAdBtn.disabled=false;reviveSkip.disabled=false;reviveStatus.textContent='quảng cáo chưa hoàn tất — thử lại';});}
 function showOver(){
   panelShown=true;scoreSent=false;
   finalScore.textContent=score;finalBest.textContent=best;newBestEl.classList.toggle('hidden',!isNewBest);recordRun(score);
@@ -808,7 +828,10 @@ function closeLb(){lbSc.classList.add('hidden');if(titleSc.classList.contains('h
  $('lbClose').addEventListener('click',function(e){closeLb();e.currentTarget.blur();});
   $('sendBtn').addEventListener('click',function(e){sendScore();e.currentTarget.blur();});
  pauseBtn.addEventListener('click',function(){setPaused(state==='PLAY');});
- resumeBtn.addEventListener('click',function(){setPaused(false);});
+   resumeBtn.addEventListener('click',function(){setPaused(false);});
+  reviveAdBtn.addEventListener('click',watchReviveAd);
+  reviveSkip.addEventListener('click',function(){if(!reviveBusy){reviveUsed=true;finishGame();}});
+
  authOpen.addEventListener('click',function(){openAuth();});
  authLogout.addEventListener('click',function(){if(authClient)authClient.auth.signOut().catch(function(){});});
  $('authClose').addEventListener('click',closeAuth);
