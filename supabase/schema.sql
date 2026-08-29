@@ -26,4 +26,10 @@ create policy "public can read scores"
  drop policy if exists "authenticated users can submit scores" on public.scores;
 create policy "authenticated users can submit scores"
   on public.scores for insert to authenticated
-  with check (auth.uid() = user_id);
+  with check (
+    auth.uid() = user_id
+    and score between 0 and 100000
+    and char_length(player_name) between 1 and 10
+  );
+
+-- Không cấp policy UPDATE/DELETE: điểm đã ghi không thể bị sửa hoặc xóa từ client.
