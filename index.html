@@ -134,6 +134,11 @@ kbd{font-style:normal;border:1px solid var(--ink2);padding:1px 6px;font-size:11p
 #homeLeaderboard .lbWrap{margin-top:4px}
 #dataTools{margin-top:14px;padding-top:10px;border-top:1px solid rgba(38,34,28,.2)}
 #dataTools .btn{font-size:10px;padding:7px 10px;margin:2px}
+#settingsBtn{margin-top:7px}
+#settingsOverlay{position:fixed;inset:0;z-index:30;display:flex;align-items:center;justify-content:center;background:rgba(240,231,211,.5);opacity:0;visibility:hidden;pointer-events:none;transition:opacity .2s,visibility .2s}
+#settingsOverlay.show{opacity:1;visibility:visible;pointer-events:auto}
+#settingsOverlay .settingsCard{width:min(92vw,360px);background:var(--paper2);border:2px solid var(--ink);box-shadow:7px 7px 0 rgba(38,34,28,.2);padding:24px;text-align:center}
+#settingsOverlay select{width:100%;margin:15px 0;padding:10px;background:var(--paper);border:1px solid var(--ink);font:inherit;color:var(--ink)}
 #dataMsg{min-height:15px;font-size:11px;color:var(--ink2);font-style:italic;margin-top:4px}
 #pauseBtn{position:fixed;top:16px;right:68px;z-index:20;width:42px;height:42px;background:var(--paper2);border:2px solid var(--ink);color:var(--ink);display:none;align-items:center;justify-content:center;cursor:pointer;box-shadow:3px 3px 0 rgba(38,34,28,.15);font:700 16px inherit}
 #pauseBtn.show{display:flex}
@@ -162,7 +167,7 @@ kbd{font-style:normal;border:1px solid var(--ink2);padding:1px 6px;font-size:11p
 </head>
 <body>
 <canvas id="game"></canvas>
-<div id="netDot"><i></i><span id="netTxt">đang kết nối…</span></div>
+<div id="netDot"><i></i><span id="netTxt" data-i18n="connecting">đang kết nối…</span></div>
 <div id="hud" class="hidden"><div id="score">0</div><div id="bestHud">kỷ lục · —</div><div id="combo" aria-live="polite"></div></div>
 <div id="runTag" class="hidden"><span id="runNo">ván 01</span><span id="runKj">霧朝</span><span id="runVn">sương sớm</span></div>
 <div id="evBanner"><span class="kanji" id="evKanji">風</span><div><b id="evName"></b><i id="evDesc"></i><div id="evBar"><i id="evBarI"></i></div></div></div>
@@ -176,21 +181,28 @@ kbd{font-style:normal;border:1px solid var(--ink2);padding:1px 6px;font-size:11p
 <p class="sub">một chuyến bay qua trời hoa anh đào</p>
 <div class="best" id="bestTitle">chưa có kỷ lục</div>
 <div class="best" id="runsTitle" style="margin-top:3px"></div>
-<div class="selector"><div class="selLabel">chim</div><div class="selGrid" id="charGrid"></div></div>
-<div class="selector"><div class="selLabel">trời</div><div class="selGrid" id="mapGrid"></div></div>
-<div><button class="btn solid" id="startBtn">bắt đầu bay</button><br><button class="btn ghost" id="lbBtn">bảng thiên hạ</button></div>
-<div id="homeLeaderboard"><h3>bảng trực tuyến</h3><div class="lbWrap" id="homeLb"></div><div id="homeLbStatus">đang chuẩn bị…</div></div>
-<div id="dataTools"><div class="selLabel">dữ liệu người chơi</div><button class="btn ghost" id="exportBtn">xuất backup</button><button class="btn ghost" id="importBtn">nhập backup</button><input id="importFile" type="file" accept="application/json,.json" hidden><div id="dataMsg"></div></div>
+<div class="selector"><div class="selLabel" data-i18n="bird">chim</div><div class="selGrid" id="charGrid"></div></div>
+<div class="selector"><div class="selLabel" data-i18n="sky">trời</div><div class="selGrid" id="mapGrid"></div></div>
+<div><button class="btn solid" id="startBtn" data-i18n="start">bắt đầu bay</button><br><button class="btn ghost" id="lbBtn" data-i18n="leaderboard">bảng thiên hạ</button><br><button class="btn ghost" id="settingsBtn" data-i18n="settings">cài đặt</button></div>
+<div id="homeLeaderboard"><h3 data-i18n="onlineLeaderboard">bảng trực tuyến</h3><div class="lbWrap" id="homeLb"></div><div id="homeLbStatus" data-i18n="preparing">đang chuẩn bị…</div></div>
+<div id="dataTools"><div class="selLabel" data-i18n="playerData">dữ liệu người chơi</div><button class="btn ghost" id="exportBtn" data-i18n="exportBackup">xuất backup</button><button class="btn ghost" id="importBtn" data-i18n="importBackup">nhập backup</button>
+<input id="importFile" type="file" accept="application/json,.json" hidden><div id="dataMsg"></div></div>
 <div class="keys"><kbd>SPACE</kbd>hoặc chạm màn hình</div>
-<div id="authPanel"><div id="authState">chơi offline — đăng nhập để lưu điểm online</div><button class="btn ghost" id="authOpen">đăng nhập</button><button class="btn ghost hidden" id="authLogout">đăng xuất</button></div>
+<div id="authPanel"><div id="authState" data-i18n="offlineLogin">chơi offline — đăng nhập để lưu điểm online</div><button class="btn ghost" id="authOpen" data-i18n="login">đăng nhập</button><button class="btn ghost hidden" id="authLogout" data-i18n="logout">đăng xuất</button></div>
 </div>
 </div>
 <div class="screen hidden" id="overScreen">
-<div class="panel"><div class="hanko" aria-hidden="true">終</div><div class="kana">旅の終わり</div><h2>HOÀN TẤT</h2><div class="rows"><div class="row"><span>điểm</span><span class="dots"></span><b id="finalScore">0</b></div><div class="row"><span>kỷ lục</span><span class="dots"></span><b id="finalBest">0</b></div></div><div class="newbest hidden" id="newBest">— kỷ lục mới —</div><div class="runLine" id="overRun"><span class="kj" id="overRunKj"></span><span id="overRunVn"></span></div><div class="nameRow" id="nameRow"><input id="nameInput" maxlength="10" placeholder="tên người bay" autocomplete="off" spellcheck="false"><button class="btn solid small" id="sendBtn">ghi danh</button></div><div class="lbWrap" id="miniLb"></div><div class="lbStatus" id="lbStatus"></div><div><button class="btn solid" id="retryBtn">bay lại</button><br><button class="btn ghost" id="homeBtn">màn chính</button></div></div>
+<div class="panel"><div class="hanko" aria-hidden="true">終</div><div class="kana">旅の終わり</div><h2 data-i18n="complete">HOÀN TẤT</h2><div class="rows"><div class="row"><span data-i18n="score">điểm</span>
+<span class="dots"></span><b id="finalScore">0</b></div><div class="row"><span>kỷ lục</span><span class="dots"></span><b id="finalBest">0</b></div></div><div class="newbest hidden" id="newBest" data-i18n="newRecord">— kỷ lục mới —</div>
+<div class="runLine" id="overRun"><span class="kj" id="overRunKj"></span><span id="overRunVn"></span></div><div class="nameRow" id="nameRow"><input id="nameInput" maxlength="10" placeholder="tên người bay" autocomplete="off" spellcheck="false"><button class="btn solid small" id="sendBtn" data-i18n="submitScore">ghi danh</button>
+</div><div class="lbWrap" id="miniLb"></div><div class="lbStatus" id="lbStatus"></div><div><button class="btn solid" id="retryBtn" data-i18n="retry">bay lại</button><br><button class="btn ghost" id="homeBtn" data-i18n="home">màn chính</button>
+</div></div>
 </div>
 <div class="authModal hidden" id="authModal"><div class="authBox"><div class="kana">旅人</div><h2>TÀI KHOẢN</h2><p class="sub">Đăng nhập để ghi danh bảng thiên hạ</p><input id="authEmail" type="email" autocomplete="email" placeholder="email"><input id="authPassword" type="password" autocomplete="current-password" placeholder="mật khẩu"><div class="authActions"><button class="btn solid" id="emailLogin">đăng nhập</button><button class="btn ghost" id="emailSignup">tạo tài khoản</button><button class="btn ghost" id="googleLogin">Google</button><button class="btn ghost" id="authClose">đóng</button></div><div id="authMsg"></div></div></div>
+<div id="settingsOverlay"><div class="settingsCard"><div class="kana">設定</div><h2 data-i18n="settings">CÀI ĐẶT</h2><label for="languageSelect" data-i18n="language">ngôn ngữ</label><select id="languageSelect" aria-label="language"><option value="vi">Tiếng Việt</option><option value="en">English</option><option value="ja">日本語</option></select><div><button class="btn ghost" id="settingsClose" data-i18n="close">đóng</button></div></div></div>
 <div class="screen hidden" id="lbScreen">
-<div class="panel"><div class="kana">順位表</div><h2>BẢNG THIÊN HẠ</h2><div class="rule"><i></i><b></b><i></i></div><div class="lbWrap" id="fullLb"></div><div class="lbStatus" id="fullStatus"></div><div style="margin-top:12px"><button class="btn ghost" id="lbClose">đóng</button></div></div>
+<div class="panel"><div class="kana">順位表</div><h2>BẢNG THIÊN HẠ</h2><div class="rule"><i></i><b></b><i></i></div><div class="lbWrap" id="fullLb"></div><div class="lbStatus" id="fullStatus"></div><div style="margin-top:12px"><button class="btn ghost" id="lbClose" data-i18n="close">đóng</button>
+</div></div>
 </div>
 <button id="pauseBtn" aria-label="tạm dừng game">Ⅱ</button>
 <div id="pauseOverlay"><div class="pauseCard"><div class="kana">休止</div><h2>TẠM DỪNG</h2><p>Nhấn P hoặc nút tiếp tục để bay lại</p><button class="btn solid" id="resumeBtn">tiếp tục</button></div></div>
@@ -228,6 +240,7 @@ var ctx=cv.getContext('2d',{alpha:false});
 function $(id){return document.getElementById(id);}
 var hud=$('hud'),scoreEl=$('score'),bestHud=$('bestHud'),comboEl=$('combo'),hint=$('hint');
 var titleSc=$('titleScreen'),overSc=$('overScreen'),lbSc=$('lbScreen'),bestTitle=$('bestTitle');
+var settingsOverlay=$('settingsOverlay'),settingsBtn=$('settingsBtn'),settingsClose=$('settingsClose'),languageSelect=$('languageSelect');
 var pauseBtn=$('pauseBtn'),pauseOverlay=$('pauseOverlay'),resumeBtn=$('resumeBtn');
 var reviveOverlay=$('reviveOverlay'),reviveAdBtn=$('reviveAdBtn'),reviveSkip=$('reviveSkip'),reviveAdBox=$('reviveAdBox'),reviveStatus=$('reviveStatus');
 var authModal=$('authModal'),authEmail=$('authEmail'),authPassword=$('authPassword'),authMsg=$('authMsg'),authState=$('authState'),authOpen=$('authOpen'),authLogout=$('authLogout');
@@ -266,6 +279,14 @@ function exportBackup(){var pass=window.prompt('Đặt mật khẩu backup (ít 
 function restoreBackupData(data){if(!data||data.app!=='chim-se'||data.schemaVersion!==1||!data.data)throw new Error('format');var value=data.data,importedBest=Number.isSafeInteger(value.best)?Math.max(0,Math.min(100000,value.best)):0;best=Math.max(best,importedBest);store.set('chimse.best',''+best);runHistory=cleanHistory(runHistory.concat(cleanHistory(value.history)));saveRunHistory();pendingScores=cleanPending(pendingScores.concat(cleanPending(value.pendingScores)));writeJson(PENDING_KEY,pendingScores);if(typeof value.name==='string'&&value.name.length<=10)store.set('chimse.name',value.name.trim());if(typeof value.mute==='boolean'){AU.setMute(value.mute);muteBtn.classList.toggle('muted',AU.muted);}if(typeof value.character==='string')store.set('chimse.char',value.character.slice(0,24));if(typeof value.map==='string')store.set('chimse.map',value.map.slice(0,24));bestTitle.textContent=best>0?'kỷ lục — '+best:'chưa có kỷ lục';buildSelectors();showDataMessage('đã nhập và giải mã backup an toàn');if(DB.online&&authUser)DB.flushPending();}
 function importBackupFile(file){if(!file)return;if(file.size>1024*1024){showDataMessage('file backup quá lớn');return;}var pass=window.prompt('Nhập mật khẩu backup:');if(!pass){showDataMessage('đã hủy nhập backup');return;}var reader=new FileReader();reader.onload=function(){try{var envelope=JSON.parse(reader.result);decryptBackup(envelope,pass).then(function(data){restoreBackupData(data);}).catch(function(){showDataMessage('sai mật khẩu hoặc backup bị hỏng');});}catch(e){showDataMessage('backup không hợp lệ');}};reader.onerror=function(){showDataMessage('không thể đọc backup');};reader.readAsText(file);}
 function pad2(n){var s=''+n;while(s.length<2)s='0'+s;return s;}
+
+/* ═══ I18N ═══ */
+var locale='vi';
+var LANG={vi:{connecting:'đang kết nối…',bird:'chim',sky:'trời',start:'bắt đầu bay',leaderboard:'bảng thiên hạ',settings:'cài đặt',onlineLeaderboard:'bảng trực tuyến',preparing:'đang chuẩn bị…',playerData:'dữ liệu người chơi',exportBackup:'xuất backup',importBackup:'nhập backup',offlineLogin:'chơi offline — đăng nhập để lưu điểm online',login:'đăng nhập',logout:'đăng xuất',complete:'HOÀN TẤT',score:'điểm',record:'kỷ lục',newRecord:'— kỷ lục mới —',submitScore:'ghi danh',retry:'bay lại',home:'màn chính',close:'đóng',language:'ngôn ngữ'},en:{connecting:'connecting…',bird:'bird',sky:'sky',start:'start flight',leaderboard:'leaderboard',settings:'settings',onlineLeaderboard:'online leaderboard',preparing:'preparing…',playerData:'player data',exportBackup:'export backup',importBackup:'import backup',offlineLogin:'playing offline — sign in to save online scores',login:'sign in',logout:'sign out',complete:'FLIGHT COMPLETE',score:'score',record:'best',newRecord:'— new record —',submitScore:'submit score',retry:'fly again',home:'home',close:'close',language:'language'},ja:{connecting:'接続中…',bird:'鳥',sky:'空',start:'飛び立つ',leaderboard:'ランキング',settings:'設定',onlineLeaderboard:'オンラインランキング',preparing:'準備中…',playerData:'プレイヤーデータ',exportBackup:'バックアップを書き出す',importBackup:'バックアップを読み込む',offlineLogin:'オフライン — ログインするとオンライン保存できます',login:'ログイン',logout:'ログアウト',complete:'飛行終了',score:'得点',record:'記録',newRecord:'— 新記録 —',submitScore:'登録',retry:'もう一度飛ぶ',home:'ホーム',close:'閉じる',language:'言語'}};
+function normalizeLocale(value){value=(value||'').toLowerCase();return value.indexOf('ja')===0?'ja':value.indexOf('vi')===0?'vi':'en';}
+function applyLocale(value){locale=LANG[value]?value:'en';document.documentElement.lang=locale;document.querySelectorAll('[data-i18n]').forEach(function(el){var key=el.getAttribute('data-i18n');if(LANG[locale][key])el.textContent=LANG[locale][key];});document.querySelectorAll('[data-i18n-placeholder]').forEach(function(el){var key=el.getAttribute('data-i18n-placeholder');if(LANG[locale][key])el.placeholder=LANG[locale][key];});if(languageSelect)languageSelect.value=locale;}
+function setLocale(value,manual){value=normalizeLocale(value);applyLocale(value);if(manual)store.set('chimse.lang',value);}
+function detectLocale(){var saved=store.get('chimse.lang');if(saved){setLocale(saved,false);return Promise.resolve(saved);}var browser=normalizeLocale(navigator.language||navigator.userLanguage);setLocale(browser,false);return fetch('/api/locale',{headers:{Accept:'application/json'}}).then(function(r){return r.ok?r.json():null;}).then(function(data){if(!store.get('chimse.lang')&&data&&data.locale)setLocale(data.locale,false);return locale;}).catch(function(){return locale;});}
 
 /* ═══ RNG ═══ */
 var RNG=(function(){
@@ -825,6 +846,10 @@ function closeLb(){lbSc.classList.add('hidden');if(titleSc.classList.contains('h
  $('retryBtn').addEventListener('click',function(e){AU.unlock();startGame();e.currentTarget.blur();});
  $('homeBtn').addEventListener('click',function(e){goTitle();e.currentTarget.blur();});
  $('lbBtn').addEventListener('click',function(e){lbSc.classList.remove('hidden');titleSc.classList.add('hidden');refreshFull();e.currentTarget.blur();});
+ settingsBtn.addEventListener('click',function(){settingsOverlay.classList.add('show');});
+ settingsClose.addEventListener('click',function(){settingsOverlay.classList.remove('show');});
+ settingsOverlay.addEventListener('click',function(e){if(e.target===settingsOverlay)settingsOverlay.classList.remove('show');});
+ languageSelect.addEventListener('change',function(){setLocale(languageSelect.value,true);});
  $('lbClose').addEventListener('click',function(e){closeLb();e.currentTarget.blur();});
   $('sendBtn').addEventListener('click',function(e){sendScore();e.currentTarget.blur();});
  pauseBtn.addEventListener('click',function(){setPaused(state==='PLAY');});
@@ -845,6 +870,8 @@ function closeLb(){lbSc.classList.add('hidden');if(titleSc.classList.contains('h
  muteBtn.addEventListener('click',function(){AU.unlock();AU.setMute(!AU.muted);muteBtn.classList.toggle('muted',AU.muted);muteBtn.blur();});
 
 if(AU.muted)muteBtn.classList.add('muted');
+applyLocale(normalizeLocale(store.get('chimse.lang')||navigator.language||'vi'));
+detectLocale();
 document.addEventListener('visibilitychange',function(){if(document.hidden&&state==='PLAY'){pausedFromVisibility=true;setPaused(true);}else if(!document.hidden){lastT=0;}});
 
 /* ═══ SELECTOR UI ═══ */

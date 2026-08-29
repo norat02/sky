@@ -30,6 +30,8 @@ Thay `your-production-domain.vercel.app` bằng domain Vercel thật. Ứng dụ
 
 ## Cấu hình Vercel
 
+Hướng dẫn chi tiết từng bước về Vercel Environment Variables, Supabase Auth và Google OAuth nằm tại [`docs/vercel-supabase-google-oauth.md`](docs/vercel-supabase-google-oauth.md).
+
 Tại **Vercel Project → Settings → Environment Variables**, thêm các biến sau cho **Production**, **Preview** và **Development**:
 
 | Biến | Giá trị |
@@ -111,6 +113,10 @@ python3 -m http.server 3000
 ```
 
 Mở `http://localhost:3000/`. Không mở trực tiếp bằng `file://` nếu muốn kiểm thử OAuth, vì Supabase cần origin hợp lệ.
+
+## Đa ngôn ngữ
+
+Game hỗ trợ `vi`, `en` và `ja`. Lần đầu mở game, ứng dụng ưu tiên mã quốc gia do Vercel cung cấp qua `/api/locale`, sau đó fallback sang `navigator.language`. Người chơi có thể mở **Cài đặt**, đổi ngôn ngữ thủ công và lựa chọn được lưu trong trình duyệt; lựa chọn thủ công được ưu tiên hơn tự động nhận diện IP.
 
 ## SEO
 
