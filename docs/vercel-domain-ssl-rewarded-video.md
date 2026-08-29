@@ -88,13 +88,25 @@ Nếu SSL chưa cấp được, kiểm tra theo thứ tự: domain đã được
 
 ## 7. Cập nhật biến môi trường Vercel
 
-Trong **Settings → Environment Variables**, thêm `PUBLIC_SITE_URL` cho Production:
+Trong Vercel, kiểm tra **Project Settings → General** với các giá trị sau:
+
+| Mục | Giá trị cần dùng |
+|---|---|
+| Framework Preset | `Other` hoặc để Vercel tự nhận diện static project |
+| Root Directory | Thư mục chứa `package.json`, `index.html` và `api/` |
+| Build Command | `npm run build` |
+| Output Directory | Để mặc định/không đặt thư mục output riêng; các file tĩnh nằm ở root và `api/*.mjs` là Vercel Functions |
+| Install Command | `npm install` hoặc lệnh mặc định của Vercel |
+
+Không cần thêm `vercel.json` riêng cho cấu trúc hiện tại. Vercel tự nhận diện các file trong `api/` dưới dạng Functions. Trong **Settings → Environment Variables**, tạo biến theo đúng phạm vi **Production**, **Preview** hoặc **Development**; thay đổi biến phải đi kèm một deployment mới.
+
+Trong Production, thêm `PUBLIC_SITE_URL`:
 
 ```text
 PUBLIC_SITE_URL=https://example.com/
 ```
 
-Có thể thêm Supabase variables:
+Thêm các biến public dùng trong bước build/client:
 
 ```text
 SUPABASE_URL=https://<project-ref>.supabase.co
@@ -109,7 +121,18 @@ SUPABASE_SERVICE_ROLE_KEY=<server-only-key>
 SCORE_SIGNING_SECRET=<long-random-secret>
 ```
 
-Không đưa hai secret cuối vào `config.js`, `index.html` hoặc biến `NEXT_PUBLIC_*`. Sau khi thêm biến, redeploy Production. Build của project sẽ sinh canonical URL, OG URL, OG image URL, `robots.txt` và `sitemap.xml` theo `PUBLIC_SITE_URL`.
+Không đưa hai secret cuối vào `config.js`, `index.html` hoặc biến `NEXT_PUBLIC_*`. Cần cấu hình cả sáu biến sau trong Vercel nếu bật đầy đủ online Leaderboard và SEO:
+
+| Biến | Scope | Bắt buộc | Mục đích |
+|---|---|---:|---|
+| `PUBLIC_SITE_URL` | Build | Có cho SEO production | Canonical, OG, robots và sitemap |
+| `SUPABASE_URL` | Build + server | Có cho online | URL project Supabase |
+| `SUPABASE_ANON_KEY` | Build/client | Có cho login/client | Public anon hoặc publishable key |
+| `SUPABASE_REDIRECT_URL` | Build/client | Không bắt buộc nếu dùng origin hiện tại | URL sau OAuth |
+| `SUPABASE_SERVICE_ROLE_KEY` | Server-only | Có cho API | Admin key để Function gọi Supabase; không được lộ client |
+| `SCORE_SIGNING_SECRET` | Server-only | Có cho API | Secret HMAC ký run ticket, tối thiểu 32 ký tự ngẫu nhiên |
+
+Sau khi thêm biến, redeploy Production. Build của project sẽ sinh canonical URL, OG URL, OG image URL, `robots.txt` và `sitemap.xml` theo `PUBLIC_SITE_URL`. Sau deployment, kiểm tra `https://domain-cua-ban/api/run-ticket` bằng một phiên đăng nhập hợp lệ; request không có Bearer token phải bị từ chối, còn lỗi `server_not_configured` cho biết server thiếu một trong ba biến `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY` hoặc `SCORE_SIGNING_SECRET`.
 
 ## 8. Cập nhật Supabase OAuth
 

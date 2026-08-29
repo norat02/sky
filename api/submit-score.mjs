@@ -2,8 +2,16 @@ import { authenticate, json, verifyRunTicket } from './_security.mjs';
 
 const rateWindow = globalThis.__scoreRateWindow || (globalThis.__scoreRateWindow = new Map());
 
-function validName(value) {
+export function validName(value) {
   return typeof value === 'string' && value.trim().length >= 1 && value.trim().length <= 10 && !/[<>]/.test(value);
+}
+
+export function validateScorePayload(body) {
+  const value = body || {};
+  const name = typeof value.name === 'string' ? value.name.trim() : '';
+  const score = value.score;
+  if (!validName(name) || !Number.isSafeInteger(score) || score < 0 || score > 100000) return null;
+  return { name, score, ticket: value.ticket };
 }
 
 export default async function handler(req, res) {
@@ -13,12 +21,11 @@ export default async function handler(req, res) {
     if (!session) return json(res, 401, { error: 'unauthorized' });
 
     const body = typeof req.body === 'string' ? JSON.parse(req.body) : (req.body || {});
-    const name = typeof body.name === 'string' ? body.name.trim() : '';
-    const score = body.score;
-    const ticket = body.ticket;
-    if (!validName(name) || !Number.isSafeInteger(score) || score < 0 || score > 100000) {
-      return json(res, 400, { error: 'invalid_score_payload' });
-    }
+    const payload = validateScorePayload(body);
+    const name = payload?.name;
+    const score = payload?.score;
+    const ticket = payload?.ticket;
+    if (!payload) return json(res, 400, { error: 'invalid_score_payload' });
 
     const run = verifyRunTicket(ticket, session.user.id);
     if (!run) return json(res, 409, { error: 'invalid_or_expired_run' });

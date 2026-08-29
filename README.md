@@ -32,12 +32,13 @@ Thay `your-production-domain.vercel.app` bằng domain Vercel thật. Ứng dụ
 
 Hướng dẫn chi tiết từng bước về Vercel Environment Variables, Supabase Auth và Google OAuth nằm tại [`docs/vercel-supabase-google-oauth.md`](docs/vercel-supabase-google-oauth.md).
 
-Tại **Vercel Project → Settings → Environment Variables**, thêm các biến sau cho **Production**, **Preview** và **Development**:
+Tại **Vercel Project → Settings → Environment Variables**, thêm các biến sau. `PUBLIC_SITE_URL`, `SUPABASE_URL`, `SUPABASE_ANON_KEY` và `SUPABASE_REDIRECT_URL` dùng cho build/client; `SUPABASE_SERVICE_ROLE_KEY` và `SCORE_SIGNING_SECRET` chỉ dùng trong server runtime. Với Production phải điền domain thật; Preview/Development có thể dùng URL tương ứng của môi trường đó. Sau khi thay đổi biến, bắt buộc tạo deployment mới vì `config.js`, `robots.txt` và `sitemap.xml` được sinh trong bước build:
 
 | Biến | Giá trị |
 |---|---|
 | `SUPABASE_URL` | Project URL trong Supabase, ví dụ `https://abc.supabase.co` |
 | `SUPABASE_ANON_KEY` | Public anon/publishable key trong Supabase |
+| `PUBLIC_SITE_URL` | Bắt buộc cho SEO production; ví dụ `https://your-domain.vercel.app/` hoặc custom domain, luôn có `/` cuối |
 | `SUPABASE_REDIRECT_URL` | Tùy chọn; domain production đầy đủ, ví dụ `https://your-domain.vercel.app/` |
 
 Vercel chạy `npm run build`. Script [`scripts/generate-config.mjs`](scripts/generate-config.mjs) sẽ tạo `config.js` từ các biến trên ngay trong quá trình build. `config.js` được ignore bởi Git và không được commit. Không bao giờ đặt `service_role` key ở trình duyệt.
@@ -45,12 +46,18 @@ Vercel chạy `npm run build`. Script [`scripts/generate-config.mjs`](scripts/ge
 Nếu triển khai bằng Vercel CLI, hãy thiết lập các biến môi trường trước khi deploy:
 
 ```bash
+vercel env add PUBLIC_SITE_URL production
 vercel env add SUPABASE_URL production
 vercel env add SUPABASE_ANON_KEY production
+vercel env add SUPABASE_REDIRECT_URL production
 vercel env add SUPABASE_SERVICE_ROLE_KEY production
 vercel env add SCORE_SIGNING_SECRET production
 vercel --prod
 ```
+
+## Kiểm tra cấu hình sau deploy
+
+Sau deployment, mở domain Production và kiểm tra `/<robots.txt>`, `/<sitemap.xml>`, canonical/OG URL và đăng nhập. Trong DevTools Network, request `/api/run-ticket` phải trả `200` sau khi đăng nhập; request `/api/submit-score` hợp lệ phải được server xử lý, còn ticket sai hoặc đã dùng phải bị từ chối. Nếu API trả `500 server_not_configured`, kiểm tra lại ba biến server-side và redeploy. Không dùng `vercel env pull` để commit secret vào repository; `.env`, `.env.local` và `config.js` phải tiếp tục nằm trong `.gitignore`.
 
 ## Leaderboard trực tuyến
 
@@ -73,7 +80,7 @@ SUPABASE_SERVICE_ROLE_KEY=<service-role-key-or-secret-key>
 SCORE_SIGNING_SECRET=<random-secret-at-least-32-characters>
 ```
 
-Sau khi cập nhật schema, cần chạy [`supabase/schema.sql`](supabase/schema.sql) để tạo bảng `score_runs`. Nếu chưa có hai biến server-side hoặc chưa chạy schema, game vẫn chạy offline nhưng không thể gửi điểm qua API.
+Sau khi cập nhật schema, cần chạy [`supabase/schema.sql`](supabase/schema.sql) trong **Supabase Dashboard → SQL Editor** để tạo `score_runs`, `scores` và các policy RLS. Kiểm tra rằng bảng đã tồn tại, RLS đang bật và policy không cho client tự `UPDATE`/`DELETE` điểm. Trên Vercel, kiểm tra **Settings → Functions** để các file `api/*.mjs` được nhận diện tự động; không đặt `api` trong Output Directory và không thêm `SUPABASE_SERVICE_ROLE_KEY`/`SCORE_SIGNING_SECRET` vào `config.js`. Sau khi nhập hoặc thay đổi biến môi trường, phải redeploy Production. Nếu chưa có hai biến server-side hoặc chưa chạy schema, game vẫn chạy offline nhưng không thể gửi điểm qua API.
 
 > Không có cơ chế nào chống gian lận tuyệt đối khi toàn bộ mô phỏng game chạy trong trình duyệt. Serverless Function này chặn giả mạo request cơ bản, replay ticket, gửi quá nhiều lần và điểm vượt tốc độ hợp lý. Muốn đạt mức chống gian lận cao hơn, cần chuyển trạng thái game hoặc xác thực replay sang server-authoritative.
 
@@ -122,9 +129,15 @@ Tính năng hồi sinh dùng hook `window.SKY_REWARDED_AD.show()`. AdSense đư�
 
 ## Kiểm thử E2E
 
-Bộ test [`e2e/game.e2e.mjs`](e2e/game.e2e.mjs) dùng Playwright với Chromium và mock Supabase/rewarded-ad provider, nên không sử dụng tài khoản production hoặc tạo dữ liệu thật. Test bao phủ mở Settings và đổi tiếng Nhật, đăng nhập email, bắt đầu chơi, gọi luồng game over, xem quảng cáo mock để hồi sinh, kết thúc ván, gửi điểm và tải Leaderboard online.
+Bộ test [`e2e/game.e2e.mjs`](e2e/game.e2e.mjs) dùng Playwright với Chromium và mock Supabase/rewarded-ad provider, nên không sử dụng tài khoản production hoặc tạo dữ liệu thật. Test bao phủ mở Settings và đổi tiếng Nhật, đăng nhập email, bắt đầu chơi, quảng cáo trả về `false` không được hồi sinh, quảng cáo được cấp reward mới hồi sinh, kết thúc ván, gửi điểm và tải Leaderboard online. Bộ kiểm thử [`scripts/test-security-rewarded.mjs`](scripts/test-security-rewarded.mjs) kiểm tra HMAC run ticket, ticket khác người dùng, sửa payload, validation điểm/tên, AdBlock/incomplete-ad guard và việc backup không chứa hàng đợi điểm online.
 
-Chạy bằng:
+Chạy các kiểm tra logic bằng:
+
+```bash
+npm test
+```
+
+Chạy thêm luồng trình duyệt E2E bằng:
 
 ```bash
 npm run test:e2e

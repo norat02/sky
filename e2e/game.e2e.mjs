@@ -75,10 +75,18 @@ try {
   await page.evaluate(() => { window.SKY_TEST_HOOKS.startDying(); });
   await page.waitForSelector('#reviveOverlay.show');
   assert(await page.locator('#reviveAdBtn').isEnabled(), 'Rewarded ad button is not enabled');
-  console.log('E2E: rewarded revive');
+  console.log('E2E: rewarded revive rejection then grant');
+  await page.evaluate(() => { window.SKY_REWARDED_AD.show = () => Promise.resolve(false); });
+  await page.locator('#reviveAdBtn').click();
+  await page.waitForFunction(() => {
+    const text = document.querySelector('#reviveStatus')?.textContent || '';
+    return !text.includes('広告を読み込み中') && !text.includes('loading ad') && !text.includes('đang tải quảng cáo');
+  });
+  assert(await page.locator('#reviveOverlay').evaluate((el) => el.classList.contains('show')), 'Incomplete rewarded ad must not revive');
+  await page.evaluate(() => { window.SKY_REWARDED_AD.show = () => Promise.resolve(true); });
   await page.locator('#reviveAdBtn').click();
   await page.waitForSelector('#reviveOverlay:not(.show)');
-  assert(  await page.locator('#reviveOverlay').evaluate((el) => !el.classList.contains('show')), 'Revive overlay did not close');
+  assert(await page.locator('#reviveOverlay').evaluate((el) => !el.classList.contains('show')), 'Granted rewarded ad did not revive');
 
   await page.evaluate(() => { window.SKY_TEST_HOOKS.startGame(); });
   await page.keyboard.press('Space');
