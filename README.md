@@ -116,7 +116,7 @@ Mở `http://localhost:3000/`. Không mở trực tiếp bằng `file://` nếu 
 
 ## Rewarded ads và hồi sinh
 
-Tính năng hồi sinh dùng hook `window.SKY_REWARDED_AD.show()`. Với website, không tìm tùy chọn rewarded trong đoạn mã AdSense display thông thường. Rewarded web ads nên được cấu hình trong **Google Ad Manager** bằng Google Publisher Tag (GPT), tạo ad unit định dạng **Rewarded**, sau đó gọi hook này khi quảng cáo đã phát xong và provider xác nhận reward. Google yêu cầu tuân thủ chính sách rewarded ads và có consent phù hợp; không tự động coi việc mở hoặc đóng quảng cáo là đã xem xong. Xem ghi chú tại [`docs/google-rewarded-ad-notes.md`](docs/google-rewarded-ad-notes.md).
+Tính năng hồi sinh dùng hook `window.SKY_REWARDED_AD.show()`. AdSense được lazy-load sau khi trang ổn định, idle callback hoặc tương tác đầu tiên; GPT chỉ được tải khi provider rewarded gọi `window.SKY_ADS.loadGPT()`. Vì website, không tìm tùy chọn rewarded trong đoạn mã AdSense display thông thường. Rewarded web ads nên được cấu hình trong **Google Ad Manager** bằng Google Publisher Tag (GPT), tạo ad unit định dạng **Rewarded**, sau đó gọi hook này khi quảng cáo đã phát xong và provider xác nhận reward. Google yêu cầu tuân thủ chính sách rewarded ads và có consent phù hợp; không tự động coi việc mở hoặc đóng quảng cáo là đã xem xong. Xem ghi chú tại [`docs/google-rewarded-ad-notes.md`](docs/google-rewarded-ad-notes.md).
 
 ## Kiểm thử E2E
 
@@ -139,5 +139,7 @@ Game hỗ trợ `vi`, `en` và `ja`. Lần đầu mở game, ứng dụng ưu ti
 Website cung cấp [`robots.txt`](robots.txt) và [`sitemap.xml`](sitemap.xml), đồng thời khai báo description, keywords, robots directive, canonical URL, Open Graph metadata, Twitter Card, structured data `VideoGame` và [`og-image.png`](og-image.png) trong `index.html`. Khi deploy Vercel, đặt `PUBLIC_SITE_URL=https://domain-cua-ban.vercel.app/`; bước build sẽ sinh lại `config.js`, `robots.txt` và `sitemap.xml` theo domain đó, đồng thời thay URL tĩnh trong metadata OG/canonical. Không dùng domain mẫu khi deploy production.
 
 ### PageSpeed
+
+Loader AdSense không còn nằm trực tiếp trong phần `<head>` dưới dạng script bên thứ ba blocking. Bootstrap nhỏ chỉ tạo request sau `load` + idle delay hoặc tương tác người dùng. Provider Google Ad Manager/GPT nên gọi `window.SKY_ADS.loadGPT()` ngay trước khi mở rewarded ad, không tải GPT khi game chưa yêu cầu. Cách này giảm request và công việc main-thread ở lần render đầu, nhưng cần đo lại trên Preview/Production vì quảng cáo thật vẫn có thể ảnh hưởng TBT sau tương tác.
 
 Để tối ưu hiệu suất, nên đo cả Mobile và Desktop bằng PageSpeed Insights sau mỗi production deployment. Game hiện tải canvas và script inline, Google Fonts, Supabase module và AdSense; cần theo dõi LCP, INP và CLS, đặc biệt khi bật quảng cáo. Không tải Supabase hoặc quảng cáo trước khi cần nếu chế độ offline/initial render không yêu cầu. Giữ thumbnail và tài nguyên tĩnh có cache trên Vercel, hạn chế thêm thư viện JavaScript, dùng font fallback nhanh và tránh layout thay đổi khi modal/quảng cáo xuất hiện. Mục tiêu Core Web Vitals tham khảo là LCP ≤ 2,5 giây, INP < 200 ms và CLS < 0,1.

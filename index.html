@@ -28,9 +28,21 @@
 <meta name="twitter:image" content="https://norat02.github.io/sky/og-image.png">
 <meta name="twitter:image:alt" content="Chim Sẻ · 小鳥の旅 — arcade flight game">
 <title>Chim Sẻ · 小鳥の旅</title>
-<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2855538220391010"
-     crossorigin="anonymous"></script>
 <script src="config.js"></script>
+<script>
+(function(){
+  var adsensePromise=null,gptPromise=null;
+  function loadScript(src,id){return new Promise(function(resolve,reject){if(document.getElementById(id)){resolve();return;}var s=document.createElement('script');s.id=id;s.async=true;s.src=src;s.crossOrigin='anonymous';s.onload=resolve;s.onerror=reject;document.head.appendChild(s);});}
+  window.SKY_ADS={
+    loadAdSense:function(){if(!adsensePromise)adsensePromise=loadScript('https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2855538220391010','sky-adsense-loader').catch(function(){adsensePromise=null;throw new Error('adsense-load');});return adsensePromise;},
+    loadGPT:function(){if(!gptPromise)gptPromise=loadScript('https://securepubads.g.doubleclick.net/tag/js/gpt.js','sky-gpt-loader').then(function(){window.googletag=window.googletag||{cmd:[]};return window.googletag;}).catch(function(){gptPromise=null;throw new Error('gpt-load');});return gptPromise;}
+  };
+  function idleLoad(){if('requestIdleCallback' in window)window.requestIdleCallback(function(){window.SKY_ADS.loadAdSense().catch(function(){});},{timeout:5000});else setTimeout(function(){window.SKY_ADS.loadAdSense().catch(function(){});},3500);}
+  window.addEventListener('load',function(){setTimeout(idleLoad,1800);},{once:true});
+  window.addEventListener('pointerdown',function(){window.SKY_ADS.loadAdSense().catch(function(){});},{once:true,passive:true});
+  window.addEventListener('keydown',function(){window.SKY_ADS.loadAdSense().catch(function(){});},{once:true,passive:true});
+})();
+</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant:ital,wght@0,500;0,600;0,700;1,600&family=Shippori+Mincho:wght@500;600;700&display=swap" rel="stylesheet">
