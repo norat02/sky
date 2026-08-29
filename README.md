@@ -116,6 +116,8 @@ Mở `http://localhost:3000/`. Không mở trực tiếp bằng `file://` nếu 
 
 ## Rewarded ads và hồi sinh
 
+Hướng dẫn đầy đủ về custom domain, SSL/HTTPS trên Vercel và định dạng rewarded video nằm tại [`docs/vercel-domain-ssl-rewarded-video.md`](docs/vercel-domain-ssl-rewarded-video.md).
+
 Tính năng hồi sinh dùng hook `window.SKY_REWARDED_AD.show()`. AdSense được lazy-load sau khi trang ổn định, idle callback hoặc tương tác đầu tiên; GPT chỉ được tải khi provider rewarded gọi `window.SKY_ADS.loadGPT()`. Vì website, không tìm tùy chọn rewarded trong đoạn mã AdSense display thông thường. Rewarded web ads nên được cấu hình trong **Google Ad Manager** bằng Google Publisher Tag (GPT), tạo ad unit định dạng **Rewarded**, sau đó gọi hook này khi quảng cáo đã phát xong và provider xác nhận reward. Google yêu cầu tuân thủ chính sách rewarded ads và có consent phù hợp; không tự động coi việc mở hoặc đóng quảng cáo là đã xem xong. Xem ghi chú tại [`docs/google-rewarded-ad-notes.md`](docs/google-rewarded-ad-notes.md).
 
 ## Kiểm thử E2E
