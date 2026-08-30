@@ -14,6 +14,7 @@
     "test:e2e:admin": "node e2e/admin.e2e.mjs",
     "test:e2e:backup": "node e2e/backup-watermark.e2e.mjs",
     "test:e2e:backup:attack": "node e2e/backup-attack.e2e.mjs",
+    "test:e2e:characters-xss": "node e2e/characters-xss.e2e.mjs",
     "benchmark:backup": "node scripts/benchmark-backup.mjs"
   },
   "devDependencies": {

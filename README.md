@@ -332,3 +332,31 @@ BENCHMARK_ITERATIONS=50 npm run benchmark:backup
 ```
 
 Kết quả in ra JSON gồm thời gian `average`, `median`, `p95`, `min`, `max` theo mili-giây cho cả mã hóa và giải mã, cùng kích thước ciphertext. `median` phản ánh vòng điển hình; `p95` dùng để nhận biết đuôi chậm do thiết bị hoặc scheduler trình duyệt. Kết quả phụ thuộc CPU, Chromium, tải máy và kích thước payload nên chỉ nên so sánh giữa các lần chạy cùng môi trường.
+
+## Roster nhân vật và coin
+
+Toàn bộ sáu map cũ (`sakura`, `autumn`, `snow`, `night`, `rain`, `aurora`) vẫn được giữ nguyên ID và giao diện. Roster hiện có chín nhân vật. Sẻ miễn phí; các nhân vật khác mở khóa bằng coin kiếm được khi nhặt coin trong ván hoặc đạt điểm khi kết thúc ván. Mỗi nhân vật có cả ưu điểm và nhược điểm, tác động tới tốc độ, khoảng khe, lực rơi, hitbox hoặc hệ số coin.
+
+| Nhân vật | Ưu điểm | Nhược điểm | Giá |
+|---|---|---|---:|
+| Sẻ | Dễ điều khiển | Không có bonus | Miễn phí |
+| Én | Bay nhanh hơn | Khe hẹp hơn | 30 coin |
+| Quạ | Khe rộng hơn | Rơi nhanh hơn | 45 coin |
+| Bồ câu | Khe rộng hơn | Coin ít hơn | 60 coin |
+| Chim cắt | Rất nhanh, nhiều coin | Khe hẹp và rơi mạnh | 80 coin |
+| Cú mèo | Rơi chậm, dễ giữ độ cao | Bay chậm, ít coin | 100 coin |
+| Diều hâu | Nhiều coin, lực vỗ mạnh | Hitbox lớn, tốc độ cao | 120 coin |
+| Hạc | Khe rất rộng | Chậm, hitbox lớn | 150 coin |
+| Bói cá | Hệ số coin cao | Khe hẹp hơn | 180 coin |
+
+Coin và danh sách nhân vật mở khóa được lưu offline bằng `chimse.coins` và `chimse.unlocked-characters`. Khi restore backup, ứng dụng chỉ nhận ID nhân vật có trong roster hiện tại.
+
+## Kiểm thử XSS localStorage
+
+Chạy mô phỏng XSS an toàn bằng Playwright:
+
+```bash
+npm run test:e2e:characters-xss
+```
+
+Test đặt marker giả vào localStorage, reload ứng dụng, theo dõi request exfiltration và kiểm tra DOM. Test đạt khi payload không thực thi, không có request gửi ra endpoint giả và ciphertext backup không xuất hiện trong giao diện. Kịch bản không gửi dữ liệu thật ra ngoài.
