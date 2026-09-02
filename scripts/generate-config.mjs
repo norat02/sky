@@ -1,13 +1,34 @@
-import { readFileSync, writeFileSync } from 'node:fs';
+import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 
-const vercelUrl = process.env.VERCEL_PROJECT_PRODUCTION_URL || process.env.VERCEL_URL;
+function parseEnvLocal(path) {
+  if (!existsSync(path)) return {};
+  const values = {};
+  for (const rawLine of readFileSync(path, 'utf8').split(/\r?\n/)) {
+    const line = rawLine.trim();
+    if (!line || line.startsWith('#')) continue;
+    const match = line.match(/^(?:export\s+)?([A-Za-z_][A-Za-z0-9_]*)\s*=\s*(.*)$/);
+    if (!match) continue;
+    let value = match[2].trim();
+    if ((value.startsWith('"') && value.endsWith('"')) || (value.startsWith("'") && value.endsWith("'"))) {
+      value = value.slice(1, -1);
+    } else {
+      value = value.replace(/\s+#.*$/, '').trim();
+    }
+    values[match[1]] = value;
+  }
+  return values;
+}
+
+const localEnv = process.env.VERCEL ? {} : parseEnvLocal('.env.local');
+const env = { ...localEnv, ...process.env };
+const vercelUrl = env.VERCEL_PROJECT_PRODUCTION_URL || env.VERCEL_URL;
 const defaultSiteUrl = vercelUrl ? `https://${vercelUrl}/` : 'https://norat02.github.io/sky/';
-const siteUrl = (process.env.PUBLIC_SITE_URL || defaultSiteUrl).replace(/\/$/, '') + '/';
+const siteUrl = (env.PUBLIC_SITE_URL || defaultSiteUrl).replace(/\/$/, '') + '/';
 const config = {
   PUBLIC_SITE_URL: siteUrl,
-  SUPABASE_URL: process.env.SUPABASE_URL || '',
-  SUPABASE_ANON_KEY: process.env.SUPABASE_ANON_KEY || '',
-  SUPABASE_REDIRECT_URL: process.env.SUPABASE_REDIRECT_URL || ''
+  SUPABASE_URL: env.SUPABASE_URL || '',
+  SUPABASE_ANON_KEY: env.SUPABASE_ANON_KEY || '',
+  SUPABASE_REDIRECT_URL: env.SUPABASE_REDIRECT_URL || ''
 };
 
 const js = `// Generated at build time. Do not commit this file.\nwindow.SKY_CONFIG = ${JSON.stringify(config, null, 2)};\n`;

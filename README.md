@@ -32,6 +32,18 @@ http://localhost:3000/**
 
 Thay `your-production-domain.vercel.app` bằng domain Vercel thật. Ứng dụng truyền `redirectTo` động theo domain đang mở; nếu muốn cố định một domain production, điền `SUPABASE_REDIRECT_URL` trong biến môi trường Vercel.
 
+## Cấu hình local bằng `.env.local`
+
+Tạo file local từ mẫu và không commit file này:
+
+```bash
+cp .env.example .env.local
+npm run env:check
+npm run build
+```
+
+Build loader JavaScript đọc `.env.local` khi chạy local và chỉ sinh các giá trị public (`PUBLIC_SITE_URL`, `SUPABASE_URL`, `SUPABASE_ANON_KEY`, `SUPABASE_REDIRECT_URL`) vào `config.js`. Công cụ Go [`tools/envcheck/main.go`](tools/envcheck/main.go) chỉ báo biến thiếu hoặc không hợp lệ, không in giá trị. `SUPABASE_SERVICE_ROLE_KEY` và `SCORE_SIGNING_SECRET` vẫn chỉ dành cho server runtime.
+
 ## Cấu hình Vercel
 
 Hướng dẫn chi tiết từng bước về Vercel Environment Variables, Supabase Auth và Google OAuth nằm tại [`docs/vercel-supabase-google-oauth.md`](docs/vercel-supabase-google-oauth.md).
