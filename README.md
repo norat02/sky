@@ -32,6 +32,12 @@ http://localhost:3000/**
 
 Thay `your-production-domain.vercel.app` bằng domain Vercel thật. Ứng dụng truyền `redirectTo` động theo domain đang mở; nếu muốn cố định một domain production, điền `SUPABASE_REDIRECT_URL` trong biến môi trường Vercel.
 
+## Cấu trúc JavaScript
+
+`index.html` giữ markup, CSS và JSON-LD metadata; toàn bộ executable game logic, ad loader, error handler và anti-cheat runtime nằm trong [`game.js`](game.js). `config.js` được nạp trước `game.js` và chỉ được sinh lúc build, giúp CSP có thể giới hạn script runtime về `'self'`.
+
+Các verifier/unit test đọc cả HTML và `game.js` để bảo đảm việc tách file không làm mất coverage.
+
 ## Cấu hình local bằng `.env.local`
 
 Tạo file local từ mẫu và không commit file này:

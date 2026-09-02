@@ -34,20 +34,22 @@ for (const bad of [
 ]) assert.equal(validateScorePayload(bad), null, `invalid payload must be rejected: ${JSON.stringify(bad)}`);
 
 const html = readFileSync(new URL('../index.html', import.meta.url), 'utf8');
-assert.match(html, /if\(ok===false\)throw new Error\('ad incomplete'\)/, 'revive must reject incomplete ads');
-assert.match(html, /RewardedSlotGrantedEvent|reward-granted|rewarded-ad/, 'rewarded-grant integration marker must exist');
-assert.match(html, /reviveUsed=true/, 'revive must be consumed after a successful grant');
-assert.match(html, /function securityLock\(reason\)/, 'anti-cheat security lock must exist');
-assert.match(html, /function antiCheatCheck\(\)/, 'DevTools detection must exist');
-assert.match(html, /function inspectInjectedNodes\(records\)/, 'DOM script injection guard must exist');
-assert.match(html, /function allowedGameScript\(node\)/, 'allowed script allowlist must exist');
-assert.match(html, /MutationObserver/, 'MutationObserver tamper guard must exist');
-assert.match(html, /e\.key==='F12'/, 'F12 DevTools shortcut must be blocked');
-assert.match(html, /state='LOCKED'/, 'suspicious activity must lock gameplay');
-assert.match(html, /if\(ANTI_CHEAT\.locked\)return/, 'locked sessions must not start or flap');
-assert.doesNotMatch(html, /deleteUser|auth\.admin\.deleteUser|deleteAccount/, 'client must not auto-delete accounts');
-assert.match(html, /sky-ad-blocked/, 'AdBlock fallback event must be handled');
-assert.doesNotMatch(html, /pendingScores:\s*cleanPending\(pendingScores\)/, 'backup must not export pending online scores');
+const gameJs = readFileSync(new URL('../game.js', import.meta.url), 'utf8');
+const source = `${html}\n${gameJs}`;
+assert.match(source, /if\(ok===false\)throw new Error\('ad incomplete'\)/, 'revive must reject incomplete ads');
+assert.match(source, /RewardedSlotGrantedEvent|reward-granted|rewarded-ad/, 'rewarded-grant integration marker must exist');
+assert.match(source, /reviveUsed=true/, 'revive must be consumed after a successful grant');
+assert.match(source, /function securityLock\(reason\)/, 'anti-cheat security lock must exist');
+assert.match(source, /function antiCheatCheck\(\)/, 'DevTools detection must exist');
+assert.match(source, /function inspectInjectedNodes\(records\)/, 'DOM script injection guard must exist');
+assert.match(source, /function allowedGameScript\(node\)/, 'allowed script allowlist must exist');
+assert.match(source, /MutationObserver/, 'MutationObserver tamper guard must exist');
+assert.match(source, /e\.key==='F12'/, 'F12 DevTools shortcut must be blocked');
+assert.match(source, /state='LOCKED'/, 'suspicious activity must lock gameplay');
+assert.match(source, /if\(ANTI_CHEAT\.locked\)return/, 'locked sessions must not start or flap');
+assert.doesNotMatch(source, /deleteUser|auth\.admin\.deleteUser|deleteAccount/, 'client must not auto-delete accounts');
+assert.match(source, /sky-ad-blocked/, 'AdBlock fallback event must be handled');
+assert.doesNotMatch(source, /pendingScores:\s*cleanPending\(pendingScores\)/, 'backup must not export pending online scores');
 
 console.log('run ticket HMAC ownership/tamper checks: OK');
 console.log('Leaderboard score payload validation checks: OK');
