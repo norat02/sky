@@ -1,6 +1,8 @@
 import { readFileSync, writeFileSync } from 'node:fs';
 
-const siteUrl = (process.env.PUBLIC_SITE_URL || 'https://norat02.github.io/sky/').replace(/\/$/, '') + '/';
+const vercelUrl = process.env.VERCEL_PROJECT_PRODUCTION_URL || process.env.VERCEL_URL;
+const defaultSiteUrl = vercelUrl ? `https://${vercelUrl}/` : 'https://norat02.github.io/sky/';
+const siteUrl = (process.env.PUBLIC_SITE_URL || defaultSiteUrl).replace(/\/$/, '') + '/';
 const config = {
   PUBLIC_SITE_URL: siteUrl,
   SUPABASE_URL: process.env.SUPABASE_URL || '',

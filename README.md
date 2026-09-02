@@ -36,13 +36,13 @@ Thay `your-production-domain.vercel.app` bằng domain Vercel thật. Ứng dụ
 
 Hướng dẫn chi tiết từng bước về Vercel Environment Variables, Supabase Auth và Google OAuth nằm tại [`docs/vercel-supabase-google-oauth.md`](docs/vercel-supabase-google-oauth.md).
 
-Tại **Vercel Project → Settings → Environment Variables**, thêm các biến sau. `PUBLIC_SITE_URL`, `SUPABASE_URL`, `SUPABASE_ANON_KEY` và `SUPABASE_REDIRECT_URL` dùng cho build/client; `SUPABASE_SERVICE_ROLE_KEY` và `SCORE_SIGNING_SECRET` chỉ dùng trong server runtime. Với Production phải điền domain thật; Preview/Development có thể dùng URL tương ứng của môi trường đó. Sau khi thay đổi biến, bắt buộc tạo deployment mới vì `config.js`, `robots.txt` và `sitemap.xml` được sinh trong bước build:
+Tại **Vercel Project → Settings → Environment Variables**, thêm các biến sau. `PUBLIC_SITE_URL`, `SUPABASE_URL`, `SUPABASE_ANON_KEY` và `SUPABASE_REDIRECT_URL` dùng cho build/client; `SUPABASE_SERVICE_ROLE_KEY` và `SCORE_SIGNING_SECRET` chỉ dùng trong server runtime. Với Production nên điền domain thật; nếu bỏ trống `PUBLIC_SITE_URL`, build trên Vercel tự dùng `VERCEL_PROJECT_PRODUCTION_URL` hoặc `VERCEL_URL` làm fallback. Sau khi thay đổi biến, bắt buộc tạo deployment mới vì `config.js`, `robots.txt` và `sitemap.xml` được sinh trong bước build:
 
 | Biến | Giá trị |
 |---|---|
 | `SUPABASE_URL` | Project URL trong Supabase, ví dụ `https://abc.supabase.co` |
 | `SUPABASE_ANON_KEY` | Public anon/publishable key trong Supabase |
-| `PUBLIC_SITE_URL` | Bắt buộc cho SEO production; ví dụ `https://your-domain.vercel.app/` hoặc custom domain, luôn có `/` cuối |
+| `PUBLIC_SITE_URL` | Khuyến nghị cho SEO production; ví dụ `https://your-domain.vercel.app/` hoặc custom domain, luôn có `/` cuối; Vercel có fallback tự động nếu bỏ trống |
 | `SUPABASE_REDIRECT_URL` | Tùy chọn; domain production đầy đủ, ví dụ `https://your-domain.vercel.app/` |
 
 Vercel chạy `npm run build`. Script [`scripts/generate-config.mjs`](scripts/generate-config.mjs) sẽ tạo `config.js` từ các biến trên ngay trong quá trình build. `config.js` được ignore bởi Git và không được commit. Không bao giờ đặt `service_role` key ở trình duyệt.
@@ -57,6 +57,14 @@ vercel env add SUPABASE_REDIRECT_URL production
 vercel env add SUPABASE_SERVICE_ROLE_KEY production
 vercel env add SCORE_SIGNING_SECRET production
 vercel --prod
+```
+
+## Kiểm thử Playwright cho cửa hàng nhân vật
+
+Kịch bản [`e2e/character-purchase.e2e.mjs`](e2e/character-purchase.e2e.mjs) khởi chạy static server, seed 100 coin, mua nhân vật `swift` qua UI, xác nhận số dư còn 20, xác nhận unlock và lựa chọn được lưu vào `localStorage`, kiểm tra click lặp không trừ coin lần hai, reload để kiểm tra persistence, rồi kiểm tra overflow ngang ở mobile, tablet và desktop. Chạy bằng:
+
+```bash
+npm run test:e2e:purchase
 ```
 
 ## Kiểm tra cấu hình sau deploy

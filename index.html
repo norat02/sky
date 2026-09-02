@@ -96,7 +96,7 @@ input{-webkit-user-select:text;user-select:text}
 @keyframes hf{50%{transform:translateY(-7px)}}
 .screen{position:fixed;inset:0;z-index:10;display:flex;align-items:center;justify-content:center;padding:20px;transition:opacity .45s ease,visibility .45s}
 .screen.hidden{opacity:0;visibility:hidden;pointer-events:none}
-#titleScreen{align-items:flex-end;padding-bottom:6vh}
+#titleScreen{align-items:center;padding:16px;overflow:auto}
 .kanjiBg{position:absolute;top:2%;right:5%;font-family:'Shippori Mincho',serif;font-size:44vh;line-height:1;color:var(--ink);opacity:.05;pointer-events:none}
 .panel{position:relative;background:var(--paper2);border:2px solid var(--ink);box-shadow:10px 10px 0 rgba(38,34,28,.13);padding:clamp(22px,4vh,36px) clamp(24px,5vw,52px);text-align:center;max-width:min(92vw,490px);max-height:92vh;overflow-y:auto;touch-action:pan-y;transition:transform .5s cubic-bezier(.18,.9,.24,1)}
 .screen.hidden .panel{transform:translateY(16px)}
@@ -206,6 +206,14 @@ kbd{font-style:normal;border:1px solid var(--ink2);padding:1px 6px;font-size:11p
 #muteBtn .x{display:none}
 #muteBtn.muted .w{display:none}
 #muteBtn.muted .x{display:initial}
+.home-panel{width:min(100%,960px);max-width:960px;display:grid;grid-template-columns:minmax(0,1.25fr) minmax(260px,.75fr);gap:clamp(20px,3vw,38px);align-items:start;text-align:left;padding:clamp(22px,4vh,36px) clamp(20px,4vw,42px)}
+.home-primary{min-width:0;text-align:center}.home-primary .kana,.home-primary h1,.home-primary .rule,.home-primary>.sub{margin-left:auto;margin-right:auto}
+.home-side{min-width:0;padding-left:clamp(18px,3vw,30px);border-left:1px solid rgba(38,34,28,.2);display:grid;gap:14px;align-content:start}.home-side>section{min-width:0}
+.hero-stats{display:grid;grid-template-columns:1fr 1fr 1.18fr;gap:7px;margin:12px 0 14px}.hero-stat{min-height:54px;padding:8px 10px;border:1px solid rgba(38,34,28,.2);background:rgba(240,231,211,.5);text-align:left}.hero-stat .stat-label{display:block;font-size:9px;letter-spacing:.16em;text-transform:uppercase;color:var(--ink2)}.hero-stat .stat-value{display:block;margin-top:3px;font-size:17px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.hero-stat.coin-stat .stat-value{color:#9c6d18}
+.rules-card{padding:14px 15px;border:1px solid rgba(38,34,28,.2);background:rgba(240,231,211,.5)}.rules-card .rail-kicker{font-size:9px;color:var(--red);font-weight:700;letter-spacing:.2em;text-transform:uppercase}.rules-card h3{margin:4px 0 9px;font-size:22px;letter-spacing:.08em}.rules-list{display:grid;gap:7px;padding:0;margin:0;list-style:none;color:var(--ink2);font-size:13px}.rules-list li{display:grid;grid-template-columns:20px 1fr;gap:7px;align-items:start;line-height:1.25}.rules-list .rule-icon{color:var(--red);font-weight:700}.protection-status{display:flex;align-items:center;gap:8px;margin-top:12px;padding-top:9px;border-top:1px solid rgba(38,34,28,.17);font-size:11px;color:var(--ink2)}.protection-status i{width:8px;height:8px;border-radius:50%;background:#3f7d4e;box-shadow:0 0 0 3px rgba(63,125,78,.12);flex:none}.protection-status.blocked{color:var(--red)}.protection-status.blocked i{background:var(--red);box-shadow:0 0 0 3px rgba(199,62,58,.12)}
+.selector{text-align:left}.selGrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(86px,1fr));gap:6px;max-height:192px;overflow-y:auto;padding:2px;overscroll-behavior:contain}.selCard{min-width:0;padding:8px 7px}.selCard .meta{max-width:none}.shop-msg{min-height:18px;margin-top:5px;color:var(--red);font-size:11px;font-style:italic;text-align:left}.home-actions{text-align:center}.home-actions .btn{margin-left:2px;margin-right:2px}#homeLeaderboard,#dataTools,#authPanel{margin-top:0;padding-top:12px;border-top:1px solid rgba(38,34,28,.2)}#homeLeaderboard h3{font-size:12px}#authPanel{text-align:center}#authPanel .btn{margin:2px}#coinWallet{margin:0;padding:0;border:0;background:transparent;display:block}#coinWallet b{font-size:17px}
+@media (max-width:760px){.home-panel{grid-template-columns:1fr;max-width:560px;gap:18px}.home-side{padding-left:0;padding-top:16px;border-left:0;border-top:1px solid rgba(38,34,28,.2)}.hero-stats{grid-template-columns:repeat(3,1fr)}}
+@media (max-width:460px){#titleScreen{padding:8px}.home-panel{padding:20px 16px;box-shadow:6px 6px 0 rgba(38,34,28,.13)}.hero-stats{gap:4px}.hero-stat{padding:7px 6px}.hero-stat .stat-label{font-size:8px;letter-spacing:.08em}.hero-stat .stat-value{font-size:15px}.selGrid{grid-template-columns:repeat(2,minmax(0,1fr));max-height:174px}.home-actions .btn{width:100%;margin:3px 0}.keys{font-size:12px}}
 </style>
 </head>
 <body>
@@ -217,16 +225,19 @@ kbd{font-style:normal;border:1px solid var(--ink2);padding:1px 6px;font-size:11p
 <div id="hint" class="hidden"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 14l7-7 7 7"/></svg><span data-i18n="touchHint">chạm để vỗ cánh</span></div>
 <div class="screen" id="titleScreen">
 <div class="kanjiBg" aria-hidden="true">飛</div>
-<div class="panel">
+<div class="panel home-panel">
+<div class="home-primary">
 <div class="kana">CHUYẾN BAY BẦU TRỜI</div>
 <h1 data-i18n="title">SKY BIRD</h1>
 <div class="rule"><i></i><b></b><i></i></div>
 <p class="sub" data-i18n="subtitle">một chuyến bay qua trời hoa anh đào</p>
-<div class="best" id="bestTitle" data-i18n="noRecord">chưa có kỷ lục</div>
-<div class="best" id="runsTitle" style="margin-top:3px"></div><div id="coinWallet" aria-live="polite">coin <b id="coinCount">0</b></div>
-<div class="selector"><div class="selLabel" data-i18n="bird">chim</div><div class="selGrid" id="charGrid"></div></div>
+<div class="hero-stats"><div class="hero-stat"><span class="stat-label">kỷ lục</span><span class="stat-value best" id="bestTitle" data-i18n="noRecord">chưa có</span></div><div class="hero-stat"><span class="stat-label">ván đã bay</span><span class="stat-value best" id="runsTitle"></span></div><div class="hero-stat coin-stat"><span class="stat-label">ví coin</span><span class="stat-value" id="coinWallet" aria-live="polite"><b id="coinCount">0</b> coin</span></div></div>
+<div class="selector"><div class="selLabel" data-i18n="bird">chim / cửa hàng</div><div class="selGrid" id="charGrid"></div><div id="shopMsg" class="shop-msg" aria-live="polite"></div></div>
 <div class="selector"><div class="selLabel" data-i18n="sky">trời</div><div class="selGrid" id="mapGrid"></div></div>
-<div><button class="btn solid" id="startBtn" data-i18n="start">bắt đầu bay</button><br><button class="btn ghost" id="lbBtn" data-i18n="leaderboard">bảng thiên hạ</button><br><button class="btn ghost" id="settingsBtn" data-i18n="settings">cài đặt</button></div>
+<div class="home-actions"><button class="btn solid" id="startBtn" data-i18n="start">bắt đầu bay</button><br><button class="btn ghost" id="lbBtn" data-i18n="leaderboard">bảng thiên hạ</button><br><button class="btn ghost" id="settingsBtn" data-i18n="settings">cài đặt</button></div>
+</div>
+<aside class="home-side">
+<section class="rules-card" aria-labelledby="rulesTitle"><div class="rail-kicker">luật bay / fair play</div><h3 id="rulesTitle">Bay sạch, bay xa</h3><ul class="rules-list"><li><span class="rule-icon" aria-hidden="true">01</span><span>Chạm hoặc nhấn Space để vỗ cánh; vượt mỗi cặp ống được cộng 1 điểm.</span></li><li><span class="rule-icon" aria-hidden="true">02</span><span>Thu coin trên đường bay; cuối ván nhận thêm <b>1 coin / 10 điểm</b>, chỉ tính một lần.</span></li><li><span class="rule-icon" aria-hidden="true">03</span><span>Mỗi ván chỉ có một lượt hồi sinh hợp lệ; điểm online được máy chủ kiểm tra.</span></li></ul><div class="protection-status" id="protectionStatus"><i aria-hidden="true"></i><span>lớp bảo vệ phiên đang hoạt động</span></div></section>
 <div id="homeLeaderboard"><h3 data-i18n="onlineLeaderboard">bảng trực tuyến</h3><div class="lbWrap" id="homeLb"></div><div id="homeLbStatus" data-i18n="preparing">đang chuẩn bị…</div></div>
 <div id="localeSuggest" class="hidden"><span id="localeSuggestText"></span><button class="btn ghost" id="localeSuggestApply" data-i18n="apply">áp dụng</button><button class="btn ghost" id="localeSuggestDismiss" data-i18n="dismiss">bỏ qua</button></div>
 <div id="dataTools"><div class="selLabel" data-i18n="playerData">dữ liệu người chơi</div>
@@ -234,6 +245,7 @@ kbd{font-style:normal;border:1px solid var(--ink2);padding:1px 6px;font-size:11p
 <input id="importFile" type="file" accept="application/json,.json" hidden><div id="dataMsg"></div></div>
 <div class="keys"><kbd>SPACE</kbd>hoặc chạm màn hình</div>
 <div id="authPanel"><div id="authState" data-i18n="offlineLogin">chơi offline — đăng nhập để lưu điểm online</div><button class="btn ghost" id="authOpen" data-i18n="login">đăng nhập</button><button class="btn ghost hidden" id="authLogout" data-i18n="logout">đăng xuất</button></div>
+</aside>
 </div>
 </div>
 <div class="screen hidden" id="overScreen">
@@ -308,20 +320,26 @@ var miniLb=$('miniLb'),lbStatus=$('lbStatus'),fullLb=$('fullLb'),fullStatus=$('f
 var exportBtn=$('exportBtn'),importBtn=$('importBtn'),importFile=$('importFile'),dataMsg=$('dataMsg');
 var runTag=$('runTag'),runNoEl=$('runNo'),runKjEl=$('runKj'),runVnEl=$('runVn');
 var overRunK=$('overRunKj'),overRunV=$('overRunVn'),runsTitle=$('runsTitle'),coinWallet=$('coinWallet'),coinCount=$('coinCount');
-var charGrid=$('charGrid'),mapGrid=$('mapGrid');
+var charGrid=$('charGrid'),mapGrid=$('mapGrid'),shopMsg=$('shopMsg');
 
 /* ═══ STORE ═══ */
 var store={get:function(k){try{return localStorage.getItem(k)}catch(e){return null}},set:function(k,v){try{localStorage.setItem(k,v)}catch(e){}}};
 function readJson(key,fallback){try{var raw=store.get(key);var value=raw?JSON.parse(raw):fallback;return value===null?fallback:value;}catch(e){return fallback;}}
 function writeJson(key,value){try{store.set(key,JSON.stringify(value));}catch(e){}}
 var HISTORY_KEY='chimse.history',PENDING_KEY='chimse.pending-scores',COINS_KEY='chimse.coins',UNLOCKED_CHARS_KEY='chimse.unlocked-characters';
-var coinsBank=Math.max(0,Number(store.get(COINS_KEY)||0)),unlockedChars=readJson(UNLOCKED_CHARS_KEY,[]);
+var rawCoins=Number(store.get(COINS_KEY)||0),coinsBank=Number.isSafeInteger(rawCoins)?Math.max(0,Math.min(1000000,rawCoins)):0,unlockedChars=readJson(UNLOCKED_CHARS_KEY,[]);
 if(!Array.isArray(unlockedChars))unlockedChars=[];
 function updateCoinWallet(){if(coinCount)coinCount.textContent=String(coinsBank);if(coinWallet)coinWallet.setAttribute('aria-label','coin '+coinsBank);}
-function saveWallet(){store.set(COINS_KEY,String(coinsBank));writeJson(UNLOCKED_CHARS_KEY,unlockedChars);updateCoinWallet();}
+function normalizeWallet(){var seen={};unlockedChars=unlockedChars.filter(function(id){if(typeof id!=='string'||seen[id]||id==='tit')return false;seen[id]=true;return CHARS.some(function(c){return c.id===id;});}).slice(0,CHARS.length);coinsBank=Number.isSafeInteger(coinsBank)?Math.max(0,Math.min(1000000,coinsBank)):0;}
+function saveWallet(){normalizeWallet();store.set(COINS_KEY,String(coinsBank));writeJson(UNLOCKED_CHARS_KEY,unlockedChars);updateCoinWallet();if(typeof syncWalletGuard==='function')syncWalletGuard();}
+function showShopMessage(text){if(shopMsg)shopMsg.textContent=text||'';}
 function isCharUnlocked(id){return id==='tit'||unlockedChars.indexOf(id)>=0;}
-function earnCoins(amount){var n=Math.max(0,Math.floor(Number(amount)||0));if(!n)return;coinsBank+=n;RUN.coinsEarned=(RUN.coinsEarned||0)+n;saveWallet();}
-function unlockChar(id){if(isCharUnlocked(id))return true;var ch=CHARS.find(function(c){return c.id===id;});if(!ch||coinsBank<ch.cost){showDataMessage('chưa đủ coin để mở '+(ch?ch.vn:'nhân vật'));return false;}coinsBank-=ch.cost;unlockedChars.push(id);saveWallet();return true;}
+function earnCoins(amount){if(typeof guardWalletIntegrity==='function'&&!guardWalletIntegrity())return;var n=Math.max(0,Math.floor(Number(amount)||0));if(!n)return;coinsBank=Math.min(1000000,coinsBank+n);RUN.coinsEarned=(RUN.coinsEarned||0)+n;saveWallet();}
+function unlockChar(id){if(typeof guardWalletIntegrity==='function'&&!guardWalletIntegrity())return false;if(isCharUnlocked(id))return true;var ch=CHARS.find(function(c){return c.id===id;});if(!ch||!Number.isSafeInteger(ch.cost)||ch.cost<0||ch.cost>1000000){showShopMessage('nhân vật không hợp lệ');return false;}if(coinsBank<ch.cost){showShopMessage('cần thêm '+(ch.cost-coinsBank)+' coin để mở '+ch.vn);return false;}coinsBank-=ch.cost;unlockedChars.push(id);saveWallet();showShopMessage(ch.vn+' đã được mở — sẵn sàng cất cánh');return true;}
+var WALLET_SNAPSHOT_KEY='chimse.wallet-snapshot';
+function walletSnapshot(){return{coins:coinsBank,unlocked:unlockedChars.slice().sort()};}
+function syncWalletGuard(){if(window.__SKY_E2E__)return;try{store.set(WALLET_SNAPSHOT_KEY,JSON.stringify(walletSnapshot()));}catch(e){}}
+function guardWalletIntegrity(){if(window.__SKY_E2E__)return true;var snapshot=readJson(WALLET_SNAPSHOT_KEY,null);if(!snapshot)return true;var current=walletSnapshot();var same=Number(snapshot.coins)===current.coins&&Array.isArray(snapshot.unlocked)&&snapshot.unlocked.length===current.unlocked.length&&snapshot.unlocked.every(function(id,i){return id===current.unlocked[i];});if(!same){securityLock('tamper');showShopMessage('phiên ví đã bị khóa vì dữ liệu không khớp — hãy tải lại trang');return false;}return true;}
 var runHistory=readJson(HISTORY_KEY,[]),pendingScores=readJson(PENDING_KEY,[]);
 function saveRunHistory(){runHistory=runHistory.slice(-24);writeJson(HISTORY_KEY,runHistory);}
 function recordRun(scoreValue){runHistory.push({score:scoreValue,at:new Date().toISOString(),character:currentChar?currentChar.id:'tit',map:currentMap?currentMap.id:'sakura',synced:false});saveRunHistory();}
@@ -631,12 +649,13 @@ function reset(){
   gapHist.length=0;dirHist.length=0;runPipeN=0;pipeSp=330;lastCoinY=null;
   bestHud.textContent=best>0?'kỷ lục · '+best:'kỷ lục · —';
 }
-var ANTI_CHEAT={locked:false,lastWidth:window.innerWidth,lastHeight:window.innerHeight};
-function securityLock(reason){if(ANTI_CHEAT.locked||window.__SKY_E2E__)return;ANTI_CHEAT.locked=true;state='LOCKED';if(securityMessage)securityMessage.textContent=reason==='devtools'?'Phát hiện DevTools hoặc công cụ debug đang mở. Hãy đóng công cụ này và tải lại trang.':'Phát hiện mã game hoặc môi trường chạy đã bị thay đổi. Phiên chơi đã bị khóa.';if(securityOverlay)securityOverlay.classList.add('show');}
-function antiCheatCheck(){if(window.__SKY_E2E__||ANTI_CHEAT.locked)return;var dw=Math.abs(window.outerWidth-window.innerWidth),dh=Math.abs(window.outerHeight-window.innerHeight);if(dw>180||dh>180)securityLock('devtools');}
+var ANTI_CHEAT={locked:false,lastWidth:window.innerWidth,lastHeight:window.innerHeight,flaps:[]};
+function securityLock(reason){if(ANTI_CHEAT.locked||window.__SKY_E2E__)return;ANTI_CHEAT.locked=true;state='LOCKED';if(securityMessage)securityMessage.textContent=reason==='devtools'?'Phát hiện DevTools hoặc công cụ debug đang mở. Hãy đóng công cụ này và tải lại trang.':reason==='automation'?'Phát hiện chuỗi thao tác bất thường. Phiên chơi đã bị khóa để bảo vệ kết quả.':'Phát hiện dữ liệu hoặc mã game đã bị thay đổi. Phiên chơi đã bị khóa.';var status=$('protectionStatus');if(status){status.classList.add('blocked');var text=status.querySelector('span');if(text)text.textContent='phiên bị khóa — tải lại để kiểm tra lại';}if(securityOverlay)securityOverlay.classList.add('show');}
+function recordFlapIntegrity(){if(window.__SKY_E2E__)return true;var now=performance.now(),cutoff=now-5000;ANTI_CHEAT.flaps=ANTI_CHEAT.flaps.filter(function(t){return t>cutoff;});ANTI_CHEAT.flaps.push(now);if(ANTI_CHEAT.flaps.length>32){securityLock('automation');return false;}return true;}
+function antiCheatCheck(){if(window.__SKY_E2E__||ANTI_CHEAT.locked)return;var dw=Math.abs(window.outerWidth-window.innerWidth),dh=Math.abs(window.outerHeight-window.innerHeight);if(dw>220||dh>220){securityLock('devtools');return;}if(!guardWalletIntegrity())return;}
 window.addEventListener('contextmenu',function(e){if(!window.__SKY_E2E__)e.preventDefault();});
 window.addEventListener('keydown',function(e){if(window.__SKY_E2E__)return;var k=(e.key||'').toLowerCase();if(e.key==='F12'||(e.ctrlKey&&e.shiftKey&&['i','j','c'].indexOf(k)>=0)||(e.ctrlKey&&k==='u')){e.preventDefault();securityLock('devtools');}});
-function allowedGameScript(node){if(!node||node.tagName!=='SCRIPT')return true;var id=node.id||'';var src=node.src||'';if(id==='sky-adsense-loader'||id==='sky-gpt-loader')return true;if(!src)return false;return src.indexOf(location.origin+'/')===0||src.indexOf('https://esm.sh/')===0;}
+function allowedGameScript(node){if(!node||node.tagName!=='SCRIPT')return true;var id=node.id||'';var src=node.src||'';if(id==='sky-adsense-loader'||id==='sky-gpt-loader')return true;if(!src)return false;return src.indexOf(location.origin+'/')===0||src.indexOf('https://esm.sh/')===0||src.indexOf('https://pagead2.googlesyndication.com/')===0||src.indexOf('https://securepubads.g.doubleclick.net/')===0||src.indexOf('chrome-extension://')===0||src.indexOf('moz-extension://')===0;}
 function inspectInjectedNodes(records){if(window.__SKY_E2E__||ANTI_CHEAT.locked)return;for(var i=0;i<records.length;i++){for(var j=0;j<records[i].addedNodes.length;j++){var node=records[i].addedNodes[j];if(node.nodeType===1&&node.tagName==='SCRIPT'&&!allowedGameScript(node)){securityLock('tamper');return;}}}}
 if(window.MutationObserver)try{new MutationObserver(inspectInjectedNodes).observe(document.documentElement,{childList:true,subtree:true});}catch(e){}
 setInterval(antiCheatCheck,1200);
@@ -659,7 +678,7 @@ function goTitle(){
   runsTitle.textContent=localizedRuns(RUN.total);
 }
 
-function doFlap(){bird.vy=CFG.FLAP;bird.flapT=0.3;bird.wingPh=0;bird.y+=CFG.FLAP*0.008;bird.rot=clamp(bird.rot-0.12,-0.42,1.32);AU.flap();flapPuff();}
+function doFlap(){if(!recordFlapIntegrity())return;bird.vy=CFG.FLAP;bird.flapT=0.3;bird.wingPh=0;bird.y+=CFG.FLAP*0.008;bird.rot=clamp(bird.rot-0.12,-0.42,1.32);AU.flap();flapPuff();}
 function setPaused(on){if(on&&state==='PLAY'){state='PAUSED';pauseOverlay.classList.add('show');pauseBtn.textContent='▶';}else if(!on&&state==='PAUSED'){state='PLAY';pauseOverlay.classList.remove('show');pauseBtn.textContent='Ⅱ';lastT=0;}}
 function tap(){
   if(ANTI_CHEAT.locked)return;
@@ -987,12 +1006,12 @@ document.addEventListener('visibilitychange',function(){if(document.hidden&&stat
 function buildSelectors(){
   charGrid.innerHTML='';mapGrid.innerHTML='';updateCoinWallet();
   CHARS.forEach(function(ch){
-    var open=isCharUnlocked(ch.id),d=document.createElement('div');d.className='selCard'+(ch.id===charId?' on ':' ')+(open?'':'locked');d.setAttribute('role','button');d.setAttribute('tabindex','0');
+    var open=isCharUnlocked(ch.id),selected=ch.id===charId,d=document.createElement('div');d.className='selCard'+(selected?' on ':' ')+(open?'':'locked');d.setAttribute('role','button');d.setAttribute('tabindex','0');d.setAttribute('data-character-id',ch.id);d.setAttribute('aria-pressed',selected?'true':'false');d.setAttribute('aria-label',open?(selected?ch.vn+' đang được chọn':'chọn '+ch.vn):'mua '+ch.vn+' với '+ch.cost+' coin');
     var k=document.createElement('span');k.className='kj';k.textContent=open?ch.kj:'?';
-    var n=document.createElement('span');n.className='nm';n.textContent=ch.vn+(open?'':' · '+ch.cost+' coin');
+    var n=document.createElement('span');n.className='nm';n.textContent=selected?ch.vn+' · đang chọn':(open?ch.vn:'mở với '+ch.cost+' coin');
     var meta=document.createElement('span');meta.className='meta';meta.textContent=ch.adv+' · '+ch.dis;
     d.appendChild(k);d.appendChild(n);d.appendChild(meta);
-    d.addEventListener('click',function(){if(!open&&!unlockChar(ch.id))return;if(!isCharUnlocked(ch.id))return;charId=ch.id;store.set('chimse.char',ch.id);applyChar();buildSelectors();});
+    d.addEventListener('click',function(){if(!isCharUnlocked(ch.id)&&!unlockChar(ch.id))return;charId=ch.id;store.set('chimse.char',ch.id);applyChar();showShopMessage(ch.vn+' đang được chọn');buildSelectors();});
     d.addEventListener('keydown',function(e){if(e.key==='Enter'||e.key===' '){e.preventDefault();d.click();}});
     charGrid.appendChild(d);
   });
@@ -1008,7 +1027,7 @@ function buildSelectors(){
 
 /* ═══ KHỞI ĐỘNG ═══ */
 try{if(document.fonts&&document.fonts.load){document.fonts.load('700 46px Cormorant');document.fonts.load('600 20px "Shippori Mincho"');}}catch(e){}
-applyChar();applyMap();makePaper();resize();window.addEventListener('resize',resize);goTitle();buildSelectors();updateCoinWallet();DB.init();requestAnimationFrame(frame);
+normalizeWallet();syncWalletGuard();applyChar();applyMap();makePaper();resize();window.addEventListener('resize',resize);goTitle();buildSelectors();updateCoinWallet();DB.init();requestAnimationFrame(frame);
 
 })();
 </script>
