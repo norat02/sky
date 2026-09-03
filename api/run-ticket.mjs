@@ -6,15 +6,12 @@ export default async function handler(req, res) {
     const session = await authenticate(req);
     if (!session) return json(res, 401, { error: 'unauthorized' });
 
-    const now = new Date().toISOString();
     const ticket = signRunTicket(session.user.id);
-    const runId = JSON.parse(Buffer.from(ticket.split('.')[0], 'base64url').toString('utf8')).runId;
-    const { error } = await session.admin.from('score_runs').insert({
-      run_id: runId,
-      user_id: session.user.id,
-      started_at: now
-    });
-    if (error) return json(res, 500, { error: 'run_ticket_storage_failed' });
+    const payload = JSON.parse(Buffer.from(ticket.split('.')[0], 'base64url').toString('utf8'));
+    await session.db`
+      INSERT INTO score_runs (run_id, user_id, started_at)
+      VALUES (${payload.runId}, ${session.user.id}, ${new Date(payload.startedAt)})
+    `;
     return json(res, 200, { ticket, expiresInSeconds: 1800 });
   } catch (error) {
     return json(res, error.status || 500, { error: error.status === 500 ? 'server_not_configured' : 'request_failed' });

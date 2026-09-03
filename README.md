@@ -6,11 +6,11 @@ Game arcade HTML thuần chạy trên Vercel. Game luôn chơi được offline;
 
 Mọi biểu tượng trong giao diện phải dùng **SVG inline hoặc SVG sprite**, không dùng emoji hoặc ký tự biểu tượng thay thế. Icon tương tác cần có `aria-label` hoặc nhãn văn bản đi kèm, trạng thái trang trí dùng `aria-hidden="true"`, và SVG phải kế thừa màu giao diện qua `currentColor` khi phù hợp.
 
-## Supabase Database và RLS
+## Neon PostgreSQL và Supabase Auth
 
-Tạo một project trên [Supabase](https://supabase.com), mở **SQL Editor** và chạy file [`supabase/schema.sql`](supabase/schema.sql). Schema tạo bảng `scores`, bật Row Level Security, cho phép mọi người đọc bảng xếp hạng và chỉ cho người dùng đã đăng nhập gửi điểm với `user_id` của chính họ.
+Mở Neon Console và chạy file [`neon/schema.sql`](neon/schema.sql) để tạo bảng `scores` và `score_runs`. Dữ liệu điểm chỉ được truy cập qua Vercel API Functions bằng Neon server-side connection string; client không kết nối trực tiếp với Neon và không dùng RLS của Supabase cho các bảng này.
 
-Nếu bảng `scores` đã được tạo từ phiên bản Neon cũ, vẫn cần chạy lại phần `alter table`, index và policy trong schema để bổ sung `user_id` và quyền RLS tương ứng.
+Supabase chỉ còn cung cấp Auth để đăng nhập và xác minh Bearer token. API kiểm tra identity bằng Supabase Auth rồi đọc/ghi dữ liệu điểm qua Neon. Chi tiết biến môi trường và migration nằm trong [`docs/neon-vercel.md`](docs/neon-vercel.md).
 
 ## Email và Google OAuth
 
@@ -52,9 +52,9 @@ Build loader JavaScript đọc `.env.local` khi chạy local và chỉ sinh các
 
 ## Cấu hình Vercel
 
-Hướng dẫn chi tiết từng bước về Vercel Environment Variables, Supabase Auth và Google OAuth nằm tại [`docs/vercel-supabase-google-oauth.md`](docs/vercel-supabase-google-oauth.md).
+Hướng dẫn chi tiết về Neon PostgreSQL, Vercel Environment Variables và Supabase Auth nằm tại [`docs/neon-vercel.md`](docs/neon-vercel.md). Hướng dẫn OAuth cũ vẫn có tại [`docs/vercel-supabase-google-oauth.md`](docs/vercel-supabase-google-oauth.md).
 
-Tại **Vercel Project → Settings → Environment Variables**, thêm các biến sau. `PUBLIC_SITE_URL`, `SUPABASE_URL`, `SUPABASE_ANON_KEY` và `SUPABASE_REDIRECT_URL` dùng cho build/client; `SUPABASE_SERVICE_ROLE_KEY` và `SCORE_SIGNING_SECRET` chỉ dùng trong server runtime. Với Production nên điền domain thật; nếu bỏ trống `PUBLIC_SITE_URL`, build trên Vercel tự dùng `VERCEL_PROJECT_PRODUCTION_URL` hoặc `VERCEL_URL` làm fallback. Sau khi thay đổi biến, bắt buộc tạo deployment mới vì `config.js`, `robots.txt` và `sitemap.xml` được sinh trong bước build:
+Tại **Vercel Project → Settings → Environment Variables**, thêm các biến sau. `DATABASE_URL` hoặc `NEON_DATABASE_URL` dùng cho Neon server runtime; `SUPABASE_URL` và `SUPABASE_SERVICE_ROLE_KEY` chỉ dùng để xác minh Supabase Auth; `SUPABASE_ANON_KEY` và `SUPABASE_REDIRECT_URL` dùng cho Auth build/client; `SCORE_SIGNING_SECRET` chỉ dùng trong server runtime. Với Production nên điền domain thật; nếu bỏ trống `PUBLIC_SITE_URL`, build trên Vercel tự dùng `VERCEL_PROJECT_PRODUCTION_URL` hoặc `VERCEL_URL` làm fallback. Sau khi thay đổi biến, bắt buộc tạo deployment mới vì `config.js`, `robots.txt` và `sitemap.xml` được sinh trong bước build:
 
 | Biến | Giá trị |
 |---|---|
@@ -110,7 +110,7 @@ SUPABASE_SERVICE_ROLE_KEY=<service-role-key-or-secret-key>
 SCORE_SIGNING_SECRET=<random-secret-at-least-32-characters>
 ```
 
-Sau khi cập nhật schema, cần chạy [`supabase/schema.sql`](supabase/schema.sql) trong **Supabase Dashboard → SQL Editor** để tạo `score_runs`, `scores` và các policy RLS. Kiểm tra rằng bảng đã tồn tại, RLS đang bật và policy không cho client tự `UPDATE`/`DELETE` điểm. Trên Vercel, kiểm tra **Settings → Functions** để các file `api/*.mjs` được nhận diện tự động; không đặt `api` trong Output Directory và không thêm `SUPABASE_SERVICE_ROLE_KEY`/`SCORE_SIGNING_SECRET` vào `config.js`. Sau khi nhập hoặc thay đổi biến môi trường, phải redeploy Production. Nếu chưa có hai biến server-side hoặc chưa chạy schema, game vẫn chạy offline nhưng không thể gửi điểm qua API.
+Sau khi cập nhật schema, cần chạy [`neon/schema.sql`](neon/schema.sql) trong **Neon Console → SQL Editor** để tạo `score_runs` và `scores`. Neon không dùng RLS cho các bảng này; chỉ Vercel Functions có `DATABASE_URL` mới được truy cập. Kiểm tra rằng bảng đã tồn tại và không có database credential nào được đưa vào client; API không cung cấp thao tác `UPDATE`/`DELETE` cho client. Trên Vercel, kiểm tra **Settings → Functions** để các file `api/*.mjs` được nhận diện tự động; không đặt `api` trong Output Directory và không thêm `SUPABASE_SERVICE_ROLE_KEY`/`SCORE_SIGNING_SECRET` vào `config.js`. Sau khi nhập hoặc thay đổi biến môi trường, phải redeploy Production. Nếu chưa có hai biến server-side hoặc chưa chạy schema, game vẫn chạy offline nhưng không thể gửi điểm qua API.
 
 > Không có cơ chế nào chống gian lận tuyệt đối khi toàn bộ mô phỏng game chạy trong trình duyệt. Serverless Function này chặn giả mạo request cơ bản, replay ticket, gửi quá nhiều lần và điểm vượt tốc độ hợp lý. Muốn đạt mức chống gian lận cao hơn, cần chuyển trạng thái game hoặc xác thực replay sang server-authoritative.
 
@@ -122,11 +122,11 @@ Leaderboard vẫn chỉ tin dữ liệu được Vercel Function xác thực b�
 
 ## Bảo mật và mã hóa
 
-Website được phục vụ qua HTTPS bởi Vercel và Supabase, nên dữ liệu truyền giữa trình duyệt và các dịch vụ được mã hóa trong quá trình truyền. Không lưu mật khẩu, service-role key hoặc secret OAuth trong client. `SUPABASE_ANON_KEY` là public key và chỉ được dùng cùng Row Level Security; service-role key và `SCORE_SIGNING_SECRET` chỉ nằm trong Vercel Environment Variables.
+Website được phục vụ qua HTTPS bởi Vercel, Neon và Supabase Auth, nên dữ liệu truyền giữa trình duyệt và các dịch vụ được mã hóa trong quá trình truyền. Không lưu mật khẩu, service-role key hoặc secret OAuth trong client. `SUPABASE_ANON_KEY` là public Auth key; service-role key, Neon connection string và `SCORE_SIGNING_SECRET` chỉ nằm trong Vercel Environment Variables.
 
 Vercel đã được cấu hình các header `Content-Security-Policy`, `X-Content-Type-Options`, `X-Frame-Options`, `Referrer-Policy` và `Permissions-Policy`. CSP chỉ cho phép các nguồn script, font, Supabase, Google OAuth và AdSense mà game đang sử dụng.
 
-RLS trong [`supabase/schema.sql`](supabase/schema.sql) cho phép đọc Leaderboard công khai, nhưng chỉ tài khoản đã xác thực mới được insert điểm của chính mình. Không có policy UPDATE/DELETE cho client. Điểm cũng bị giới hạn từ `0` đến `100000`, tên người chơi từ 1 đến 10 ký tự và được kiểm tra trước khi gửi.
+Neon không cấp quyền database cho client. Leaderboard được đọc qua API server; chỉ request đã xác thực và có run ticket hợp lệ mới được insert điểm. Không có endpoint client cho UPDATE/DELETE. Điểm cũng bị giới hạn từ `0` đến `100000`, tên người chơi từ 1 đến 10 ký tự và được kiểm tra trước khi gửi.
 
 Các biện pháp phía client không thể ngăn người dùng sửa JavaScript hoặc giả mạo điểm. Nếu Leaderboard cần chống gian lận nghiêm ngặt, cần thêm Vercel Function dùng secret server-side để xác thực kết quả hoặc hệ thống replay/server-authoritative; tuyệt đối không đưa service-role key vào `index.html`.
 

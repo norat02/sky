@@ -69,6 +69,15 @@ func checkGroup(label string, names []string, local map[string]string) int {
 	return failures
 }
 
+func checkDatabase(local map[string]string) int {
+	if strings.TrimSpace(value("DATABASE_URL", local)) == "" && strings.TrimSpace(value("NEON_DATABASE_URL", local)) == "" {
+		fmt.Println("MISSING server/DATABASE_URL or server/NEON_DATABASE_URL")
+		return 1
+	}
+	fmt.Println("OK server/Neon connection string present")
+	return 0
+}
+
 func main() {
 	local, err := parseDotEnv(".env.local")
 	if err != nil {
@@ -76,6 +85,7 @@ func main() {
 		os.Exit(2)
 	}
 	failures := checkGroup("public", requiredPublic, local)
+	failures += checkDatabase(local)
 	failures += checkGroup("server", requiredServer, local)
 	if failures > 0 {
 		fmt.Printf("Environment check failed: %d issue(s); values were not printed.\n", failures)

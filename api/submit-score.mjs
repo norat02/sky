@@ -41,19 +41,36 @@ export default async function handler(req, res) {
     const maxPlausibleScore = Math.min(100000, Math.floor(elapsedSeconds * 25) + 5);
     if (score > maxPlausibleScore) return json(res, 422, { error: 'score_rate_exceeded' });
 
-    const { data: existing, error: lookupError } = await session.admin.from('score_runs').select('run_id,submitted_at').eq('run_id', run.runId).eq('user_id', session.user.id).maybeSingle();
-    if (lookupError || !existing || existing.submitted_at) return json(res, 409, { error: 'run_already_used' });
+    const existing = await session.db`
+      SELECT run_id, submitted_at
+      FROM score_runs
+      WHERE run_id = ${run.runId} AND user_id = ${session.user.id}
+      LIMIT 1
+    `;
+    if (!existing[0] || existing[0].submitted_at) return json(res, 409, { error: 'run_already_used' });
 
-    const { data: lockedRows, error: markError } = await session.admin.from('score_runs').update({ submitted_at: new Date(now).toISOString() }).eq('run_id', run.runId).eq('user_id', session.user.id).is('submitted_at', null).select('run_id');
-    if (markError) return json(res, 500, { error: 'run_lock_failed' });
-    if (!lockedRows || lockedRows.length !== 1) return json(res, 409, { error: 'run_already_used' });
+    const lockedRows = await session.db`
+      UPDATE score_runs
+      SET submitted_at = ${new Date(now)}
+      WHERE run_id = ${run.runId}
+        AND user_id = ${session.user.id}
+        AND submitted_at IS NULL
+      RETURNING run_id
+    `;
+    if (lockedRows.length !== 1) return json(res, 409, { error: 'run_already_used' });
 
-    const { error: insertError } = await session.admin.from('scores').insert({ player_name: name, score, user_id: session.user.id });
-    if (insertError) return json(res, 500, { error: 'score_storage_failed' });
+    await session.db`
+      INSERT INTO scores (player_name, score, user_id)
+      VALUES (${name}, ${score}, ${session.user.id})
+    `;
 
-    const { data: rows, error: listError } = await session.admin.from('scores').select('player_name,score,created_at').order('score', { ascending: false }).order('created_at', { ascending: true }).limit(10);
-    if (listError) return json(res, 200, { rows: [] });
-    return json(res, 200, { rows: (rows || []).map((row) => ({ name: row.player_name, score: row.score })) });
+    const rows = await session.db`
+      SELECT player_name, score, created_at
+      FROM scores
+      ORDER BY score DESC, created_at ASC
+      LIMIT 10
+    `;
+    return json(res, 200, { rows: rows.map((row) => ({ name: row.player_name, score: row.score })) });
   } catch (error) {
     return json(res, error instanceof SyntaxError ? 400 : 500, { error: error instanceof SyntaxError ? 'invalid_json' : 'request_failed' });
   }

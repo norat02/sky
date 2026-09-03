@@ -36,23 +36,21 @@ assert.equal(forbidden.statusCode, 403, 'authenticated non-admin must return 403
 assert.equal(forbidden.payload.error, 'forbidden');
 
 const calls = [];
-const adminClient = {
-  from(table) {
-    calls.push(table);
-    const builder = {
-      select() { return builder; },
-      order() { return builder; },
-      limit() { return Promise.resolve({ data: table === 'scores' ? [{ player_name: 'Sky', score: 42, user_id: 'u1', created_at: '2026-08-29T00:00:00Z' }] : [{ score: 42 }], count: table === 'scores' ? 1 : null, error: null }); },
-      not() { return Promise.resolve({ data: null, count: 1, error: null }); }
-    };
-    return builder;
-  }
+const neonMock = async (strings, ...values) => {
+  const query = strings.join('$param');
+  const table = query.includes('score_runs') ? 'score_runs' : 'scores';
+  calls.push(table);
+  if (query.includes('count(*)') && query.includes('submitted_at')) return [{ count: 1 }];
+  if (query.includes('count(*)')) return [{ count: table === 'scores' ? 1 : 2 }];
+  if (query.includes('ORDER BY score DESC LIMIT 1')) return [{ score: 42 }];
+  return [{ id: 1, player_name: 'Sky', score: 42, user_id: 'u1', created_at: '2026-08-29T00:00:00Z' }];
 };
+void neonMock;
 const allowed = responseRecorder();
-await createAdminDataHandler({ authenticateFn: async () => ({ admin: adminClient, user: { id: 'x', email: 'admin@example.com', app_metadata: {} } }) })({ method: 'GET', headers: {} }, allowed);
+await createAdminDataHandler({ authenticateFn: async () => ({ db: neonMock, user: { id: 'x', email: 'admin@example.com', app_metadata: {} } }) })({ method: 'GET', headers: {} }, allowed);
 assert.equal(allowed.statusCode, 200, 'admin must receive data');
 assert.equal(allowed.payload.stats.topScore, 42);
-assert.deepEqual(allowed.payload.scores[0].player_name, 'Sky');
+assert.equal(allowed.payload.scores[0].player_name, 'Sky');
 assert.deepEqual(calls.sort(), ['score_runs', 'score_runs', 'scores', 'scores', 'scores'].sort(), 'admin handler must query expected tables');
 
 console.log('admin auth seams: OK');

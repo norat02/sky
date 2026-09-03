@@ -1,8 +1,10 @@
 import crypto from 'node:crypto';
 import { createClient } from '@supabase/supabase-js';
+import { requireDatabase } from './_db.mjs';
 
 const supabaseUrl = process.env.SUPABASE_URL;
 const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+const databaseUrl = process.env.DATABASE_URL || process.env.NEON_DATABASE_URL;
 const signingSecret = process.env.SCORE_SIGNING_SECRET;
 
 export function json(res, status, payload) {
@@ -10,7 +12,7 @@ export function json(res, status, payload) {
 }
 
 export function requireConfig() {
-  if (!supabaseUrl || !serviceRoleKey || !signingSecret) {
+  if (!supabaseUrl || !serviceRoleKey || !databaseUrl || !signingSecret) {
     const error = new Error('server configuration missing');
     error.status = 500;
     throw error;
@@ -27,7 +29,7 @@ export async function authenticate(req) {
   });
   const { data, error } = await admin.auth.getUser(token);
   if (error || !data?.user) return null;
-  return { admin, user: data.user };
+  return { db: requireDatabase(), user: data.user };
 }
 
 function envList(name) {

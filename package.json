@@ -4,6 +4,7 @@
   "version": "1.0.0",
   "type": "module",
   "dependencies": {
+    "@neondatabase/serverless": "^1.0.2",
     "@supabase/supabase-js": "^2.49.8"
   },
   "scripts": {

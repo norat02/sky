@@ -4,6 +4,7 @@ import crypto from 'node:crypto';
 
 process.env.SUPABASE_URL ||= 'https://unit-test.supabase.co';
 process.env.SUPABASE_SERVICE_ROLE_KEY ||= 'unit-test-service-role-key';
+process.env.DATABASE_URL ||= 'postgresql://unit-test:unit-test@localhost/unit-test';
 process.env.SCORE_SIGNING_SECRET ||= 'unit-test-signing-secret-with-more-than-32-chars';
 
 const { signRunTicket, verifyRunTicket } = await import('../api/_security.mjs');

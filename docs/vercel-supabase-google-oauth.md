@@ -6,7 +6,8 @@ Mở **Vercel → Project → Settings → Environment Variables** và tạo cá
 
 | Biến | Bắt buộc | Phạm vi | Giá trị |
 |---|---:|---|---|
-| `SUPABASE_URL` | Có | Client + Server | Project URL, dạng `https://<project-ref>.supabase.co`. |
+| `DATABASE_URL` hoặc `NEON_DATABASE_URL` | Có cho API | Server-only | Neon pooled connection string, có `sslmode=require`. |
+| `SUPABASE_URL` | Có cho Auth | Client + Server | Supabase Auth project URL, dạng `https://<project-ref>.supabase.co`. |
 | `SUPABASE_ANON_KEY` | Có | Client | Public anon/publishable key. Biến này có thể xuất hiện trong client và phải được bảo vệ bằng RLS. |
 | `SUPABASE_REDIRECT_URL` | Không | Build/client | URL Production, ví dụ `https://game.example.com/` hoặc `https://your-project.vercel.app/`. Nếu bỏ trống, ứng dụng dùng origin hiện tại. |
 | `SUPABASE_SERVICE_ROLE_KEY` | Có cho API | Server-only | Service-role key của Supabase. Không bao giờ đưa vào `config.js`, `index.html` hoặc log client. |
@@ -20,9 +21,9 @@ openssl rand -base64 48
 
 Vercel chạy `npm run build`. Script `scripts/generate-config.mjs` chỉ đưa các biến public vào `config.js`. Các biến server-only được đọc trực tiếp bởi Vercel Functions.
 
-## 2. Supabase Database và Auth
+## 2. Neon Database và Supabase Auth
 
-Trong Supabase **SQL Editor**, chạy [`supabase/schema.sql`](../supabase/schema.sql). Kiểm tra RLS đã bật cho `scores` và `score_runs`. Client chỉ nên đọc Leaderboard; việc ghi điểm đi qua API server.
+Supabase chỉ dùng cho Auth. Trong Neon Console, chạy [`neon/schema.sql`](../neon/schema.sql) để tạo `scores` và `score_runs`. Neon không cấp quyền database cho client; việc đọc Leaderboard và ghi điểm đều đi qua Vercel API server.
 
 Trong **Authentication → Providers**:
 
@@ -85,4 +86,4 @@ Nếu Google trả lỗi `redirect_uri_mismatch`, đối chiếu chính xác cal
 
 Không commit `.env`, `config.js`, service-role key hoặc Google client secret. Chỉ public anon/publishable key được phép xuất hiện ở client. Không tin điểm số từ client; API phải xác thực JWT, run ticket, rate limit và schema trước khi ghi database.
 
-Locale theo IP chỉ là gợi ý giao diện, không dùng cho phân quyền hoặc quyết định bảo mật. Nếu Vercel không cung cấp country header, ứng dụng fallback sang `navigator.language`, rồi dùng English nếu không nhận diện được.
+Locale theo IP chỉ là gợi ý giao diện, không dùng cho phân quyền hoặc quyết định bảo mật. Nếu Vercel không cung cấp country header, ứng dụng fallback sang `navigator.language`, rồi dùng English nếu không nhận diện được. Database runtime của API là Neon; Supabase không còn là database của game.
