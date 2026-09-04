@@ -1,0 +1,63 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: sky
+      POSTGRES_USER: sky
+      POSTGRES_PASSWORD: sky
+    ports: ["5432:5432"]
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./server/migrations/001_sky_bird_v2.sql:/docker-entrypoint-initdb.d/001_sky_bird_v2.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U sky -d sky"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+  redis:
+    image: redis:7-alpine
+    ports: ["6379:6379"]
+  rabbitmq:
+    image: rabbitmq:3-management-alpine
+    environment:
+      RABBITMQ_DEFAULT_USER: sky
+      RABBITMQ_DEFAULT_PASS: sky
+    ports: ["5672:5672", "15672:15672"]
+  api1:
+    build: .
+    command: node server/index.mjs
+    environment: &api-env
+      DATABASE_URL: postgres://sky:sky@postgres:5432/sky
+      REDIS_URL: redis://redis:6379
+      RABBITMQ_URL: amqp://sky:sky@rabbitmq:5672
+      JWT_SECRET: change-this-in-production
+      PORT: 4000
+    depends_on:
+      postgres: { condition: service_healthy }
+      redis: { condition: service_started }
+      rabbitmq: { condition: service_started }
+  api2:
+    build: .
+    command: node server/index.mjs
+    environment:
+      <<: *api-env
+      PORT: 4000
+    depends_on:
+      postgres: { condition: service_healthy }
+      redis: { condition: service_started }
+      rabbitmq: { condition: service_started }
+  worker:
+    build: .
+    command: node server/worker.mjs
+    environment: *api-env
+    depends_on:
+      postgres: { condition: service_healthy }
+      rabbitmq: { condition: service_started }
+  nginx:
+    image: nginx:1.27-alpine
+    ports: ["8080:80"]
+    volumes:
+      - ./infra/nginx.conf:/etc/nginx/nginx.conf:ro
+    depends_on: [api1, api2]
+volumes:
+  postgres_data:

@@ -5,7 +5,15 @@
   "type": "module",
   "dependencies": {
     "@neondatabase/serverless": "^1.0.2",
-    "@supabase/supabase-js": "^2.49.8"
+    "@supabase/supabase-js": "^2.49.8",
+    "amqplib": "^2.0.1",
+    "cors": "^2.8.6",
+    "dotenv": "^17.4.2",
+    "express": "^5.2.1",
+    "helmet": "^8.3.0",
+    "ioredis": "^6.0.0",
+    "pg": "^8.23.0",
+    "zod": "^4.5.4"
   },
   "scripts": {
     "build": "node scripts/generate-config.mjs",
@@ -18,9 +26,14 @@
     "test:e2e:backup:attack": "node e2e/backup-attack.e2e.mjs",
     "test:e2e:characters-xss": "node e2e/characters-xss.e2e.mjs",
     "test:e2e:purchase": "node e2e/character-purchase.e2e.mjs",
-    "benchmark:backup": "node scripts/benchmark-backup.mjs"
+    "benchmark:backup": "node scripts/benchmark-backup.mjs",
+    "api:dev": "node --env-file=.env server/index.mjs",
+    "api": "node server/index.mjs",
+    "worker": "node server/worker.mjs",
+    "test:api": "node scripts/test-api.mjs"
   },
   "devDependencies": {
-    "playwright": "^1.62.1"
+    "playwright": "^1.62.1",
+    "supertest": "^7.2.2"
   }
 }

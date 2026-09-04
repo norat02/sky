@@ -386,3 +386,10 @@ npm run test:e2e:characters-xss
 ```
 
 Test đặt marker giả vào localStorage, reload ứng dụng, theo dõi request exfiltration và kiểm tra DOM. Test đạt khi payload không thực thi, không có request gửi ra endpoint giả và ciphertext backup không xuất hiện trong giao diện. Kịch bản không gửi dữ liệu thật ra ngoài.
+
+
+## Sky Bird v2 — REST backend reference
+
+Repository hiện có thêm backend REST độc lập tại [`server/`](server/) và hạ tầng local tại [`docker-compose.yml`](docker-compose.yml). Backend bao gồm JWT Authentication, RBAC (`player`/`admin`), PostgreSQL schema với foreign key và index leaderboard, transaction, row locking và optimistic version để chống ghi điểm đồng thời, Redis cache/rate limiting, RabbitMQ message queue qua transactional outbox, idempotency key, cùng Nginx load balancing.
+
+Đọc hướng dẫn đầy đủ tại [`docs/backend-v2.md`](docs/backend-v2.md). Smoke test chạy bằng `npm run test:api`; kiểm tra frontend và các luồng bảo mật hiện có bằng `npm test`. Docker stack chạy bằng `docker compose up --build` và expose API qua `http://localhost:8080`.
