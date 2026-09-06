@@ -7,3 +7,8 @@ config.js
 # Local tooling and Vercel metadata
 node_modules/
 .vercel/
+dist/
+android/local.properties
+android/**/*.jks
+android/**/*.keystore
+android/google-services.json

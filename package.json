@@ -4,6 +4,8 @@
   "version": "1.0.0",
   "type": "module",
   "dependencies": {
+    "@capacitor/app": "^8.1.1",
+    "@capacitor/core": "^8.5.1",
     "@neondatabase/serverless": "^1.0.2",
     "@supabase/supabase-js": "^2.49.8",
     "amqplib": "^2.0.1",
@@ -16,7 +18,7 @@
     "zod": "^4.5.4"
   },
   "scripts": {
-    "build": "node scripts/generate-config.mjs",
+    "build": "node scripts/generate-config.mjs && node scripts/build-web.mjs",
     "env:check": "go run ./tools/envcheck/main.go",
     "verify": "node scripts/verify.mjs",
     "test": "node scripts/test-flows.mjs && node scripts/test-security-rewarded.mjs && node scripts/test-admin-auth.mjs",
@@ -30,10 +32,18 @@
     "api:dev": "node --env-file=.env server/index.mjs",
     "api": "node server/index.mjs",
     "worker": "node server/worker.mjs",
-    "test:api": "node scripts/test-api.mjs"
+    "test:api": "node scripts/test-api.mjs",
+    "build:web": "npm run build",
+    "cap:sync": "npm run build && npx cap sync android",
+    "cap:open": "npx cap open android",
+    "cap:build:apk": "npm run cap:sync && cd android && ./gradlew assembleDebug --no-daemon",
+    "cap:build:aab": "npm run cap:sync && cd android && ./gradlew bundleDebug --no-daemon"
   },
   "devDependencies": {
+    "@capacitor/android": "^8.5.1",
+    "@capacitor/cli": "^8.5.1",
     "playwright": "^1.62.1",
-    "supertest": "^7.2.2"
+    "supertest": "^7.2.2",
+    "typescript": "^7.0.2"
   }
 }

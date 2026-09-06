@@ -23,13 +23,15 @@ const localEnv = process.env.VERCEL ? {} : parseEnvLocal('.env.local');
 const env = { ...localEnv, ...process.env };
 const vercelUrl = env.VERCEL_PROJECT_PRODUCTION_URL || env.VERCEL_URL;
 const defaultSiteUrl = vercelUrl ? `https://${vercelUrl}/` : 'https://norat02.github.io/sky/';
-const siteUrl = (env.PUBLIC_SITE_URL || defaultSiteUrl).replace(/\/$/, '') + '/';
+const siteUrl = (env.VITE_PUBLIC_SITE_URL || defaultSiteUrl).replace(/\/$/, '') + '/';
 const config = {
   PUBLIC_SITE_URL: siteUrl,
-  SUPABASE_URL: env.SUPABASE_URL || '',
-  SUPABASE_ANON_KEY: env.SUPABASE_ANON_KEY || '',
-  SUPABASE_REDIRECT_URL: env.SUPABASE_REDIRECT_URL || '',
-  ADSENSE_PUBLISHER_ID: env.ADSENSE_PUBLISHER_ID || ''
+  API_BASE_URL: env.VITE_API_BASE_URL || '',
+  SUPABASE_URL: env.VITE_SUPABASE_URL || '',
+  SUPABASE_ANON_KEY: env.VITE_SUPABASE_ANON_KEY || '',
+  SUPABASE_REDIRECT_URL: env.VITE_SUPABASE_REDIRECT_URL || siteUrl,
+  ADSENSE_PUBLISHER_ID: env.ADSENSE_PUBLISHER_ID || '',
+  NATIVE_OAUTH_REDIRECT_SCHEME: env.VITE_NATIVE_OAUTH_REDIRECT_SCHEME || 'com.norat02.skybird'
 };
 
 const js = `// Generated at build time. Do not commit this file.\nwindow.SKY_CONFIG = ${JSON.stringify(config, null, 2)};\n`;

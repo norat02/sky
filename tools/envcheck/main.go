@@ -8,7 +8,7 @@ import (
 	"strings"
 )
 
-var requiredPublic = []string{"PUBLIC_SITE_URL", "SUPABASE_URL", "SUPABASE_ANON_KEY"}
+var requiredPublic = []string{"VITE_PUBLIC_SITE_URL", "VITE_SUPABASE_URL", "VITE_SUPABASE_ANON_KEY"}
 var requiredServer = []string{"SUPABASE_SERVICE_ROLE_KEY", "SCORE_SIGNING_SECRET"}
 var keyPattern = regexp.MustCompile(`^(?:export\s+)?([A-Za-z_][A-Za-z0-9_]*)\s*=\s*(.*)$`)
 

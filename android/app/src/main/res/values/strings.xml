@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Sky Bird</string>
+    <string name="title_activity_main">Sky Bird</string>
+    <string name="package_name">com.norat02.skybird</string>
+    <string name="custom_url_scheme">com.norat02.skybird</string>
+</resources>

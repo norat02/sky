@@ -1,0 +1,12 @@
+{
+  "appId": "com.norat02.skybird",
+  "appName": "Sky Bird",
+  "webDir": "dist",
+  "bundledWebRuntime": false,
+  "server": {
+    "androidScheme": "https"
+  },
+  "android": {
+    "allowMixedContent": false
+  }
+}
