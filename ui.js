@@ -30,6 +30,7 @@
       <div id="dataTools"><div class="selLabel" data-i18n="playerData">dữ liệu người chơi</div><button class="btn ghost" id="exportBtn" data-i18n="exportBackup">xuất backup</button><button class="btn ghost" id="importBtn" data-i18n="importBackup">nhập backup</button><input id="importFile" type="file" accept="application/json,.json" hidden><div id="dataMsg"></div></div>
       <div class="keys"><kbd>SPACE</kbd>hoặc chạm màn hình</div>
       <div id="authPanel"><div id="authState" data-i18n="offlineLogin">chơi offline — đăng nhập để lưu điểm online</div><button class="btn ghost" id="authOpen" data-i18n="login">đăng nhập</button><button class="btn ghost hidden" id="authLogout" data-i18n="logout">đăng xuất</button></div>
+      <div class="quick-locale" role="group" aria-label="Language"><span data-i18n="language">ngôn ngữ</span><button type="button" id="quickLocaleVi" data-locale="vi" aria-label="Tiếng Việt">VI</button><button type="button" id="quickLocaleEn" data-locale="en" aria-label="English">EN</button></div>
       <nav class="policy-links" aria-label="Chính sách website"><a href="privacy-policy.html">Privacy Policy</a><a href="terms-of-use.html">Terms of Use</a></nav>
     </aside>
   </div>
