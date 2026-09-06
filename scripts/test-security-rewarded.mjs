@@ -35,8 +35,9 @@ for (const bad of [
 ]) assert.equal(validateScorePayload(bad), null, `invalid payload must be rejected: ${JSON.stringify(bad)}`);
 
 const html = readFileSync(new URL('../index.html', import.meta.url), 'utf8');
+const uiJs = readFileSync(new URL('../ui.js', import.meta.url), 'utf8');
 const gameJs = readFileSync(new URL('../game.js', import.meta.url), 'utf8');
-const source = `${html}\n${gameJs}`;
+const source = `${html}\n${uiJs}\n${gameJs}`;
 assert.match(source, /if\(ok===false\)throw new Error\('ad incomplete'\)/, 'revive must reject incomplete ads');
 assert.match(source, /RewardedSlotGrantedEvent|reward-granted|rewarded-ad/, 'rewarded-grant integration marker must exist');
 assert.match(source, /reviveUsed=true/, 'revive must be consumed after a successful grant');

@@ -6,8 +6,9 @@ const adminHtml = readFileSync('admin.html', 'utf8');
 const adminApi = readFileSync('api/admin-data.mjs', 'utf8');
 const adminE2E = readFileSync('e2e/admin.e2e.mjs', 'utf8');
 const scripts = [...html.matchAll(/<script(?:\s[^>]*)?>([\s\S]*?)<\/script>/gi)].map((m) => m[1]);
+const uiJs = readFileSync('ui.js', 'utf8');
 const gameJs = readFileSync('game.js', 'utf8');
-const source = `${html}\n${gameJs}`;
+const source = `${html}\n${uiJs}\n${gameJs}`;
 assert(source.includes('homeLeaderboard'));
 assert(adminHtml.includes('id="appView"'), 'Admin dashboard markup missing');
 assert(adminHtml.includes('/api/admin-data'), 'Admin API integration missing');
@@ -90,4 +91,4 @@ assert(readFileSync('e2e/game.e2e.mjs', 'utf8').includes('option[value="zh"]'), 
 assert(readFileSync('e2e/game.e2e.mjs', 'utf8').includes('Incomplete rewarded ad must not revive'), 'Playwright rewarded rejection coverage missing');
 assert(readFileSync('e2e/game.e2e.mjs', 'utf8').includes('Leaderboard payload score was not validated'), 'Playwright Leaderboard payload coverage missing');
 writeFileSync('/tmp/sky-source-current.js', source, 'utf8');
-console.log(`verified HTML + game.js; ${scripts.length} inline metadata script block(s)`);
+console.log(`verified HTML + ui.js + game.js; ${scripts.length} inline metadata script block(s)`);
