@@ -1,10 +1,13 @@
-name: Build Android APK
+name: Build web and optional Android APK
 
 on:
   workflow_dispatch:
   push:
     branches:
       - main
+
+permissions:
+  contents: read
 
 jobs:
   build:
@@ -26,21 +29,61 @@ jobs:
       - name: Build web
         run: npm run build
 
-      - name: Sync Capacitor
-        run: npx cap sync android
+      - name: Verify source and tests
+        run: |
+          npm run verify
+          npm test
+
+      - name: Upload static website artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: sky-bird-web
+          path: |
+            index.html
+            styles.css
+            ui.js
+            game.js
+            consent-gate.js
+            privacy-policy.html
+            terms-of-use.html
+            og-image.png
+            robots.txt
+            sitemap.xml
+            config.js
+            config.example.js
+
+      - name: Detect Android project
+        id: android-project
+        shell: bash
+        run: |
+          if [[ -x android/gradlew && -f capacitor.config.json || -f capacitor.config.ts ]]; then
+            echo "available=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "available=false" >> "$GITHUB_OUTPUT"
+            echo "No committed Capacitor Android project found; web build completed and APK build is skipped."
+          fi
 
       - name: Setup Java
+        if: steps.android-project.outputs.available == 'true'
         uses: actions/setup-java@v4
         with:
           distribution: temurin
-          java-version: 21
+          java-version: '21'
+          cache: gradle
+
+      - name: Sync Capacitor
+        if: steps.android-project.outputs.available == 'true'
+        run: npx --no-install cap sync android
 
       - name: Build APK
+        if: steps.android-project.outputs.available == 'true'
         working-directory: android
-        run: ./gradlew assembleDebug
+        run: ./gradlew assembleDebug --no-daemon
 
       - name: Upload APK
+        if: steps.android-project.outputs.available == 'true'
         uses: actions/upload-artifact@v4
         with:
-          name: chim-se-apk
+          name: sky-bird-apk
           path: android/app/build/outputs/apk/debug/app-debug.apk
+          if-no-files-found: error

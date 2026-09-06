@@ -4,7 +4,7 @@
   "cleanUrls": true,
   "headers": [
     {
-      "source": "/(.*\\.(png|jpg|jpeg|webp|svg|woff2))",
+      "source": "/(.*\\.(js|css|png|jpg|jpeg|webp|svg|woff2))",
       "headers": [
         { "key": "Cache-Control", "value": "public, max-age=86400, stale-while-revalidate=604800" }
       ]
@@ -16,7 +16,7 @@
         { "key": "X-Frame-Options", "value": "DENY" },
         { "key": "Referrer-Policy", "value": "strict-origin-when-cross-origin" },
         { "key": "Permissions-Policy", "value": "camera=(), microphone=(), geolocation=()" },
-        { "key": "Content-Security-Policy", "value": "default-src 'self'; script-src 'self' 'unsafe-inline' https://esm.sh https://images.dmca.com https://pagead2.googlesyndication.com https://securepubads.g.doubleclick.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' https://images.dmca.com data: blob:; connect-src 'self' https://*.supabase.co https://esm.sh https://securepubads.g.doubleclick.net https://*.doubleclick.net; frame-src 'self' https://accounts.google.com https://*.doubleclick.net; form-action 'self' https://accounts.google.com; base-uri 'self'; object-src 'none'; frame-ancestors 'none'" }
+        { "key": "Content-Security-Policy", "value": "default-src 'self'; script-src 'self' 'unsafe-inline' https://esm.sh https://images.dmca.com https://pagead2.googlesyndication.com https://securepubads.g.doubleclick.net https://fundingchoicesmessages.google.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' https://images.dmca.com https://fundingchoicesmessages.google.com data: blob:; connect-src 'self' https://*.supabase.co https://esm.sh https://securepubads.g.doubleclick.net https://*.doubleclick.net https://fundingchoicesmessages.google.com; frame-src 'self' https://accounts.google.com https://*.doubleclick.net https://fundingchoicesmessages.google.com; form-action 'self' https://accounts.google.com; base-uri 'self'; object-src 'none'; frame-ancestors 'none'" }
       ]
     }
   ]

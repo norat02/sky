@@ -9,3 +9,9 @@ Nguồn 2: https://support.google.com/adsense/answer/10960768?hl=vi — Trong Ad
 Nguồn 3: https://support.google.com/adsense/answer/13554116?hl=vi — Khi phân phát quảng cáo được cá nhân hóa cho người dùng EEA/UK/Switzerland, Google yêu cầu CMP được Google chứng nhận và tích hợp IAB TCF; trang nêu mốc EEA/UK từ 16/01/2024 và Switzerland từ 31/07/2024.
 
 Trạng thái repository: hiện có nội dung Privacy Policy mô tả CMP và consent nhưng chưa có CMP script/config runtime thực tế trong mã nguồn. Không được coi là đã tuân thủ đầy đủ cho tới khi bật một CMP thực tế, cấu hình domain/ATP/purposes, publish message, kiểm tra consent signal trước khi tải quảng cáo và xác minh bằng công cụ kiểm tra của Google.
+
+## Cơ chế chặn yêu cầu quảng cáo
+
+Nguồn bổ sung: https://support.google.com/adsense/answer/7670312?hl=en — Với mã AdSense bất đồng bộ, Google hướng dẫn đặt `(adsbygoogle=window.adsbygoogle||[]).pauseAdRequests=1` trước khi gọi `adsbygoogle.push(...)`; sau khi người dùng chọn consent, đặt `pauseAdRequests=0`. Repository hiện triển khai cơ chế này trong `consent-gate.js`, đồng thời `game.js` chỉ tải `adsbygoogle.js` sau khi consent gate nhận trạng thái `__tcfapi` hợp lệ. Khi chưa có publisher ID hoặc CMP signal, quảng cáo vẫn bị chặn.
+
+Nguồn bổ sung: https://support.google.com/adsense/answer/16918505?hl=en — Google mô tả Google CMP là công cụ thu thập consent/opt-out và nhấn mạnh rằng publisher dùng sản phẩm quảng cáo của Google phải dùng CMP được Google chứng nhận, tích hợp IAB TCF khi phân phát quảng cáo cá nhân hóa tại EEA, UK và Switzerland. URL loader trong `consent-gate.js` phải được lấy/xác nhận từ phần Privacy & messaging của tài khoản AdSense production; publisher ID trong biến môi trường là thông tin public, không phải secret.

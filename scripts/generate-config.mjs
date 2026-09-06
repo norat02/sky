@@ -28,7 +28,8 @@ const config = {
   PUBLIC_SITE_URL: siteUrl,
   SUPABASE_URL: env.SUPABASE_URL || '',
   SUPABASE_ANON_KEY: env.SUPABASE_ANON_KEY || '',
-  SUPABASE_REDIRECT_URL: env.SUPABASE_REDIRECT_URL || ''
+  SUPABASE_REDIRECT_URL: env.SUPABASE_REDIRECT_URL || '',
+  ADSENSE_PUBLISHER_ID: env.ADSENSE_PUBLISHER_ID || ''
 };
 
 const js = `// Generated at build time. Do not commit this file.\nwindow.SKY_CONFIG = ${JSON.stringify(config, null, 2)};\n`;
