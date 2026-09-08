@@ -312,3 +312,160 @@ select count(*) from public.scores;
 ```
 
 Không đưa `SUPABASE_SERVICE_ROLE_KEY` vào `.env.local` dùng cho frontend, APK hoặc iOS.
+
+## 10. Signing certificate và xuất AAB lên Google Play
+
+### 10.1. Tạo upload signing certificate
+
+Google Play nên quản lý **App Signing Key** bằng Play App Signing. Bạn chỉ giữ **Upload Key** để ký AAB trước khi upload. Tạo key ngoài repository:
+
+```bash
+mkdir -p "$HOME/sky-secrets"
+keytool -genkeypair -v \
+  -keystore "$HOME/sky-secrets/sky-upload.jks" \
+  -alias sky-upload \
+  -keyalg RSA -keysize 2048 -validity 10000 \
+  -storetype JKS
+```
+
+Khi `keytool` hỏi, đặt store password và key password đủ mạnh. Lấy fingerprint:
+
+```bash
+keytool -list -v \
+  -keystore "$HOME/sky-secrets/sky-upload.jks" \
+  -alias sky-upload
+```
+
+Không gửi file `.jks`, password hoặc private key lên GitHub. Có thể dùng biến môi trường khi build local:
+
+```bash
+export ANDROID_KEYSTORE_PATH="$HOME/sky-secrets/sky-upload.jks"
+export ANDROID_KEYSTORE_PASSWORD='STORE_PASSWORD'
+export ANDROID_KEY_ALIAS='sky-upload'
+export ANDROID_KEY_PASSWORD='KEY_PASSWORD'
+```
+
+Hoặc tạo `android/keystore.properties` (file đã bị `.gitignore`):
+
+```properties
+ANDROID_KEYSTORE_PATH=/home/your-user/sky-secrets/sky-upload.jks
+ANDROID_KEYSTORE_PASSWORD=STORE_PASSWORD
+ANDROID_KEY_ALIAS=sky-upload
+ANDROID_KEY_PASSWORD=KEY_PASSWORD
+```
+
+Gradle của project đọc PATH hoặc `keystore.properties` và chỉ gắn signing config khi đủ thông tin. Kiểm tra:
+
+```bash
+cd android
+./gradlew signingReport
+```
+
+Trong output, variant `release` phải hiển thị đúng keystore, alias và SHA-1/SHA-256 của upload certificate.
+
+### 10.2. Tăng version trước mỗi lần phát hành
+
+Mở `android/app/build.gradle` và tăng `versionCode`; `versionName` là chuỗi hiển thị cho người dùng:
+
+```gradle
+defaultConfig {
+    versionCode 2
+    versionName "1.1.0"
+}
+```
+
+`versionCode` phải lớn hơn bản đã upload. Không đổi `applicationId` sau khi app đã phát hành:
+
+```text
+com.norat02.skybird
+```
+
+### 10.3. Build AAB release
+
+Từ thư mục gốc:
+
+```bash
+npm ci
+cp .env.example .env.local
+# điền VITE_* public variables trong .env.local
+npm run build
+npx cap sync android
+
+cd android
+./gradlew clean
+./gradlew bundleRelease --no-daemon
+```
+
+Windows PowerShell:
+
+```powershell
+npm ci
+npm run build
+npx cap sync android
+cd android
+.\gradlew.bat clean
+.\gradlew.bat bundleRelease --no-daemon
+```
+
+AAB nằm tại:
+
+```text
+android/app/build/outputs/bundle/release/app-release.aab
+```
+
+Không upload debug APK/AAB. File upload phải là `bundleRelease` được ký bằng upload key.
+
+### 10.4. Tạo app trên Google Play Console
+
+1. Mở [Google Play Console](https://play.google.com/console/).
+2. Chọn **Create app**.
+3. Chọn ngôn ngữ mặc định phù hợp với app, ví dụ Vietnamese.
+4. Nhập tên `Sky Bird`.
+5. Chọn **App** và **Game**.
+6. Chọn miễn phí hoặc trả phí.
+7. Xác nhận declarations và tạo app.
+
+Package name trong AAB phải là:
+
+```text
+com.norat02.skybird
+```
+
+### 10.5. Bật Play App Signing và upload AAB
+
+Ở lần upload đầu tiên, vào **Test and release → Setup → App integrity** và chọn **Play App Signing**. Với app mới, chọn để Google tạo app signing key mới. Chỉ chọn upload app signing key hiện có nếu bạn phải giữ key của app cũ.
+
+Sau đó vào **Internal testing → Create new release**:
+
+1. Tạo track Internal testing.
+2. Chọn **Create new release**.
+3. Upload `android/app/build/outputs/bundle/release/app-release.aab`.
+4. Chờ Play Console kiểm tra chữ ký và version code.
+5. Nhập release name và release notes.
+6. Chọn **Save** rồi **Review release**.
+7. Chọn **Start rollout to internal testing**.
+
+### 10.6. Thêm tester và kiểm thử
+
+Trong **Internal testing → Testers**, thêm email Google dùng trên thiết bị. Copy opt-in link, mở bằng đúng tài khoản Google trên Android thật, cài app từ Play Store và kiểm tra:
+
+- App cài đặt được.
+- Google OAuth quay lại app.
+- Leaderboard đọc được.
+- Gửi điểm chỉ một lần.
+- Logout/login lại đúng session.
+- Không có secret trong APK/AAB.
+
+Trước khi production, hoàn tất **Store listing**, **App content**, **Data safety**, **Privacy policy** và **Content rating**.
+
+### 10.7. Lỗi signing thường gặp
+
+| Lỗi | Cách xử lý |
+|---|---|
+| `release is not signed` | Kiểm tra đủ `ANDROID_KEYSTORE_PATH`, password và alias; chạy `./gradlew signingReport`. |
+| `Keystore was tampered with` | Sai store password hoặc file `.jks` bị hỏng; dùng backup chính xác. |
+| `alias does not exist` | `ANDROID_KEY_ALIAS` không khớp alias trong `keytool -list`. |
+| `version code already used` | Tăng `versionCode` trong `android/app/build.gradle`. |
+| `package name changed` | Giữ nguyên `com.norat02.skybird` sau khi app đã phát hành. |
+| `certificate differs from previous upload` | Đang dùng sai upload key; dùng key cũ hoặc làm thủ tục reset upload key trong Play Console. |
+| Google Login lỗi sau khi upload Play | Kiểm tra Supabase/Google redirect; flow hosted OAuth dùng Web OAuth Client và không đưa service-role key vào app. |
