@@ -15,7 +15,7 @@ const ticket = signRunTicket(userId);
 assert.ok(verifyRunTicket(ticket, userId), 'fresh ticket must verify for its owner');
 assert.equal(verifyRunTicket(ticket, 'different-user'), null, 'ticket must not verify for another user');
 const [encoded, signature] = ticket.split('.');
-const alteredSignature = `${signature.slice(0, -1)}${signature.endsWith('A') ? 'B' : 'A'}`;
+const alteredSignature = `${signature[0] === 'A' ? 'B' : 'A'}${signature.slice(1)}`;
 assert.equal(verifyRunTicket(`${encoded}.${alteredSignature}`, userId), null, 'altered HMAC must be rejected');
 const alteredPayload = Buffer.from(JSON.stringify({ v: 1, uid: userId, runId: crypto.randomUUID(), startedAt: Date.now(), exp: Date.now() + 1800000 })).toString('base64url');
 assert.equal(verifyRunTicket(`${alteredPayload}.${signature}`, userId), null, 'payload changes must invalidate the original signature');

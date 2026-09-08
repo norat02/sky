@@ -2,6 +2,8 @@
   "name": "sky-bird",
   "private": true,
   "version": "1.0.0",
+  "description": "Sky Bird cross-platform game",
+  "author": "Norat02 <norat02@users.noreply.github.com>",
   "main": "electron/main.cjs",
   "type": "module",
   "dependencies": {
@@ -37,8 +39,8 @@
     "build:web": "npm run build",
     "web:dev": "npm run build && python3 -m http.server 4173 -d dist",
     "desktop:dev": "npm run build && electron electron/main.cjs",
-    "desktop:build": "npm run build && electron-builder --win --x64",
-    "desktop:build:all": "npm run build && electron-builder --win --mac --linux",
+    "desktop:build": "npm run build && electron-builder --win --x64 --publish never",
+    "desktop:build:all": "npm run build && electron-builder --win --mac --linux --publish never",
     "cap:sync": "npm run build && npx cap sync",
     "cap:sync:android": "npm run build && npx cap sync android",
     "cap:sync:ios": "npm run build && npx cap sync ios",
@@ -50,6 +52,7 @@
   "build": {
     "appId": "com.norat02.skybird.desktop",
     "productName": "Sky Bird",
+    "desktopName": "sky-bird",
     "files": ["electron/**/*", "dist/**/*", "package.json"],
     "win": { "target": ["nsis", "portable"] },
     "mac": { "target": ["dmg", "zip"] },

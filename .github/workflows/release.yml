@@ -128,7 +128,10 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npm run build
-      - run: npx electron-builder --${{ matrix.target }}
+      - name: Install Linux packaging tools
+        if: runner.os == 'Linux'
+        run: sudo apt-get update && sudo apt-get install -y binutils
+      - run: npx electron-builder --${{ matrix.target }} --publish never
       - uses: actions/upload-artifact@v7
         with:
           name: release-desktop-${{ matrix.target }}
@@ -165,7 +168,7 @@ jobs:
           TEAM_ID: ${{ secrets.IOS_TEAM_ID }}
         run: |
           xcodebuild archive \
-            -workspace App/App.xcworkspace \
+            -project App/App.xcodeproj \
             -scheme App \
             -configuration Release \
             -archivePath "$RUNNER_TEMP/SkyBird.xcarchive" \

@@ -107,7 +107,7 @@ cp .env.example .env.local
 # điền VITE_* public variables
 npm run build
 npx cap sync ios
-open ios/App/App.xcworkspace
+open ios/App/App.xcodeproj
 ```
 
 Trong Xcode:

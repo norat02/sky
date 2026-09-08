@@ -202,7 +202,7 @@ npm run build
 npx cap sync ios
 cd ios
 pod install
-open App.xcworkspace
+open App.xcodeproj
 ```
 
 Trong Xcode:
