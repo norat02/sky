@@ -10,6 +10,8 @@ Hướng dẫn build APK bằng Android Studio, chạy app trên PC và tạo pr
 
 Cấu hình và checklist kiểm thử Google OAuth trên điện thoại Android thật nằm tại [`docs/android-google-oauth-test-vi.md`](docs/android-google-oauth-test-vi.md), bao gồm ADB, logcat, deep-link test và lỗi `redirect_uri_mismatch`.
 
+Cấu hình Apple Developer, Bundle ID, Distribution certificate, provisioning profile, App Store Connect API key và GitHub Actions để tạo `.ipa` nằm tại [`docs/apple-developer-ipa-vi.md`](docs/apple-developer-ipa-vi.md).
+
 ## Quy chuẩn giao diện
 
 Mọi biểu tượng trong giao diện phải dùng **SVG inline hoặc SVG sprite**, không dùng emoji hoặc ký tự biểu tượng thay thế. Icon tương tác cần có `aria-label` hoặc nhãn văn bản đi kèm, trạng thái trang trí dùng `aria-hidden="true"`, và SVG phải kế thừa màu giao diện qua `currentColor` khi phù hợp.

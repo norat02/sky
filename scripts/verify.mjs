@@ -68,6 +68,9 @@ assert(readFileSync('scripts/generate-config.mjs', 'utf8').includes('PUBLIC_SITE
 assert(readFileSync('scripts/build-web.mjs', 'utf8').includes("const dist"), 'Shared dist build missing');
 assert(readFileSync('capacitor.config.json', 'utf8').includes('"webDir": "dist"'), 'Capacitor must use shared dist');
 assert(readFileSync('android/app/src/main/AndroidManifest.xml', 'utf8').includes('com.norat02.skybird'), 'Android OAuth deep link missing');
+assert(readFileSync('ios/App/App/Info.plist', 'utf8').includes('com.norat02.skybird'), 'iOS OAuth URL scheme missing');
+assert(readFileSync('.github/workflows/release.yml', 'utf8').includes('gh release create'), 'Release workflow missing');
+assert(readFileSync('package.json', 'utf8').includes('desktop:build:all'), 'Desktop multi-platform build script missing');
 assert(gameJs.includes('API_BASE_URL'), 'Native API base URL missing');
 const jaLocale = source.match(/ja:\{([\s\S]*?)\}\};/);
 assert(jaLocale, 'Japanese locale dictionary missing');
