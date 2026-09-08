@@ -1,5 +1,5 @@
 # Local Supabase runtime configuration
-config.js
+env.js
 .env
 .env.*
 !.env.example

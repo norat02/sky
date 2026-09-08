@@ -12,7 +12,7 @@ const page = await browser.newPage({ viewport: { width: 390, height: 844 }, serv
 page.setDefaultTimeout(6000);
 const exfil = [];
 page.on('request', (request) => { if (request.url().includes('/xss-exfil')) exfil.push(request.url()); });
-await page.route('**/config.js', (route) => route.fulfill({ contentType: 'application/javascript', body: "window.SKY_CONFIG={};" }));
+await page.route('**/env.js', (route) => route.fulfill({ contentType: 'application/javascript', body: "window.SKY_ENV={};" }));
 await page.addInitScript(() => {
   window.__SKY_E2E__ = true;
   window.__XSS_FIRED__ = false;

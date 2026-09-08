@@ -6,7 +6,7 @@
 
 Sky Bird dùng **Neon PostgreSQL** cho `scores` và `score_runs`. Supabase chỉ còn được dùng cho Auth để xác minh Bearer token trong Vercel Functions; client không kết nối trực tiếp với Neon hoặc Supabase database.
 
-API server lấy kết nối từ `DATABASE_URL` hoặc `NEON_DATABASE_URL`, dùng `@neondatabase/serverless` và parameterized tagged SQL. Không đưa connection string, service role key hoặc signing secret vào `config.js`.
+API server lấy kết nối từ `DATABASE_URL` hoặc `NEON_DATABASE_URL`, dùng `@neondatabase/serverless` và parameterized tagged SQL. Không đưa connection string, service role key hoặc signing secret vào `env.js`.
 
 ## Khởi tạo schema
 
@@ -40,7 +40,7 @@ npm run verify
 npm test
 ```
 
-`npm run env:check` chỉ báo `OK`, `MISSING` hoặc `INVALID`, không in giá trị. File `.env.local` và `config.js` không được commit.
+`npm run env:check` chỉ báo `OK`, `MISSING` hoặc `INVALID`, không in giá trị. File `.env.local` và `env.js` không được commit.
 
 ## Deploy
 

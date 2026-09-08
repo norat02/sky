@@ -19,7 +19,7 @@ const browser = await chromium.launch({
 });
 const page = await browser.newPage({ serviceWorkers: 'block' });
 page.setDefaultTimeout(15000);
-await page.route('**/config.js', (route) => route.fulfill({ contentType: 'application/javascript', body: 'window.SKY_CONFIG={};' }));
+await page.route('**/env.js', (route) => route.fulfill({ contentType: 'application/javascript', body: 'window.SKY_ENV={};' }));
 await page.addInitScript(() => { window.__SKY_E2E__ = true; });
 
 try {

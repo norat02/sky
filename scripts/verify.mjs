@@ -89,7 +89,7 @@ assert(vercel.includes('X-Frame-Options'));
 assert(vercel.includes('fundingchoicesmessages.google.com'), 'Google CMP endpoint missing from CSP');
 assert(readFileSync('.env.example', 'utf8').includes('ADSENSE_PUBLISHER_ID='), 'AdSense publisher ID env example missing');
 assert(readFileSync('.env.example', 'utf8').includes('VITE_API_BASE_URL='), 'Native API base env example missing');
-const clientBundle = readFileSync('dist/config.js', 'utf8');
+const clientBundle = readFileSync('dist/env.js', 'utf8');
 for (const secretMarker of ['DATABASE_URL', 'NEON_DATABASE_URL', 'SUPABASE_SERVICE_ROLE_KEY', 'SCORE_SIGNING_SECRET', 'ADMIN_EMAILS', 'ADMIN_USER_IDS']) assert(!clientBundle.includes(secretMarker), `Server secret marker leaked into dist: ${secretMarker}`);
 const security = readFileSync('api/_security.mjs', 'utf8');
 const runTicketApi = readFileSync('api/run-ticket.mjs', 'utf8');

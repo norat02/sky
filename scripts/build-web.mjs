@@ -15,7 +15,7 @@ const files = [
   'og-image.png',
   'robots.txt',
   'sitemap.xml',
-  'config.js',
+  'env.js',
 ];
 
 await rm(dist, { recursive: true, force: true });

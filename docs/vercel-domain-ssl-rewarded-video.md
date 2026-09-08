@@ -121,7 +121,7 @@ SUPABASE_SERVICE_ROLE_KEY=<server-only-key>
 SCORE_SIGNING_SECRET=<long-random-secret>
 ```
 
-Không đưa hai secret cuối vào `config.js`, `index.html` hoặc biến `NEXT_PUBLIC_*`. Cần cấu hình cả sáu biến sau trong Vercel nếu bật đầy đủ online Leaderboard và SEO:
+Không đưa hai secret cuối vào `env.js`, `index.html` hoặc biến `NEXT_PUBLIC_*`. Cần cấu hình cả sáu biến sau trong Vercel nếu bật đầy đủ online Leaderboard và SEO:
 
 | Biến | Scope | Bắt buộc | Mục đích |
 |---|---|---:|---|

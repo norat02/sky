@@ -1,6 +1,6 @@
 (function(){
   var adsensePromise=null,gptPromise=null;
-  var adsensePublisherId=String((window.SKY_CONFIG&&window.SKY_CONFIG.ADSENSE_PUBLISHER_ID)||'').trim().replace(/^ca-pub-/,'');
+  var adsensePublisherId=String((window.SKY_ENV&&window.SKY_ENV.ADSENSE_PUBLISHER_ID)||'').trim().replace(/^ca-pub-/,'');
   function markBlocked(provider){window.SKY_ADS.blocked=true;window.SKY_ADS.blockedProvider=provider;window.dispatchEvent(new CustomEvent('sky-ad-blocked',{detail:{provider:provider}}));}
   function loadScript(src,id){return new Promise(function(resolve,reject){if(document.getElementById(id)){resolve();return;}var s=document.createElement('script');s.id=id;s.async=true;s.src=src;s.crossOrigin='anonymous';s.onload=resolve;s.onerror=function(){reject(new Error('blocked-or-unavailable'));};document.head.appendChild(s);});}
   window.SKY_ADS={blocked:false,blockedProvider:'',loadAdSense:function(){if(!window.SKY_CONSENT||!window.SKY_CONSENT.canRequestAds())return Promise.reject(new Error('consent_required'));if(!adsensePublisherId)return Promise.reject(new Error('adsense_publisher_id_missing'));if(!adsensePromise)adsensePromise=loadScript('https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-'+encodeURIComponent(adsensePublisherId),'sky-adsense-loader').then(function(){window.adsbygoogle=window.adsbygoogle||[];window.adsbygoogle.pauseAdRequests=0;return window.adsbygoogle;}).catch(function(e){adsensePromise=null;markBlocked('adsense');throw e;});return adsensePromise;},loadGPT:function(){if(!gptPromise)gptPromise=loadScript('https://securepubads.g.doubleclick.net/tag/js/gpt.js','sky-gpt-loader').then(function(){window.googletag=window.googletag||{cmd:[]};return window.googletag;}).catch(function(e){gptPromise=null;markBlocked('gpt');throw e;});return gptPromise;}};
@@ -20,15 +20,15 @@ window.addEventListener('error',function(e){
 'use strict';
 
 /* ═══ SUPABASE CONFIG (để trống = offline) ═══ */
-var SITE_URL=(window.SKY_CONFIG&&window.SKY_CONFIG.PUBLIC_SITE_URL)||(window.location.origin+window.location.pathname);
-var SUPABASE_URL=(window.SKY_CONFIG&&window.SKY_CONFIG.SUPABASE_URL)||'';
-var SUPABASE_ANON_KEY=(window.SKY_CONFIG&&window.SKY_CONFIG.SUPABASE_ANON_KEY)||'';
-var API_BASE_URL=((window.SKY_NATIVE&&window.SKY_NATIVE.isNative&&window.SKY_CONFIG&&window.SKY_CONFIG.API_BASE_URL)||'').replace(/\/$/,'');
+var SITE_URL=(window.SKY_ENV&&window.SKY_ENV.PUBLIC_SITE_URL)||(window.location.origin+window.location.pathname);
+var SUPABASE_URL=(window.SKY_ENV&&window.SKY_ENV.SUPABASE_URL)||'';
+var SUPABASE_ANON_KEY=(window.SKY_ENV&&window.SKY_ENV.SUPABASE_ANON_KEY)||'';
+var API_BASE_URL=((window.SKY_NATIVE&&window.SKY_NATIVE.isNative&&window.SKY_ENV&&window.SKY_ENV.API_BASE_URL)||'').replace(/\/$/,'');
 function apiUrl(path){return API_BASE_URL+path;}
 var canonicalMeta=document.querySelector('link[rel="canonical"]');if(canonicalMeta)canonicalMeta.href=SITE_URL;
 var ogUrlMeta=document.querySelector('meta[property="og:url"]');if(ogUrlMeta)ogUrlMeta.content=SITE_URL;
 var shareImage=SITE_URL+'og-image.png';var ogImageMeta=document.querySelector('meta[property="og:image"]');if(ogImageMeta)ogImageMeta.content=shareImage;var ogSecureMeta=document.querySelector('meta[property="og:image:secure_url"]');if(ogSecureMeta)ogSecureMeta.content=shareImage;var twitterImageMeta=document.querySelector('meta[name="twitter:image"]');if(twitterImageMeta)twitterImageMeta.content=shareImage;
-var SUPABASE_REDIRECT_URL=(window.SKY_CONFIG&&window.SKY_CONFIG.SUPABASE_REDIRECT_URL)||'';
+var SUPABASE_REDIRECT_URL=(window.SKY_ENV&&window.SKY_ENV.SUPABASE_REDIRECT_URL)||'';
 
 /* ═══ THAM SỐ CƠ BẢN ═══ */
 var BASE={GAP0:212,GAPSHRINK:0.75,GAPMIN:158,SPEED0:130,SPEEDGROW:0.7,SPEEDMAX:205,PW:62,GROUND:86,BIRD_XF:0.30};

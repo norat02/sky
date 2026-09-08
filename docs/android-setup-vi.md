@@ -1,6 +1,6 @@
 # Hướng dẫn phát hành Sky Bird Android và đăng nhập Google
 
-Tài liệu này dành cho repository `norat02/sky`. Ứng dụng Android là Capacitor wrapper của game web, vì vậy **Google Login không dùng Firebase mặc định**: luồng đăng nhập đi qua **Supabase Auth → Google OAuth → deep link `com.norat02.skybird://login-callback`**.
+Tài liệu này dành cho repository `norat02/sky`. Ứng dụng Android là Capacitor wrapper của game web, vì vậy **Google Login không dùng Firebase mặc định**: luồng đăng nhập đi qua **Supabase Auth → Google OAuth → deep link `com.norat02.skybird://login-callback`**. Hướng dẫn build iPhone và PC nằm tại [`platform-build-vi.md`](platform-build-vi.md).
 
 ## 1. Chuẩn bị môi trường
 
@@ -34,7 +34,7 @@ npm run build
 npx cap sync android
 ```
 
-`config.js` là file được sinh tự động và bị ignore bởi Git.
+`env.js` chỉ là artifact public được sinh tự động từ `.env.local` trong lúc build, bị ignore bởi Git và không được tự sửa/commit. Repository không dùng `config.js`.
 
 ## 3. Tạo keystore release
 

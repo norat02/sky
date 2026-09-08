@@ -9,7 +9,7 @@ await sleep(700);
 const browser = await chromium.launch({ headless: true, executablePath: process.env.CHROMIUM_PATH || '/usr/bin/chromium', args: ['--no-sandbox'] });
 const page = await browser.newPage({ serviceWorkers: 'block' });
 page.setDefaultTimeout(10000);
-await page.route('**/config.js', (route) => route.fulfill({ contentType: 'application/javascript', body: 'window.SKY_CONFIG={};' }));
+await page.route('**/env.js', (route) => route.fulfill({ contentType: 'application/javascript', body: 'window.SKY_ENV={};' }));
 await page.addInitScript(() => { window.__SKY_E2E__ = true; });
 try {
   await page.goto(`${baseURL}/`, { waitUntil: 'domcontentloaded', timeout: 20000 });

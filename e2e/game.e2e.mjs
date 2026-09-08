@@ -12,9 +12,9 @@ const page = await browser.newPage({ viewport: { width: 390, height: 844 }, serv
 page.setDefaultTimeout(5000);
 page.on('pageerror', (error) => console.error('pageerror:', error.message));
 
-await page.route('**/config.js', (route) => route.fulfill({
+await page.route('**/env.js', (route) => route.fulfill({
   contentType: 'application/javascript',
-  body: "window.SKY_CONFIG={SUPABASE_URL:'https://mock.supabase.co',SUPABASE_ANON_KEY:'mock-anon',SUPABASE_REDIRECT_URL:'http://127.0.0.1:4173/'};"
+  body: "window.SKY_ENV={SUPABASE_URL:'https://mock.supabase.co',SUPABASE_ANON_KEY:'mock-anon',SUPABASE_REDIRECT_URL:'http://127.0.0.1:4173/'};"
 }));
 await page.route('**/esm.sh/@supabase/supabase-js@2*', (route) => route.fulfill({
   contentType: 'application/javascript',

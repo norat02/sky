@@ -6,6 +6,8 @@ Game arcade HTML thuần chạy trên Vercel. Game luôn chơi được offline;
 
 Hướng dẫn phát hành Android, điền các biến `ANDROID_KEYSTORE_*`, tạo Google OAuth Client và cấu hình Supabase nằm tại [`docs/android-setup-vi.md`](docs/android-setup-vi.md). Android dùng deep link `com.norat02.skybird://login-callback`; không đưa service-role key hoặc keystore vào APK/repository.
 
+Hướng dẫn build APK bằng Android Studio, chạy app trên PC và tạo project iPhone bằng Xcode nằm tại [`docs/platform-build-vi.md`](docs/platform-build-vi.md). Cấu hình local chỉ dùng `.env.local`; `env.js` chỉ là artifact tự sinh khi build.
+
 ## Quy chuẩn giao diện
 
 Mọi biểu tượng trong giao diện phải dùng **SVG inline hoặc SVG sprite**, không dùng emoji hoặc ký tự biểu tượng thay thế. Icon tương tác cần có `aria-label` hoặc nhãn văn bản đi kèm, trạng thái trang trí dùng `aria-hidden="true"`, và SVG phải kế thừa màu giao diện qua `currentColor` khi phù hợp.
@@ -38,7 +40,7 @@ Thay `your-production-domain.vercel.app` bằng domain Vercel thật. Ứng dụ
 
 ## Cấu trúc JavaScript
 
-`index.html` giữ markup, CSS và JSON-LD metadata; toàn bộ executable game logic, ad loader, error handler và anti-cheat runtime nằm trong [`game.js`](game.js). `config.js` được nạp trước `game.js` và chỉ được sinh lúc build, giúp CSP có thể giới hạn script runtime về `'self'`.
+`index.html` giữ markup, CSS và JSON-LD metadata; toàn bộ executable game logic, ad loader, error handler và anti-cheat runtime nằm trong [`game.js`](game.js). `env.js` được nạp trước `game.js` và chỉ được sinh lúc build, giúp CSP có thể giới hạn script runtime về `'self'`.
 
 Các verifier/unit test đọc cả HTML và `game.js` để bảo đảm việc tách file không làm mất coverage.
 
@@ -52,13 +54,13 @@ npm run env:check
 npm run build
 ```
 
-Build loader JavaScript đọc `.env.local` khi chạy local và chỉ sinh các giá trị public (`PUBLIC_SITE_URL`, `SUPABASE_URL`, `SUPABASE_ANON_KEY`, `SUPABASE_REDIRECT_URL`) vào `config.js`. Công cụ Go [`tools/envcheck/main.go`](tools/envcheck/main.go) chỉ báo biến thiếu hoặc không hợp lệ, không in giá trị. `SUPABASE_SERVICE_ROLE_KEY` và `SCORE_SIGNING_SECRET` vẫn chỉ dành cho server runtime.
+Build loader JavaScript đọc `.env.local` khi chạy local và chỉ sinh các giá trị public (`PUBLIC_SITE_URL`, `SUPABASE_URL`, `SUPABASE_ANON_KEY`, `SUPABASE_REDIRECT_URL`) vào `env.js`. Công cụ Go [`tools/envcheck/main.go`](tools/envcheck/main.go) chỉ báo biến thiếu hoặc không hợp lệ, không in giá trị. `SUPABASE_SERVICE_ROLE_KEY` và `SCORE_SIGNING_SECRET` vẫn chỉ dành cho server runtime.
 
 ## Cấu hình Vercel
 
 Hướng dẫn chi tiết về Supabase Database, Vercel Environment Variables và Supabase Auth nằm tại [`docs/android-setup-vi.md`](docs/android-setup-vi.md). Migration chính thức là [`supabase/schema.sql`](supabase/schema.sql); tài liệu Neon cũ chỉ giữ để tham khảo lịch sử.
 
-Tại **Vercel Project → Settings → Environment Variables**, thêm `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY` và `SCORE_SIGNING_SECRET` cho server; `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`, `VITE_API_BASE_URL` và `VITE_SUPABASE_REDIRECT_URL` cho build/client. Với Production nên điền domain thật; nếu bỏ trống `PUBLIC_SITE_URL`, build trên Vercel tự dùng `VERCEL_PROJECT_PRODUCTION_URL` hoặc `VERCEL_URL` làm fallback. Sau khi thay đổi biến, bắt buộc tạo deployment mới vì `config.js`, `robots.txt` và `sitemap.xml` được sinh trong bước build:
+Tại **Vercel Project → Settings → Environment Variables**, thêm `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY` và `SCORE_SIGNING_SECRET` cho server; `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`, `VITE_API_BASE_URL` và `VITE_SUPABASE_REDIRECT_URL` cho build/client. Với Production nên điền domain thật; nếu bỏ trống `PUBLIC_SITE_URL`, build trên Vercel tự dùng `VERCEL_PROJECT_PRODUCTION_URL` hoặc `VERCEL_URL` làm fallback. Sau khi thay đổi biến, bắt buộc tạo deployment mới vì `env.js`, `robots.txt` và `sitemap.xml` được sinh trong bước build:
 
 | Biến | Giá trị |
 |---|---|
@@ -67,7 +69,7 @@ Tại **Vercel Project → Settings → Environment Variables**, thêm `SUPABASE
 | `PUBLIC_SITE_URL` | Khuyến nghị cho SEO production; ví dụ `https://your-domain.vercel.app/` hoặc custom domain, luôn có `/` cuối; Vercel có fallback tự động nếu bỏ trống |
 | `SUPABASE_REDIRECT_URL` | Tùy chọn; domain production đầy đủ, ví dụ `https://your-domain.vercel.app/` |
 
-Vercel chạy `npm run build`. Script [`scripts/generate-config.mjs`](scripts/generate-config.mjs) sẽ tạo `config.js` từ các biến trên ngay trong quá trình build. `config.js` được ignore bởi Git và không được commit. Không bao giờ đặt `service_role` key ở trình duyệt.
+Vercel chạy `npm run build`. Script [`scripts/generate-config.mjs`](scripts/generate-config.mjs) sẽ tạo `env.js` từ các biến trên ngay trong quá trình build. `env.js` được ignore bởi Git và không được commit. Không bao giờ đặt `service_role` key ở trình duyệt.
 
 Nếu triển khai bằng Vercel CLI, hãy thiết lập các biến môi trường trước khi deploy:
 
@@ -91,7 +93,7 @@ npm run test:e2e:purchase
 
 ## Kiểm tra cấu hình sau deploy
 
-Sau deployment, mở domain Production và kiểm tra `/<robots.txt>`, `/<sitemap.xml>`, canonical/OG URL và đăng nhập. Trong DevTools Network, request `/api/run-ticket` phải trả `200` sau khi đăng nhập; request `/api/submit-score` hợp lệ phải được server xử lý, còn ticket sai hoặc đã dùng phải bị từ chối. Nếu API trả `500 server_not_configured`, kiểm tra lại ba biến server-side và redeploy. Không dùng `vercel env pull` để commit secret vào repository; `.env`, `.env.local` và `config.js` phải tiếp tục nằm trong `.gitignore`.
+Sau deployment, mở domain Production và kiểm tra `/<robots.txt>`, `/<sitemap.xml>`, canonical/OG URL và đăng nhập. Trong DevTools Network, request `/api/run-ticket` phải trả `200` sau khi đăng nhập; request `/api/submit-score` hợp lệ phải được server xử lý, còn ticket sai hoặc đã dùng phải bị từ chối. Nếu API trả `500 server_not_configured`, kiểm tra lại ba biến server-side và redeploy. Không dùng `vercel env pull` để commit secret vào repository; `.env`, `.env.local` và `env.js` phải tiếp tục nằm trong `.gitignore`.
 
 ## Leaderboard trực tuyến
 
@@ -105,7 +107,7 @@ Khi nhân vật chết, game có thể hiển thị một lượt **hồi sinh s
 
 ## Xác thực điểm server-side
 
-Thư mục [`api/`](api/) chứa hai Vercel Serverless Functions. `run-ticket` xác thực Supabase access token rồi cấp một run ticket có chữ ký HMAC; `submit-score` xác thực lại JWT, kiểm tra ticket chưa hết hạn và chưa được dùng, giới hạn tần suất gửi, giới hạn tốc độ điểm theo thời gian chơi, khóa ticket một lần và chỉ sau đó mới ghi vào Supabase. `SUPABASE_SERVICE_ROLE_KEY` chỉ được đọc bên trong Function, không bao giờ được sinh vào `config.js`.
+Thư mục [`api/`](api/) chứa hai Vercel Serverless Functions. `run-ticket` xác thực Supabase access token rồi cấp một run ticket có chữ ký HMAC; `submit-score` xác thực lại JWT, kiểm tra ticket chưa hết hạn và chưa được dùng, giới hạn tần suất gửi, giới hạn tốc độ điểm theo thời gian chơi, khóa ticket một lần và chỉ sau đó mới ghi vào Supabase. `SUPABASE_SERVICE_ROLE_KEY` chỉ được đọc bên trong Function, không bao giờ được sinh vào `env.js`.
 
 Cấu hình thêm các biến sau trong Vercel, chỉ áp dụng cho server runtime:
 
@@ -114,7 +116,7 @@ SUPABASE_SERVICE_ROLE_KEY=<service-role-key-or-secret-key>
 SCORE_SIGNING_SECRET=<random-secret-at-least-32-characters>
 ```
 
-Sau khi cập nhật schema, cần chạy [`supabase/schema.sql`](supabase/schema.sql) trong **Supabase Dashboard → SQL Editor** để tạo `score_runs` và `scores`. Bật RLS, không tạo policy cho client; chỉ Vercel Functions có `SUPABASE_SERVICE_ROLE_KEY` mới được truy cập. Kiểm tra rằng bảng đã tồn tại và không có database credential nào được đưa vào client; API không cung cấp thao tác `UPDATE`/`DELETE` cho client. Trên Vercel, kiểm tra **Settings → Functions** để các file `api/*.mjs` được nhận diện tự động; không đặt `api` trong Output Directory và không thêm `SUPABASE_SERVICE_ROLE_KEY`/`SCORE_SIGNING_SECRET` vào `config.js`. Sau khi nhập hoặc thay đổi biến môi trường, phải redeploy Production. Nếu chưa có biến server-side hoặc chưa chạy schema, game vẫn chạy offline nhưng không thể gửi điểm qua API.
+Sau khi cập nhật schema, cần chạy [`supabase/schema.sql`](supabase/schema.sql) trong **Supabase Dashboard → SQL Editor** để tạo `score_runs` và `scores`. Bật RLS, không tạo policy cho client; chỉ Vercel Functions có `SUPABASE_SERVICE_ROLE_KEY` mới được truy cập. Kiểm tra rằng bảng đã tồn tại và không có database credential nào được đưa vào client; API không cung cấp thao tác `UPDATE`/`DELETE` cho client. Trên Vercel, kiểm tra **Settings → Functions** để các file `api/*.mjs` được nhận diện tự động; không đặt `api` trong Output Directory và không thêm `SUPABASE_SERVICE_ROLE_KEY`/`SCORE_SIGNING_SECRET` vào `env.js`. Sau khi nhập hoặc thay đổi biến môi trường, phải redeploy Production. Nếu chưa có biến server-side hoặc chưa chạy schema, game vẫn chạy offline nhưng không thể gửi điểm qua API.
 
 > Không có cơ chế nào chống gian lận tuyệt đối khi toàn bộ mô phỏng game chạy trong trình duyệt. Serverless Function này chặn giả mạo request cơ bản, replay ticket, gửi quá nhiều lần và điểm vượt tốc độ hợp lý. Muốn đạt mức chống gian lận cao hơn, cần chuyển trạng thái game hoặc xác thực replay sang server-authoritative.
 
@@ -167,8 +169,8 @@ node e2e/backup-watermark.e2e.mjs
 ## Chạy cục bộ
 
 ```bash
-cp config.example.js config.js
-# điền cấu hình Supabase trong config.js nếu muốn thử online
+cp config.example.js env.js
+# điền cấu hình Supabase trong env.js nếu muốn thử online
 npm run build
 python3 -m http.server 3000
 ```
@@ -205,7 +207,7 @@ Game có bản dịch đầy đủ cho `vi`, `en`, `ja`, `zh` (Trung giản th�
 
 ## SEO
 
-Website cung cấp [`robots.txt`](robots.txt) và [`sitemap.xml`](sitemap.xml), đồng thời khai báo description, keywords, robots directive, canonical URL, Open Graph metadata, Twitter Card, structured data `VideoGame` và [`og-image.png`](og-image.png) trong `index.html`. Khi deploy Vercel, đặt `PUBLIC_SITE_URL=https://domain-cua-ban.vercel.app/`; bước build sẽ sinh lại `config.js`, `robots.txt` và `sitemap.xml` theo domain đó, đồng thời thay URL tĩnh trong metadata OG/canonical. Không dùng domain mẫu khi deploy production.
+Website cung cấp [`robots.txt`](robots.txt) và [`sitemap.xml`](sitemap.xml), đồng thời khai báo description, keywords, robots directive, canonical URL, Open Graph metadata, Twitter Card, structured data `VideoGame` và [`og-image.png`](og-image.png) trong `index.html`. Khi deploy Vercel, đặt `PUBLIC_SITE_URL=https://domain-cua-ban.vercel.app/`; bước build sẽ sinh lại `env.js`, `robots.txt` và `sitemap.xml` theo domain đó, đồng thời thay URL tĩnh trong metadata OG/canonical. Không dùng domain mẫu khi deploy production.
 
 ### PageSpeed
 
@@ -222,13 +224,13 @@ Quyền quản trị được kiểm tra ở server-side trong [`api/admin-data.
 
 ### Cấu hình `ADMIN_EMAILS` trên Vercel
 
-`ADMIN_EMAILS` là biến **server-side**, không được thêm tiền tố `PUBLIC_` và không được đưa vào `config.js`. Vercel mã hóa biến môi trường khi lưu, nhưng giá trị vẫn có thể được xem bởi người có quyền truy cập project, vì vậy chỉ cấp quyền Vercel cần thiết cho thành viên quản trị. Tham khảo [Vercel Environment Variables](https://vercel.com/docs/environment-variables).
+`ADMIN_EMAILS` là biến **server-side**, không được thêm tiền tố `PUBLIC_` và không được đưa vào `env.js`. Vercel mã hóa biến môi trường khi lưu, nhưng giá trị vẫn có thể được xem bởi người có quyền truy cập project, vì vậy chỉ cấp quyền Vercel cần thiết cho thành viên quản trị. Tham khảo [Vercel Environment Variables](https://vercel.com/docs/environment-variables).
 
 1. Mở **Vercel Dashboard**, chọn đúng project đang deploy repository `norat02/sky`, sau đó vào **Settings → Environment Variables**.
 2. Nhập tên biến chính xác là `ADMIN_EMAILS`. Ở ô giá trị, nhập email đã tồn tại trong **Supabase → Authentication → Users**, ví dụ `admin@example.com`. Nếu có nhiều admin, phân tách bằng dấu phẩy, chẳng hạn `owner@example.com, moderator@example.com`.
 3. Chọn environment áp dụng. Chọn **Production** cho domain thật. Chọn thêm **Preview** nếu cần test trên deployment preview. Nếu hai môi trường dùng danh sách khác nhau, tạo giá trị riêng cho từng environment thay vì gộp tài khoản preview vào Production.
 4. Nhấn **Save**, sau đó tạo deployment mới bằng cách push commit mới lên nhánh production hoặc chọn **Redeploy** deployment. Thay đổi biến môi trường **không áp dụng ngược cho deployment cũ**; Vercel chỉ đưa giá trị mới vào deployment mới.
-5. Không đặt `ADMIN_EMAILS` trong `config.js`, `index.html`, `admin.html`, GitHub Actions log hoặc file public. Có thể cấu hình thêm `ADMIN_USER_IDS` bằng UUID Supabase nếu muốn phân quyền ổn định hơn email; khi dùng cả hai, chỉ cần một điều kiện khớp.
+5. Không đặt `ADMIN_EMAILS` trong `env.js`, `index.html`, `admin.html`, GitHub Actions log hoặc file public. Có thể cấu hình thêm `ADMIN_USER_IDS` bằng UUID Supabase nếu muốn phân quyền ổn định hơn email; khi dùng cả hai, chỉ cần một điều kiện khớp.
 
 Giá trị mẫu trong Vercel:
 
@@ -269,7 +271,7 @@ Có thể lấy callback URL này ngay tại trang Google provider trong Supabas
 
 #### 2. Bật Google provider trong Supabase
 
-Vào **Supabase Dashboard → Authentication → Providers → Google**, bật Google, dán **Client ID** và **Client Secret** từ Google Cloud rồi lưu. Không commit Client Secret vào repository và không đặt nó trong `config.js`; secret này chỉ được lưu ở Supabase.
+Vào **Supabase Dashboard → Authentication → Providers → Google**, bật Google, dán **Client ID** và **Client Secret** từ Google Cloud rồi lưu. Không commit Client Secret vào repository và không đặt nó trong `env.js`; secret này chỉ được lưu ở Supabase.
 
 #### 3. Cấu hình URL Configuration của Supabase
 

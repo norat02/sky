@@ -44,9 +44,9 @@ const assertResponsiveLayout = async (label) => {
   assert(layout.scrollWidth <= layout.viewport + 1, `${label}: unexpected horizontal overflow`);
   assert(layout.panelRight <= layout.viewport + 1, `${label}: home panel exceeds viewport`);
 };
-await page.route('**/config.js', (route) => route.fulfill({
+await page.route('**/env.js', (route) => route.fulfill({
   contentType: 'application/javascript',
-  body: 'window.SKY_CONFIG={};',
+  body: 'window.SKY_ENV={};',
 }));
 await page.addInitScript(() => {
   window.__SKY_E2E__ = true;

@@ -34,8 +34,8 @@ const config = {
   NATIVE_OAUTH_REDIRECT_SCHEME: env.VITE_NATIVE_OAUTH_REDIRECT_SCHEME || 'com.norat02.skybird'
 };
 
-const js = `// Generated at build time. Do not commit this file.\nwindow.SKY_CONFIG = ${JSON.stringify(config, null, 2)};\n`;
-writeFileSync('config.js', js, 'utf8');
+const js = `// Generated at build time. Do not commit this file.\nwindow.SKY_ENV = ${JSON.stringify(config, null, 2)};\n`;
+writeFileSync('env.js', js, 'utf8');
 const html = readFileSync('index.html', 'utf8').replaceAll('https://norat02.github.io/sky/', siteUrl);
 writeFileSync('index.html', html, 'utf8');
 writeFileSync('robots.txt', `User-agent: *\nAllow: /\nSitemap: ${siteUrl}sitemap.xml\n`, 'utf8');

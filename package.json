@@ -6,6 +6,7 @@
   "dependencies": {
     "@capacitor/app": "^8.1.1",
     "@capacitor/core": "^8.5.1",
+    "@capacitor/ios": "^8.5.1",
     "@supabase/supabase-js": "^2.49.8",
     "amqplib": "^2.0.1",
     "cors": "^2.8.6",
@@ -33,8 +34,12 @@
     "worker": "node server/worker.mjs",
     "test:api": "node scripts/test-api.mjs",
     "build:web": "npm run build",
-    "cap:sync": "npm run build && npx cap sync android",
+    "web:dev": "npm run build && python3 -m http.server 4173 -d dist",
+    "cap:sync": "npm run build && npx cap sync",
+    "cap:sync:android": "npm run build && npx cap sync android",
+    "cap:sync:ios": "npm run build && npx cap sync ios",
     "cap:open": "npx cap open android",
+    "cap:open:ios": "npx cap open ios",
     "cap:build:apk": "npm run cap:sync && cd android && ./gradlew assembleDebug --no-daemon",
     "cap:build:aab": "npm run cap:sync && cd android && ./gradlew bundleDebug --no-daemon"
   },

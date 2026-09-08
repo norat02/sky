@@ -6,7 +6,7 @@
 <meta name="robots" content="noindex,nofollow">
 <meta name="theme-color" content="#f0e7d3">
 <title>Sky Bird — Khu vực quản trị</title>
-<script src="config.js"></script>
+<script src="env.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant:ital,wght@0,500;0,600;0,700;1,600&family=Shippori+Mincho:wght@500;600;700&display=swap" rel="stylesheet">
@@ -209,7 +209,7 @@ td.score-cell{font-size:20px;font-weight:700;color:var(--red)}
 <script>
 (function(){
   'use strict';
-  var config=window.SKY_CONFIG||{};
+  var config=window.SKY_ENV||{};
   var supabaseUrl=config.SUPABASE_URL||'';
   var supabaseAnonKey=config.SUPABASE_ANON_KEY||'';
   var client=null,session=null,rows=[];

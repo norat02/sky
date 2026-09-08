@@ -4,7 +4,7 @@
   var ads = window.adsbygoogle = window.adsbygoogle || [];
   ads.pauseAdRequests = 1;
 
-  var config = window.SKY_CONFIG || {};
+  var config = window.SKY_ENV || {};
   var publisherId = String(config.ADSENSE_PUBLISHER_ID || '').trim().replace(/^ca-pub-/, '');
   var state = 'unknown';
   var mode = 'blocked';
