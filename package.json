@@ -2,6 +2,7 @@
   "name": "sky-bird",
   "private": true,
   "version": "1.0.0",
+  "main": "electron/main.cjs",
   "type": "module",
   "dependencies": {
     "@capacitor/app": "^8.1.1",
@@ -35,6 +36,8 @@
     "test:api": "node scripts/test-api.mjs",
     "build:web": "npm run build",
     "web:dev": "npm run build && python3 -m http.server 4173 -d dist",
+    "desktop:dev": "npm run build && electron electron/main.cjs",
+    "desktop:build": "npm run build && electron-builder --win --x64",
     "cap:sync": "npm run build && npx cap sync",
     "cap:sync:android": "npm run build && npx cap sync android",
     "cap:sync:ios": "npm run build && npx cap sync ios",
@@ -43,9 +46,18 @@
     "cap:build:apk": "npm run cap:sync && cd android && ./gradlew assembleDebug --no-daemon",
     "cap:build:aab": "npm run cap:sync && cd android && ./gradlew bundleDebug --no-daemon"
   },
+  "build": {
+    "appId": "com.norat02.skybird.desktop",
+    "productName": "Sky Bird",
+    "files": ["electron/**/*", "dist/**/*", "package.json"],
+    "win": { "target": ["nsis", "portable"] },
+    "nsis": { "oneClick": false, "allowToChangeInstallationDirectory": true }
+  },
   "devDependencies": {
     "@capacitor/android": "^8.5.1",
     "@capacitor/cli": "^8.5.1",
+    "electron": "^38.8.6",
+    "electron-builder": "^26.15.3",
     "playwright": "^1.62.1",
     "supertest": "^7.2.2",
     "typescript": "^7.0.2"

@@ -225,34 +225,41 @@ npx cap sync ios
 
 Deep link Google OAuth của iOS cần được khai báo trong URL schemes của app. Nếu đổi scheme, phải đổi đồng thời `VITE_NATIVE_OAUTH_REDIRECT_SCHEME`, Supabase Redirect URLs và native configuration.
 
-## 7. Chạy phiên bản PC
+## 7. Đóng gói ứng dụng PC thành `.exe`
 
-PC không cần APK. Có hai lựa chọn:
+PC dùng Electron, **không dùng PWA**. Electron mở chính bundle `dist/` đã dùng cho website, Android và iPhone, nên gameplay, theme và locale được đồng bộ.
 
-### Chạy local
+Trên Windows hoặc máy có môi trường build Windows:
 
 ```bash
 npm ci
 cp .env.example .env.local
 # sửa .env.local
+npm run desktop:dev
+```
+
+Để tạo installer và bản portable:
+
+```bash
+npm run desktop:build
+```
+
+Kết quả nằm trong `dist/` hoặc thư mục output do electron-builder báo, thường gồm:
+
+```text
+Sky Bird Setup <version>.exe
+Sky Bird <version>.exe
+```
+
+Nếu build từ Linux/macOS để phát hành Windows, nên dùng Windows CI/runner hoặc máy Windows để tránh thiếu signing/toolchain. EXE desktop dùng redirect web production cho Google OAuth; cấu hình Google/Supabase giống web. Không đưa service-role key vào `.env.local`.
+
+Để chạy web debug trên PC mà không tạo EXE:
+
+```bash
 npm run web:dev
 ```
 
-Mở trình duyệt tại:
-
-```text
-http://localhost:4173
-```
-
-### Deploy website
-
-Build static:
-
-```bash
-npm run build
-```
-
-Thư mục deploy là `dist/`. Có thể dùng Vercel, Netlify, GitHub Pages hoặc một static server. Trên Vercel, đặt các biến `VITE_*` ở Environment Variables; server API cần thêm `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY` và `SCORE_SIGNING_SECRET`.
+Mở `http://localhost:4173`. Đây chỉ là server kiểm thử web, không phải PWA hay sản phẩm desktop.
 
 ## 8. Kiểm tra Google Login trên Android/iPhone
 

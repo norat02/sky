@@ -8,6 +8,8 @@ Hướng dẫn phát hành Android, điền các biến `ANDROID_KEYSTORE_*`, t�
 
 Hướng dẫn build APK bằng Android Studio, chạy app trên PC và tạo project iPhone bằng Xcode nằm tại [`docs/platform-build-vi.md`](docs/platform-build-vi.md). Cấu hình local chỉ dùng `.env.local`; `env.js` chỉ là artifact tự sinh khi build.
 
+Cấu hình và checklist kiểm thử Google OAuth trên điện thoại Android thật nằm tại [`docs/android-google-oauth-test-vi.md`](docs/android-google-oauth-test-vi.md), bao gồm ADB, logcat, deep-link test và lỗi `redirect_uri_mismatch`.
+
 ## Quy chuẩn giao diện
 
 Mọi biểu tượng trong giao diện phải dùng **SVG inline hoặc SVG sprite**, không dùng emoji hoặc ký tự biểu tượng thay thế. Icon tương tác cần có `aria-label` hoặc nhãn văn bản đi kèm, trạng thái trang trí dùng `aria-hidden="true"`, và SVG phải kế thừa màu giao diện qua `currentColor` khi phù hợp.
