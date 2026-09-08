@@ -82,7 +82,11 @@ assert(gameJs.includes('API_BASE_URL'), 'Native API base URL missing');
 const jaLocale = source.match(/ja:\{([\s\S]*?)\}\};/);
 assert(jaLocale, 'Japanese locale dictionary missing');
 const i18nKeys = [...source.matchAll(/data-i18n="([^"]+)"/g)].map((m) => m[1]);
-for (const key of new Set(i18nKeys)) assert(jaLocale[1].includes(`${key}:`), `Japanese translation missing: ${key}`);
+for (const key of new Set(i18nKeys)) {
+  if (['volume', 'mute'].includes(key)) continue;
+  assert(jaLocale[1].includes(`${key}:`), `Japanese translation missing: ${key}`);
+}
+assert(source.includes("Object.assign(LANG.ja,{volume:'音量',mute:'消音',unmute:'音声をオン'})"), 'Japanese settings translation missing');
 for (const key of ['title','subtitle','touchHint','authTitle','pauseTitle','reviveTitle','namePlaceholder','email','password','signup','google','apply','dismiss']) assert(jaLocale[1].includes(`${key}:`), `Japanese translation missing: ${key}`);
 assert(source.includes('schemaVersion:1'));
 assert(readFileSync('supabase/schema.sql', 'utf8').includes('create table if not exists public.scores'));
