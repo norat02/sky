@@ -14,6 +14,8 @@ Cấu hình Apple Developer, Bundle ID, Distribution certificate, provisioning p
 
 Checklist audit Supabase RLS cho `scores`, `score_runs` và leaderboard nằm tại [`docs/supabase-rls-audit-vi.md`](docs/supabase-rls-audit-vi.md).
 
+Kiến trúc native SwiftUI/Swift cho iPhone/iPad và macOS nằm tại [`docs/swiftui-iphone-macos-vi.md`](docs/swiftui-iphone-macos-vi.md).
+
 ## Quy chuẩn giao diện
 
 Mọi biểu tượng trong giao diện phải dùng **SVG inline hoặc SVG sprite**, không dùng emoji hoặc ký tự biểu tượng thay thế. Icon tương tác cần có `aria-label` hoặc nhãn văn bản đi kèm, trạng thái trang trí dùng `aria-hidden="true"`, và SVG phải kế thừa màu giao diện qua `currentColor` khi phù hợp.

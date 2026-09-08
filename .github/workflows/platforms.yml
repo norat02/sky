@@ -79,3 +79,12 @@ jobs:
       - name: Validate iOS simulator build without signing
         working-directory: ios
         run: xcodebuild -project App/App.xcodeproj -scheme App -sdk iphonesimulator -configuration Debug -destination 'generic/platform=iOS Simulator' CODE_SIGNING_ALLOWED=NO build
+
+  macos-swiftui:
+    name: macOS SwiftUI native
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v7
+      - name: Build SwiftUI macOS app
+        working-directory: macos/SkyBirdMac
+        run: swift build -c release

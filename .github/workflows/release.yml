@@ -201,8 +201,22 @@ jobs:
           path: '*.ipa'
           if-no-files-found: error
 
+  macos-swiftui:
+    needs: prepare
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v7
+      - name: Build native SwiftUI macOS app
+        working-directory: macos/SkyBirdMac
+        run: ./build-app.sh
+      - uses: actions/upload-artifact@v7
+        with:
+          name: release-macos-swiftui
+          path: macos/SkyBirdMac/Sky Bird.app.zip
+          if-no-files-found: error
+
   github-release:
-    needs: [prepare, web, android, desktop, ios]
+    needs: [prepare, web, android, desktop, ios, macos-swiftui]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/download-artifact@v7

@@ -41,6 +41,8 @@
     "desktop:dev": "npm run build && electron electron/main.cjs",
     "desktop:build": "npm run build && electron-builder --win --x64 --publish never",
     "desktop:build:all": "npm run build && electron-builder --win --mac --linux --publish never",
+    "macos:swiftui:build": "cd macos/SkyBirdMac && swift build -c release",
+    "macos:swiftui:app": "cd macos/SkyBirdMac && ./build-app.sh",
     "cap:sync": "npm run build && npx cap sync",
     "cap:sync:android": "npm run build && npx cap sync android",
     "cap:sync:ios": "npm run build && npx cap sync ios",
