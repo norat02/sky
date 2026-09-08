@@ -60,3 +60,11 @@ alter table public.score_runs enable row level security;
 -- Explicit deny for client roles. service_role bypasses RLS server-side.
 revoke all on table public.scores from anon, authenticated;
 revoke all on table public.score_runs from anon, authenticated;
+
+-- Identity sequence cũng không được cấp cho client roles.
+do $$
+begin
+  if to_regclass('public.scores_id_seq') is not null then
+    revoke all on sequence public.scores_id_seq from anon, authenticated;
+  end if;
+end $$;
