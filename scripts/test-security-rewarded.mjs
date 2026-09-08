@@ -37,7 +37,8 @@ for (const bad of [
 const html = readFileSync(new URL('../index.html', import.meta.url), 'utf8');
 const uiJs = readFileSync(new URL('../ui.js', import.meta.url), 'utf8');
 const gameJs = readFileSync(new URL('../game.js', import.meta.url), 'utf8');
-const source = `${html}\n${uiJs}\n${gameJs}`;
+const integrityJs = readFileSync(new URL('../security-integrity.js', import.meta.url), 'utf8');
+const source = `${html}\n${uiJs}\n${gameJs}\n${integrityJs}`;
 assert.match(source, /if\(ok===false\)throw new Error\('ad incomplete'\)/, 'revive must reject incomplete ads');
 assert.match(source, /RewardedSlotGrantedEvent|reward-granted|rewarded-ad/, 'rewarded-grant integration marker must exist');
 assert.match(source, /reviveUsed=true/, 'revive must be consumed after a successful grant');
@@ -49,6 +50,9 @@ assert.match(source, /MutationObserver/, 'MutationObserver tamper guard must exi
 assert.match(source, /e\.key==='F12'/, 'F12 DevTools shortcut must be blocked');
 assert.match(source, /state='LOCKED'/, 'suspicious activity must lock gameplay');
 assert.match(source, /if\(ANTI_CHEAT\.locked\)return/, 'locked sessions must not start or flap');
+assert.match(integrityJs, /SKY_SECURITY_READY/, 'integrity marker must exist');
+assert.match(integrityJs, /SKY_SECURITY_BLOCKED/, 'missing integrity must fail closed');
+assert.match(gameJs, /SKY_SECURITY_HEARTBEAT/, 'anti-cheat heartbeat must exist');
 assert.doesNotMatch(source, /deleteUser|auth\.admin\.deleteUser|deleteAccount/, 'client must not auto-delete accounts');
 assert.match(source, /sky-ad-blocked/, 'AdBlock fallback event must be handled');
 assert.doesNotMatch(source, /pendingScores:\s*cleanPending\(pendingScores\)/, 'backup must not export pending online scores');

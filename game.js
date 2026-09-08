@@ -392,7 +392,7 @@ function reset(){
 var ANTI_CHEAT={locked:false,lastWidth:window.innerWidth,lastHeight:window.innerHeight,flaps:[]};
 function securityLock(reason){if(ANTI_CHEAT.locked||window.__SKY_E2E__)return;ANTI_CHEAT.locked=true;state='LOCKED';if(securityMessage)securityMessage.textContent=reason==='devtools'?'Phát hiện DevTools hoặc công cụ debug đang mở. Hãy đóng công cụ này và tải lại trang.':reason==='automation'?'Phát hiện chuỗi thao tác bất thường. Phiên chơi đã bị khóa để bảo vệ kết quả.':'Phát hiện dữ liệu hoặc mã game đã bị thay đổi. Phiên chơi đã bị khóa.';var status=$('protectionStatus');if(status){status.classList.add('blocked');var text=status.querySelector('span');if(text)text.textContent='phiên bị khóa — tải lại để kiểm tra lại';}if(securityOverlay)securityOverlay.classList.add('show');}
 function recordFlapIntegrity(){if(window.__SKY_E2E__)return true;var now=performance.now(),cutoff=now-5000;ANTI_CHEAT.flaps=ANTI_CHEAT.flaps.filter(function(t){return t>cutoff;});ANTI_CHEAT.flaps.push(now);if(ANTI_CHEAT.flaps.length>32){securityLock('automation');return false;}return true;}
-function antiCheatCheck(){if(window.__SKY_E2E__||ANTI_CHEAT.locked)return;var dw=Math.abs(window.outerWidth-window.innerWidth),dh=Math.abs(window.outerHeight-window.innerHeight);if(dw>220||dh>220){securityLock('devtools');return;}if(!guardWalletIntegrity())return;}
+function antiCheatCheck(){if(window.__SKY_E2E__||ANTI_CHEAT.locked)return;if(!window.SKY_SECURITY_READY){securityLock('tamper');return;}if(typeof window.SKY_SECURITY_HEARTBEAT==='function')window.SKY_SECURITY_HEARTBEAT();var dw=Math.abs(window.outerWidth-window.innerWidth),dh=Math.abs(window.outerHeight-window.innerHeight);if(dw>220||dh>220){securityLock('devtools');return;}if(!guardWalletIntegrity())return;}
 window.addEventListener('contextmenu',function(e){if(!window.__SKY_E2E__)e.preventDefault();});
 window.addEventListener('keydown',function(e){if(window.__SKY_E2E__)return;var k=(e.key||'').toLowerCase();if(e.key==='F12'||(e.ctrlKey&&e.shiftKey&&['i','j','c'].indexOf(k)>=0)||(e.ctrlKey&&k==='u')){e.preventDefault();securityLock('devtools');}});
 function allowedGameScript(node){if(!node||node.tagName!=='SCRIPT')return true;var id=node.id||'';var src=node.src||'';if(id==='sky-adsense-loader'||id==='sky-gpt-loader'||node.dataset.googleCmp==='true')return true;if(!src)return false;return src.indexOf(location.origin+'/')===0||src.indexOf('https://esm.sh/')===0||src.indexOf('https://pagead2.googlesyndication.com/')===0||src.indexOf('https://securepubads.g.doubleclick.net/')===0||src.indexOf('https://fundingchoicesmessages.google.com/')===0||src.indexOf('chrome-extension://')===0||src.indexOf('moz-extension://')===0;}
@@ -400,7 +400,7 @@ function inspectInjectedNodes(records){if(window.__SKY_E2E__||ANTI_CHEAT.locked)
 if(window.MutationObserver)try{new MutationObserver(inspectInjectedNodes).observe(document.documentElement,{childList:true,subtree:true});}catch(e){}
 setInterval(antiCheatCheck,1200);
 function startGame(){
-  if(ANTI_CHEAT.locked)return;
+  if(ANTI_CHEAT.locked||window.SKY_SECURITY_BLOCKED||!window.SKY_SECURITY_READY){securityLock('tamper');return;}
   try{if(document.activeElement&&document.activeElement.blur)document.activeElement.blur();}catch(e){}
   pauseOverlay.classList.remove('show');pauseBtn.textContent='Ⅱ';pauseBtn.classList.add('show');
   applyChar();applyMap();rollRun();reset();state='READY';
@@ -769,6 +769,6 @@ function buildSelectors(){
 
 /* ═══ KHỞI ĐỘNG ═══ */
 try{if(document.fonts&&document.fonts.load){document.fonts.load('700 46px Cormorant');document.fonts.load('600 20px "Shippori Mincho"');}}catch(e){}
-normalizeWallet();syncWalletGuard();applyChar();applyMap();makePaper();resize();window.addEventListener('resize',resize);goTitle();buildSelectors();updateCoinWallet();DB.init();requestAnimationFrame(frame);
+window.SKY_GAME_BOOTED=true;normalizeWallet();syncWalletGuard();applyChar();applyMap();makePaper();resize();window.addEventListener('resize',resize);goTitle();buildSelectors();updateCoinWallet();DB.init();requestAnimationFrame(frame);
 
 })();

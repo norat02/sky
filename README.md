@@ -44,7 +44,7 @@ https://*-<team-or-account-slug>.vercel.app/**
 http://localhost:3000/**
 ```
 
-Thay `your-production-domain.vercel.app` bằng domain Vercel thật. Ứng dụng truyền `redirectTo` động theo domain đang mở; nếu muốn cố định một domain production, điền `SUPABASE_REDIRECT_URL` trong biến môi trường Vercel.
+Thay `your-production-domain.vercel.app` bằng domain Vercel thật. Ứng dụng truyền `redirectTo` động theo domain đang mở; nếu muốn cố định một domain production, điền `VITE_SUPABASE_REDIRECT_URL` trong `.env.local` hoặc Vercel build environment.
 
 ## Cấu trúc JavaScript
 
@@ -62,30 +62,30 @@ npm run env:check
 npm run build
 ```
 
-Build loader JavaScript đọc `.env.local` khi chạy local và chỉ sinh các giá trị public (`PUBLIC_SITE_URL`, `SUPABASE_URL`, `SUPABASE_ANON_KEY`, `SUPABASE_REDIRECT_URL`) vào `env.js`. Công cụ Go [`tools/envcheck/main.go`](tools/envcheck/main.go) chỉ báo biến thiếu hoặc không hợp lệ, không in giá trị. `SUPABASE_SERVICE_ROLE_KEY` và `SCORE_SIGNING_SECRET` vẫn chỉ dành cho server runtime.
+Build loader JavaScript đọc `.env.local` khi chạy local và chỉ sinh các giá trị public (`VITE_PUBLIC_SITE_URL`, `VITE_API_BASE_URL`, `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`, `VITE_SUPABASE_REDIRECT_URL`) vào `env.js`. Công cụ Go [`tools/envcheck/main.go`](tools/envcheck/main.go) chỉ báo biến thiếu hoặc không hợp lệ, không in giá trị. `SUPABASE_SERVICE_ROLE_KEY` và `SCORE_SIGNING_SECRET` vẫn chỉ dành cho server runtime.
 
 ## Cấu hình Vercel
 
 Hướng dẫn chi tiết về Supabase Database, Vercel Environment Variables và Supabase Auth nằm tại [`docs/android-setup-vi.md`](docs/android-setup-vi.md). Migration chính thức là [`supabase/schema.sql`](supabase/schema.sql); tài liệu Neon cũ chỉ giữ để tham khảo lịch sử.
 
-Tại **Vercel Project → Settings → Environment Variables**, thêm `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY` và `SCORE_SIGNING_SECRET` cho server; `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`, `VITE_API_BASE_URL` và `VITE_SUPABASE_REDIRECT_URL` cho build/client. Với Production nên điền domain thật; nếu bỏ trống `PUBLIC_SITE_URL`, build trên Vercel tự dùng `VERCEL_PROJECT_PRODUCTION_URL` hoặc `VERCEL_URL` làm fallback. Sau khi thay đổi biến, bắt buộc tạo deployment mới vì `env.js`, `robots.txt` và `sitemap.xml` được sinh trong bước build:
+Tại **Vercel Project → Settings → Environment Variables**, thêm `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY` và `SCORE_SIGNING_SECRET` cho server; `VITE_PUBLIC_SITE_URL`, `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`, `VITE_API_BASE_URL` và `VITE_SUPABASE_REDIRECT_URL` cho build/client. Sau khi thay đổi biến, bắt buộc tạo deployment mới vì `env.js`, `robots.txt` và `sitemap.xml` được sinh trong bước build:
 
 | Biến | Giá trị |
 |---|---|
-| `SUPABASE_URL` | Project URL trong Supabase, ví dụ `https://abc.supabase.co` |
-| `SUPABASE_ANON_KEY` | Public anon/publishable key trong Supabase |
-| `PUBLIC_SITE_URL` | Khuyến nghị cho SEO production; ví dụ `https://your-domain.vercel.app/` hoặc custom domain, luôn có `/` cuối; Vercel có fallback tự động nếu bỏ trống |
-| `SUPABASE_REDIRECT_URL` | Tùy chọn; domain production đầy đủ, ví dụ `https://your-domain.vercel.app/` |
+| `VITE_SUPABASE_URL` | Project URL trong Supabase, ví dụ `https://abc.supabase.co` |
+| `VITE_SUPABASE_ANON_KEY` | Public anon/publishable key trong Supabase |
+| `VITE_PUBLIC_SITE_URL` | Khuyến nghị cho SEO production; ví dụ `https://your-domain.vercel.app/` |
+| `VITE_SUPABASE_REDIRECT_URL` | Tùy chọn; domain production đầy đủ |
 
 Vercel chạy `npm run build`. Script [`scripts/generate-config.mjs`](scripts/generate-config.mjs) sẽ tạo `env.js` từ các biến trên ngay trong quá trình build. `env.js` được ignore bởi Git và không được commit. Không bao giờ đặt `service_role` key ở trình duyệt.
 
 Nếu triển khai bằng Vercel CLI, hãy thiết lập các biến môi trường trước khi deploy:
 
 ```bash
-vercel env add PUBLIC_SITE_URL production
-vercel env add SUPABASE_URL production
-vercel env add SUPABASE_ANON_KEY production
-vercel env add SUPABASE_REDIRECT_URL production
+vercel env add VITE_PUBLIC_SITE_URL production
+vercel env add VITE_SUPABASE_URL production
+vercel env add VITE_SUPABASE_ANON_KEY production
+vercel env add VITE_SUPABASE_REDIRECT_URL production
 vercel env add SUPABASE_SERVICE_ROLE_KEY production
 vercel env add SCORE_SIGNING_SECRET production
 vercel --prod

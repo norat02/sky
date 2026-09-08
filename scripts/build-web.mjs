@@ -9,6 +9,7 @@ const files = [
   'ui.js',
   'game.js',
   'consent-gate.js',
+  'security-integrity.js',
   'native-bridge.js',
   'privacy-policy.html',
   'terms-of-use.html',
