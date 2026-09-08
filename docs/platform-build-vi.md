@@ -229,6 +229,8 @@ Deep link Google OAuth của iOS cần được khai báo trong URL schemes củ
 
 PC dùng Electron, **không dùng PWA**. Electron mở chính bundle `dist/` đã dùng cho website, Android và iPhone, nên gameplay, theme và locale được đồng bộ.
 
+GitHub Actions tại `.github/workflows/platforms.yml` build bundle web, kiểm tra desktop Windows/macOS/Linux và validate iOS Simulator không signing. Workflow Android tại `.github/workflows/android.yml` build APK/AAB debug. Release AAB cần keystore riêng và không nên để private key trong log CI.
+
 Trên Windows hoặc máy có môi trường build Windows:
 
 ```bash
@@ -260,6 +262,10 @@ npm run web:dev
 ```
 
 Mở `http://localhost:4173`. Đây chỉ là server kiểm thử web, không phải PWA hay sản phẩm desktop.
+
+## 8. Một codebase và backend dùng chung
+
+Web, Android, iPhone/iPad và desktop đều dùng cùng `dist/`, API Vercel, Supabase Auth và Supabase Database. Database production hiện tại là **Supabase PostgreSQL**, không phải Neon. Chạy [`supabase/schema.sql`](../supabase/schema.sql) trong Supabase SQL Editor trước khi kiểm thử leaderboard.
 
 ## 8. Kiểm tra Google Login trên Android/iPhone
 

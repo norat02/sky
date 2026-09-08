@@ -38,6 +38,7 @@
     "web:dev": "npm run build && python3 -m http.server 4173 -d dist",
     "desktop:dev": "npm run build && electron electron/main.cjs",
     "desktop:build": "npm run build && electron-builder --win --x64",
+    "desktop:build:all": "npm run build && electron-builder --win --mac --linux",
     "cap:sync": "npm run build && npx cap sync",
     "cap:sync:android": "npm run build && npx cap sync android",
     "cap:sync:ios": "npm run build && npx cap sync ios",
@@ -51,7 +52,9 @@
     "productName": "Sky Bird",
     "files": ["electron/**/*", "dist/**/*", "package.json"],
     "win": { "target": ["nsis", "portable"] },
-    "nsis": { "oneClick": false, "allowToChangeInstallationDirectory": true }
+    "mac": { "target": ["dmg", "zip"] },
+    "nsis": { "oneClick": false, "allowToChangeInstallationDirectory": true },
+    "linux": { "target": ["AppImage", "deb"], "category": "Game" }
   },
   "devDependencies": {
     "@capacitor/android": "^8.5.1",
