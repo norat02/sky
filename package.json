@@ -52,7 +52,6 @@
   "build": {
     "appId": "com.norat02.skybird.desktop",
     "productName": "Sky Bird",
-    "desktopName": "sky-bird",
     "files": ["electron/**/*", "dist/**/*", "package.json"],
     "win": { "target": ["nsis", "portable"] },
     "mac": { "target": ["dmg", "zip"] },
