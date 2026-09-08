@@ -2,6 +2,10 @@
   'use strict';
 
   var native = !!(window.Capacitor && typeof window.Capacitor.isNativePlatform === 'function' && window.Capacitor.isNativePlatform());
+  if (native) {
+    document.documentElement.classList.add('native-app');
+    if (window.Capacitor.getPlatform && window.Capacitor.getPlatform() === 'android') document.documentElement.classList.add('android-app');
+  }
   var callbackScheme = (window.SKY_CONFIG && window.SKY_CONFIG.NATIVE_OAUTH_REDIRECT_SCHEME) || 'com.norat02.skybird';
   var callbackUrl = null;
   var callbackListeners = [];

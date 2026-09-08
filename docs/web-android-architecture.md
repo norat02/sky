@@ -11,13 +11,13 @@ Android không có gameplay/frontend riêng. Thư mục `android/` chỉ là l�
 | UI/game/assets | Source frontend hiện tại | Cùng bundle `dist/` trong WebView |
 | API | Relative `/api/*` | `VITE_API_BASE_URL` trỏ tới Vercel `/api/*` |
 | Auth | Supabase Auth redirect Web | Supabase Auth redirect `com.norat02.skybird://login-callback` |
-| Database | Không kết nối Neon trực tiếp | Không kết nối Neon trực tiếp |
+| Database | Không kết nối Supabase trực tiếp | Không kết nối Supabase trực tiếp |
 | Server | Vercel Serverless Functions | Gọi cùng Vercel Serverless Functions |
-| Database server-side | Neon PostgreSQL | Neon PostgreSQL qua API server |
+| Database server-side | Supabase PostgreSQL | Supabase PostgreSQL qua API server |
 
 ## Biến môi trường
 
-Các biến `VITE_*` và `ADSENSE_PUBLISHER_ID` là public runtime configuration. `DATABASE_URL`, `NEON_DATABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, `SCORE_SIGNING_SECRET`, `ADMIN_EMAILS` và `ADMIN_USER_IDS` chỉ được đặt trong server/Vercel, không được đưa vào `dist/`, Android assets hoặc APK/AAB.
+Các biến `VITE_*` và `ADSENSE_PUBLISHER_ID` là public runtime configuration. `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, `SCORE_SIGNING_SECRET`, `ADMIN_EMAILS` và `ADMIN_USER_IDS` chỉ được đặt trong server/Vercel, không được đưa vào `dist/`, Android assets hoặc APK/AAB.
 
 ## OAuth Android
 

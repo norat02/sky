@@ -3,6 +3,31 @@ apply plugin: 'com.android.application'
 android {
     namespace = "com.norat02.skybird"
     compileSdk = rootProject.ext.compileSdkVersion
+    def signingProps = new Properties()
+    def signingFile = rootProject.file('keystore.properties')
+    if (signingFile.exists()) signingFile.withInputStream { signingProps.load(it) }
+    def envOrProp = { String key -> System.getenv(key) ?: signingProps.getProperty(key) }
+    def keystorePath = envOrProp('ANDROID_KEYSTORE_PATH')
+    def keystoreBase64 = envOrProp('ANDROID_KEYSTORE_BASE64')
+    if (!keystorePath && keystoreBase64) {
+        keystorePath = layout.buildDirectory.file('sky-release.jks').get().asFile.absolutePath
+        def keystoreFile = file(keystorePath)
+        if (!keystoreFile.exists()) {
+            keystoreFile.parentFile.mkdirs()
+            keystoreFile.bytes = keystoreBase64.decodeBase64()
+        }
+    }
+    def hasReleaseSigning = keystorePath && envOrProp('ANDROID_KEY_ALIAS') && envOrProp('ANDROID_KEYSTORE_PASSWORD') && envOrProp('ANDROID_KEY_PASSWORD')
+    signingConfigs {
+        release {
+            if (hasReleaseSigning) {
+                storeFile file(keystorePath)
+                storePassword envOrProp('ANDROID_KEYSTORE_PASSWORD')
+                keyAlias envOrProp('ANDROID_KEY_ALIAS')
+                keyPassword envOrProp('ANDROID_KEY_PASSWORD')
+            }
+        }
+    }
     defaultConfig {
         applicationId "com.norat02.skybird"
         minSdkVersion rootProject.ext.minSdkVersion
@@ -20,6 +45,7 @@ android {
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+            if (hasReleaseSigning) signingConfig signingConfigs.release
         }
     }
 }

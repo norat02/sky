@@ -37,7 +37,7 @@ var CFG={G:1600,FLAP:-465,MAXFALL:640,R:14,SPEEDMUL:1,GAPMUL:1,COINMUL:1};
 for(var k in BASE)CFG[k]=BASE[k];
 
 var TAU=Math.PI*2;
-var INK='#26221c',PAPER='#f0e7d3',RED='#c73e3a',RED_L='#d4584e';
+  var INK='#eaf6ff',PAPER='#07111f',RED='#29add5',RED_L='#63d4f2';
 function sm(a,dt){return 1-Math.exp(-a*dt);}
 
 /* ═══ DOM ═══ */
@@ -280,7 +280,7 @@ var DB={
   },
   accessToken:function(){if(!DB.client||!authUser)return Promise.reject(new Error('auth'));return DB.client.auth.getSession().then(function(r){var token=r.data&&r.data.session&&r.data.session.access_token;if(!token)throw new Error('auth');return token;});},
   beginRun:function(){return DB.accessToken().then(function(token){return fetch(apiUrl('/api/run-ticket'),{method:'POST',headers:{Authorization:'Bearer '+token,'Content-Type':'application/json'},body:'{}'});}).then(function(r){if(!r.ok)throw new Error('run ticket');return r.json();}).then(function(data){runTicket=data.ticket;return runTicket;});},
-  refreshTop:function(){if(!DB.online||!DB.client)return Promise.resolve(null);return DB.client.from('scores').select('player_name,score,created_at').order('score',{ascending:false}).order('created_at',{ascending:true}).limit(10).then(function(r){if(r.error)throw r.error;DB.cache=(r.data||[]).map(function(x){return{name:x.player_name,score:x.score};});return DB.cache;}).catch(function(){return null;});},
+  refreshTop:function(){if(!DB.online||!DB.client)return Promise.resolve(null);return fetch(apiUrl('/api/leaderboard')).then(function(r){if(!r.ok)throw new Error('leaderboard_api');return r.json();}).then(function(payload){DB.cache=Array.isArray(payload.rows)?payload.rows.map(function(x){return{name:String(x.name||'').slice(0,10),score:Number(x.score)||0;} }):[];return DB.cache;}).catch(function(){return DB.client.from('scores').select('player_name,score,created_at').order('score',{ascending:false}).order('created_at',{ascending:true}).limit(10).then(function(r){if(r.error)throw r.error;DB.cache=(r.data||[]).map(function(x){return{name:x.player_name,score:x.score};});return DB.cache;}).catch(function(){return null;});},
   submitPayload:function(item){return DB.accessToken().then(function(token){return fetch(apiUrl('/api/submit-score'),{method:'POST',headers:{Authorization:'Bearer '+token,'Content-Type':'application/json'},body:JSON.stringify({name:item.name,score:item.score,ticket:item.ticket})});}).then(function(r){return r.json().then(function(data){if(!r.ok){var e=new Error(data.error||'submit');e.apiCode=data.error;e.retryable=r.status>=500||r.status===429;throw e;}return data.rows||[];});});},
   submit:function(name,sc){if(!DB.client||!authUser||!runTicket)return Promise.reject(new Error('run'));return DB.submitPayload({name:name,score:sc,ticket:runTicket});},
   flushPending:function(){if(!DB.online||!authUser||!pendingScores.length)return Promise.resolve();var queue=pendingScores.slice();var next=Promise.resolve();queue.forEach(function(item){next=next.then(function(){if(!pendingScores.some(function(x){return x.ticket===item.ticket;}))return;return DB.submitPayload(item).then(function(){removePendingScore(item.ticket);}).catch(function(e){if(!e.retryable)removePendingScore(item.ticket);else schedulePendingRetry();});});});return next;}

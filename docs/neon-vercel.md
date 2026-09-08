@@ -1,4 +1,6 @@
-# Neon PostgreSQL + Vercel
+# Deprecated: Neon PostgreSQL + Vercel
+
+> Repository đã chuyển database điểm sang Supabase Database. Không dùng tài liệu này cho deployment mới; hãy chạy [`supabase/schema.sql`](../supabase/schema.sql) và đọc [`android-setup-vi.md`](android-setup-vi.md).
 
 ## Kiến trúc
 
