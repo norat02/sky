@@ -35,7 +35,6 @@ ADMIN_USER_IDS=
 ## 2. Chuẩn bị Android Studio trên Windows/macOS/Linux
 
 Cài các thành phần sau:
-
 1. Android Studio bản mới.
 2. Android SDK Platform phù hợp với `compileSdk` của project.
 3. Android SDK Platform-Tools.
