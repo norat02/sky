@@ -59,24 +59,49 @@ jobs:
         run: |
           set -euo pipefail
 
-          ./gradlew signingReport --no-daemon > signing-report.txt
+          KEYSTORE="$HOME/.config/.android/debug.keystore"
+          ALIAS="AndroidDebugKey"
 
-          echo "## Android Certificate Fingerprints" >> "$GITHUB_STEP_SUMMARY"
-          echo "" >> "$GITHUB_STEP_SUMMARY"
-          echo "**Package:** \`com.norat02.skybird\`" >> "$GITHUB_STEP_SUMMARY"
-          echo "" >> "$GITHUB_STEP_SUMMARY"
+          if [ ! -f "$KEYSTORE" ]; then
+            echo "::error::Debug keystore not found: $KEYSTORE"
+            exit 1
+          fi
 
-          echo '```text' >> "$GITHUB_STEP_SUMMARY"
+          FINGERPRINTS="$(keytool -list -v \
+            -keystore "$KEYSTORE" \
+            -alias "$ALIAS" \
+            -storepass android \
+            -keypass android 2>/dev/null)"
 
-          grep -E \
-            "Variant:|Config:|Store:|Alias:|SHA1:|SHA-256:" \
-            signing-report.txt \
-            | tee -a "$GITHUB_STEP_SUMMARY"
+          SHA1="$(printf '%s\n' "$FINGERPRINTS" | sed -n 's/^[[:space:]]*SHA1:[[:space:]]*//p' | head -n 1)"
+          SHA256="$(printf '%s\n' "$FINGERPRINTS" | sed -n 's/^[[:space:]]*SHA256:[[:space:]]*//p' | head -n 1)"
 
-          echo '```' >> "$GITHUB_STEP_SUMMARY"
+          if [ -z "$SHA1" ]; then
+            echo "::error::SHA-1 fingerprint could not be extracted."
+            exit 1
+          fi
 
-          echo "" >> "$GITHUB_STEP_SUMMARY"
-          echo "Use the SHA-1 fingerprint for Google Android OAuth." >> "$GITHUB_STEP_SUMMARY"
+          if [ -z "$SHA256" ]; then
+            echo "::error::SHA-256 fingerprint could not be extracted."
+            exit 1
+          fi
+
+          {
+            echo "## Android Certificate Fingerprints"
+            echo ""
+            echo "| Field | Value |"
+            echo "|---|---|"
+            echo "| Package | \`com.norat02.skybird\` |"
+            echo "| Keystore | \`debug.keystore\` |"
+            echo "| Alias | \`AndroidDebugKey\` |"
+            echo "| SHA-1 | \`$SHA1\` |"
+            echo "| SHA-256 | \`$SHA256\` |"
+            echo ""
+            echo "These fingerprints belong to the Android debug signing certificate."
+          } >> "$GITHUB_STEP_SUMMARY"
+
+          echo "SHA-1: $SHA1"
+          echo "SHA-256: $SHA256"
 
       - name: Build debug APK and AAB
         working-directory: android
