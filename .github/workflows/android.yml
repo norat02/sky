@@ -45,10 +45,38 @@ jobs:
         uses: android-actions/setup-android@v4
 
       - name: Install Android SDK packages
-        run: sdkmanager "platforms;android-36" "build-tools;35.0.0" "platform-tools"
+        run: |
+          sdkmanager "platforms;android-36" \
+            "build-tools;35.0.0" \
+            "platform-tools"
 
       - name: Sync shared Web client into Capacitor
         run: npx cap sync android
+
+      - name: Get Android certificate fingerprints
+        working-directory: android
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          ./gradlew signingReport --no-daemon > signing-report.txt
+
+          echo "## Android Certificate Fingerprints" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "**Package:** \`com.norat02.skybird\`" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+
+          echo '```text' >> "$GITHUB_STEP_SUMMARY"
+
+          grep -E \
+            "Variant:|Config:|Store:|Alias:|SHA1:|SHA-256:" \
+            signing-report.txt \
+            | tee -a "$GITHUB_STEP_SUMMARY"
+
+          echo '```' >> "$GITHUB_STEP_SUMMARY"
+
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "Use the SHA-1 fingerprint for Google Android OAuth." >> "$GITHUB_STEP_SUMMARY"
 
       - name: Build debug APK and AAB
         working-directory: android
