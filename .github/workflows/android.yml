@@ -59,22 +59,69 @@ jobs:
         run: |
           set -euo pipefail
 
-          KEYSTORE="$HOME/.config/.android/debug.keystore"
-          ALIAS="AndroidDebugKey"
+          echo "Generating Android signing report..."
 
-          if [ ! -f "$KEYSTORE" ]; then
-            echo "::error::Debug keystore not found: $KEYSTORE"
+          ./gradlew signingReport --no-daemon | tee signing-report.txt
+
+          echo ""
+          echo "Searching for Android debug keystore..."
+
+          KEYSTORE="$(
+            grep -m1 '^Store:' signing-report.txt \
+            | sed 's/^Store:[[:space:]]*//' \
+            | xargs
+          )"
+
+          ALIAS="$(
+            grep -m1 '^Alias:' signing-report.txt \
+            | sed 's/^Alias:[[:space:]]*//' \
+            | xargs
+          )"
+
+          if [ -z "$KEYSTORE" ]; then
+            echo "::error::Could not determine Android debug keystore."
+
+            echo "Available debug keystores:"
+            find "$HOME" \
+              -name "debug.keystore" \
+              -type f \
+              -print || true
+
             exit 1
           fi
 
-          FINGERPRINTS="$(keytool -list -v \
-            -keystore "$KEYSTORE" \
-            -alias "$ALIAS" \
-            -storepass android \
-            -keypass android 2>/dev/null)"
+          if [ -z "$ALIAS" ]; then
+            echo "::error::Could not determine Android signing alias."
+            exit 1
+          fi
 
-          SHA1="$(printf '%s\n' "$FINGERPRINTS" | sed -n 's/^[[:space:]]*SHA1:[[:space:]]*//p' | head -n 1)"
-          SHA256="$(printf '%s\n' "$FINGERPRINTS" | sed -n 's/^[[:space:]]*SHA256:[[:space:]]*//p' | head -n 1)"
+          echo "Keystore: $KEYSTORE"
+          echo "Alias: $ALIAS"
+
+          if [ ! -f "$KEYSTORE" ]; then
+            echo "::error::Keystore does not exist: $KEYSTORE"
+            exit 1
+          fi
+
+          FINGERPRINTS="$(
+            keytool -list -v \
+              -keystore "$KEYSTORE" \
+              -alias "$ALIAS" \
+              -storepass android \
+              -keypass android
+          )"
+
+          SHA1="$(
+            printf '%s\n' "$FINGERPRINTS" \
+            | grep -m1 'SHA1:' \
+            | sed 's/.*SHA1:[[:space:]]*//'
+          )"
+
+          SHA256="$(
+            printf '%s\n' "$FINGERPRINTS" \
+            | grep -m1 'SHA256:' \
+            | sed 's/.*SHA256:[[:space:]]*//'
+          )"
 
           if [ -z "$SHA1" ]; then
             echo "::error::SHA-1 fingerprint could not be extracted."
@@ -86,38 +133,81 @@ jobs:
             exit 1
           fi
 
+          echo ""
+          echo "========================================"
+          echo "Android Certificate"
+          echo "========================================"
+          echo "Package: com.norat02.skybird"
+          echo "Keystore: $KEYSTORE"
+          echo "Alias: $ALIAS"
+          echo "SHA-1: $SHA1"
+          echo "SHA-256: $SHA256"
+          echo "========================================"
+
           {
             echo "## Android Certificate Fingerprints"
             echo ""
             echo "| Field | Value |"
             echo "|---|---|"
             echo "| Package | \`com.norat02.skybird\` |"
-            echo "| Keystore | \`debug.keystore\` |"
-            echo "| Alias | \`AndroidDebugKey\` |"
+            echo "| Keystore | \`$KEYSTORE\` |"
+            echo "| Alias | \`$ALIAS\` |"
             echo "| SHA-1 | \`$SHA1\` |"
             echo "| SHA-256 | \`$SHA256\` |"
             echo ""
-            echo "These fingerprints belong to the Android debug signing certificate."
+            echo "### Google OAuth"
+            echo ""
+            echo "Use the SHA-1 fingerprint with the Android package name when creating the Google OAuth Android client."
           } >> "$GITHUB_STEP_SUMMARY"
-
-          echo "SHA-1: $SHA1"
-          echo "SHA-256: $SHA256"
 
       - name: Build debug APK and AAB
         working-directory: android
-        run: ./gradlew assembleDebug bundleDebug --no-daemon
+        run: |
+          ./gradlew assembleDebug bundleDebug --no-daemon
+
+      - name: Verify Android artifacts
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          APK="${{ github.workspace }}/android/app/build/outputs/apk/debug/app-debug.apk"
+          AAB="${{ github.workspace }}/android/app/build/outputs/bundle/debug/app-debug.aab"
+
+          if [ ! -f "$APK" ]; then
+            echo "::error::APK not found: $APK"
+            exit 1
+          fi
+
+          if [ ! -f "$AAB" ]; then
+            echo "::error::AAB not found: $AAB"
+            exit 1
+          fi
+
+          echo "APK: $APK"
+          echo "AAB: $AAB"
+
+          {
+            echo ""
+            echo "## Android Build Artifacts"
+            echo ""
+            echo "| Artifact | Status |"
+            echo "|---|---|"
+            echo "| Debug APK | Ready |"
+            echo "| Debug AAB | Ready |"
+          } >> "$GITHUB_STEP_SUMMARY"
 
       - name: Upload Web artifact
         uses: actions/upload-artifact@v7
         with:
           name: sky-bird-web
-          path: dist
+          path: ${{ github.workspace }}/dist
+          if-no-files-found: error
 
       - name: Upload Android artifacts
         uses: actions/upload-artifact@v7
         with:
           name: sky-bird-android-debug
           path: |
-            android/app/build/outputs/apk/debug/app-debug.apk
-            android/app/build/outputs/bundle/debug/app-debug.aab
+            ${{ github.workspace }}/android/app/build/outputs/apk/debug/app-debug.apk
+            ${{ github.workspace }}/android/app/build/outputs/bundle/debug/app-debug.aab
           if-no-files-found: error
