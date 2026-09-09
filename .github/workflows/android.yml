@@ -14,26 +14,44 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      # ============================================================
+      # 1. Checkout source code
+      # ============================================================
       - name: Checkout
         uses: actions/checkout@v7
 
+      # ============================================================
+      # 2. Setup Node.js
+      # ============================================================
       - name: Setup Node
         uses: actions/setup-node@v7
         with:
           node-version: 24
           cache: npm
 
+      # ============================================================
+      # 3. Install JavaScript dependencies
+      # ============================================================
       - name: Install JavaScript dependencies
         run: npm ci
 
+      # ============================================================
+      # 4. Build shared Web client
+      # ============================================================
       - name: Build shared Web client
         run: npm run build
 
+      # ============================================================
+      # 5. Verify source and tests
+      # ============================================================
       - name: Verify source and tests
         run: |
           npm run verify
           npm test
 
+      # ============================================================
+      # 6. Setup Java
+      # ============================================================
       - name: Setup Java
         uses: actions/setup-java@v6
         with:
@@ -41,86 +59,151 @@ jobs:
           java-version: "21"
           cache: gradle
 
+      # ============================================================
+      # 7. Setup Android SDK
+      # ============================================================
       - name: Setup Android SDK
         uses: android-actions/setup-android@v4
 
+      # ============================================================
+      # 8. Install Android SDK packages
+      # ============================================================
       - name: Install Android SDK packages
         run: |
           sdkmanager "platforms;android-36" \
             "build-tools;35.0.0" \
             "platform-tools"
 
+      # ============================================================
+      # 9. Sync Capacitor Android project
+      # ============================================================
       - name: Sync shared Web client into Capacitor
         run: npx cap sync android
 
+      # ============================================================
+      # 10. Check Android project
+      # ============================================================
+      - name: Verify Android project
+        working-directory: android
+        run: |
+          set -euo pipefail
+
+          if [ ! -f "./gradlew" ]; then
+            echo "::error::android/gradlew was not found."
+            exit 1
+          fi
+
+          chmod +x ./gradlew
+
+          echo "Android project:"
+          pwd
+
+          echo ""
+          echo "Gradle version:"
+          ./gradlew --version
+
+      # ============================================================
+      # 11. Build Debug APK
+      #
+      # This step is intentionally executed BEFORE keytool.
+      # Gradle generates the Android debug keystore here.
+      # ============================================================
+      - name: Generate Android debug keystore
+        working-directory: android
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          echo "========================================"
+          echo "Generating Android debug keystore"
+          echo "========================================"
+
+          ./gradlew assembleDebug --no-daemon
+
+          echo ""
+          echo "Searching for generated debug.keystore..."
+
+          KEYSTORE="$(
+            find "$HOME" \
+              -type f \
+              -name "debug.keystore" \
+              -print -quit
+          )"
+
+          if [ -z "$KEYSTORE" ]; then
+            echo "::error::debug.keystore was not generated."
+
+            echo ""
+            echo "Searching for all keystore files:"
+            find "$HOME" \
+              -type f \
+              \( -name "*.keystore" -o -name "*.jks" \) \
+              -print || true
+
+            exit 1
+          fi
+
+          echo ""
+          echo "Debug keystore found:"
+          echo "$KEYSTORE"
+
+      # ============================================================
+      # 12. Get SHA-1 and SHA-256
+      # ============================================================
       - name: Get Android certificate fingerprints
         working-directory: android
         shell: bash
         run: |
           set -euo pipefail
 
-          echo "Generating Android signing report..."
-
-          ./gradlew signingReport --no-daemon | tee signing-report.txt
-
-          echo ""
-          echo "Searching for Android debug keystore..."
+          echo "========================================"
+          echo "Finding Android debug keystore"
+          echo "========================================"
 
           KEYSTORE="$(
-            grep -m1 '^Store:' signing-report.txt \
-            | sed 's/^Store:[[:space:]]*//' \
-            | xargs
-          )"
-
-          ALIAS="$(
-            grep -m1 '^Alias:' signing-report.txt \
-            | sed 's/^Alias:[[:space:]]*//' \
-            | xargs
+            find "$HOME" \
+              -type f \
+              -name "debug.keystore" \
+              -print -quit
           )"
 
           if [ -z "$KEYSTORE" ]; then
-            echo "::error::Could not determine Android debug keystore."
-
-            echo "Available debug keystores:"
-            find "$HOME" \
-              -name "debug.keystore" \
-              -type f \
-              -print || true
-
+            echo "::error::Could not find debug.keystore."
             exit 1
           fi
 
-          if [ -z "$ALIAS" ]; then
-            echo "::error::Could not determine Android signing alias."
-            exit 1
-          fi
+          echo "Keystore:"
+          echo "$KEYSTORE"
 
-          echo "Keystore: $KEYSTORE"
-          echo "Alias: $ALIAS"
+          ALIAS="AndroidDebugKey"
+          STORE_PASSWORD="android"
+          KEY_PASSWORD="android"
 
-          if [ ! -f "$KEYSTORE" ]; then
-            echo "::error::Keystore does not exist: $KEYSTORE"
-            exit 1
-          fi
+          echo ""
+          echo "========================================"
+          echo "Reading certificate"
+          echo "========================================"
 
-          FINGERPRINTS="$(
+          KEYTOOL_OUTPUT="$(
             keytool -list -v \
               -keystore "$KEYSTORE" \
               -alias "$ALIAS" \
-              -storepass android \
-              -keypass android
+              -storepass "$STORE_PASSWORD" \
+              -keypass "$KEY_PASSWORD"
           )"
 
+          echo "$KEYTOOL_OUTPUT"
+
           SHA1="$(
-            printf '%s\n' "$FINGERPRINTS" \
-            | grep -m1 'SHA1:' \
-            | sed 's/.*SHA1:[[:space:]]*//'
+            printf '%s\n' "$KEYTOOL_OUTPUT" |
+            grep -m1 'SHA1:' |
+            sed 's/.*SHA1:[[:space:]]*//'
           )"
 
           SHA256="$(
-            printf '%s\n' "$FINGERPRINTS" \
-            | grep -m1 'SHA256:' \
-            | sed 's/.*SHA256:[[:space:]]*//'
+            printf '%s\n' "$KEYTOOL_OUTPUT" |
+            grep -m1 'SHA256:' |
+            sed 's/.*SHA256:[[:space:]]*//'
           )"
 
           if [ -z "$SHA1" ]; then
@@ -135,7 +218,7 @@ jobs:
 
           echo ""
           echo "========================================"
-          echo "Android Certificate"
+          echo "Android Certificate Fingerprints"
           echo "========================================"
           echo "Package: com.norat02.skybird"
           echo "Keystore: $KEYSTORE"
@@ -144,6 +227,7 @@ jobs:
           echo "SHA-256: $SHA256"
           echo "========================================"
 
+          # Save values to GitHub Step Summary.
           {
             echo "## Android Certificate Fingerprints"
             echo ""
@@ -157,14 +241,34 @@ jobs:
             echo ""
             echo "### Google OAuth"
             echo ""
-            echo "Use the SHA-1 fingerprint with the Android package name when creating the Google OAuth Android client."
+            echo "Android package name:"
+            echo ""
+            echo "\`com.norat02.skybird\`"
+            echo ""
+            echo "Use the SHA-1 fingerprint above when configuring the Google OAuth Android client."
+            echo ""
+            echo "Redirect URI:"
+            echo ""
+            echo "\`com.norat02.skybird://login-callback\`"
           } >> "$GITHUB_STEP_SUMMARY"
 
-      - name: Build debug APK and AAB
+      # ============================================================
+      # 13. Build Debug AAB
+      #
+      # assembleDebug was already executed above.
+      # Here we only generate the AAB.
+      # ============================================================
+      - name: Build Android debug AAB
         working-directory: android
+        shell: bash
         run: |
-          ./gradlew assembleDebug bundleDebug --no-daemon
+          set -euo pipefail
 
+          ./gradlew bundleDebug --no-daemon
+
+      # ============================================================
+      # 14. Verify Android output files
+      # ============================================================
       - name: Verify Android artifacts
         shell: bash
         run: |
@@ -173,29 +277,78 @@ jobs:
           APK="${{ github.workspace }}/android/app/build/outputs/apk/debug/app-debug.apk"
           AAB="${{ github.workspace }}/android/app/build/outputs/bundle/debug/app-debug.aab"
 
+          echo "========================================"
+          echo "Checking Android artifacts"
+          echo "========================================"
+
           if [ ! -f "$APK" ]; then
-            echo "::error::APK not found: $APK"
+            echo "::error::APK not found:"
+            echo "$APK"
             exit 1
           fi
 
           if [ ! -f "$AAB" ]; then
-            echo "::error::AAB not found: $AAB"
+            echo "::error::AAB not found:"
+            echo "$AAB"
             exit 1
           fi
 
-          echo "APK: $APK"
-          echo "AAB: $AAB"
+          echo ""
+          echo "APK:"
+          echo "$APK"
+
+          echo ""
+          echo "AAB:"
+          echo "$AAB"
+
+          echo ""
+          echo "APK size:"
+          du -h "$APK"
+
+          echo ""
+          echo "AAB size:"
+          du -h "$AAB"
 
           {
             echo ""
             echo "## Android Build Artifacts"
             echo ""
-            echo "| Artifact | Status |"
-            echo "|---|---|"
-            echo "| Debug APK | Ready |"
-            echo "| Debug AAB | Ready |"
+            echo "| Artifact | Status | Path |"
+            echo "|---|---|---|"
+            echo "| Debug APK | Ready | \`android/app/build/outputs/apk/debug/app-debug.apk\` |"
+            echo "| Debug AAB | Ready | \`android/app/build/outputs/bundle/debug/app-debug.aab\` |"
           } >> "$GITHUB_STEP_SUMMARY"
 
+      # ============================================================
+      # 15. Verify Web output
+      # ============================================================
+      - name: Verify Web artifact
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          WEB="${{ github.workspace }}/dist"
+
+          echo "========================================"
+          echo "Checking Web build"
+          echo "========================================"
+
+          if [ ! -d "$WEB" ]; then
+            echo "::error::Web dist directory not found:"
+            echo "$WEB"
+            exit 1
+          fi
+
+          echo "Web output:"
+          echo "$WEB"
+
+          echo ""
+          echo "Web files:"
+          find "$WEB" -maxdepth 2 -type f | sort | head -100
+
+      # ============================================================
+      # 16. Upload Web artifact
+      # ============================================================
       - name: Upload Web artifact
         uses: actions/upload-artifact@v7
         with:
@@ -203,6 +356,9 @@ jobs:
           path: ${{ github.workspace }}/dist
           if-no-files-found: error
 
+      # ============================================================
+      # 17. Upload Android APK + AAB
+      # ============================================================
       - name: Upload Android artifacts
         uses: actions/upload-artifact@v7
         with:
