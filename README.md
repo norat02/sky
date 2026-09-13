@@ -16,6 +16,8 @@ Checklist audit Supabase RLS cho `scores`, `score_runs` và leaderboard nằm t�
 
 Kiến trúc native SwiftUI/Swift cho iPhone/iPad và macOS nằm tại [`docs/swiftui-iphone-macos-vi.md`](docs/swiftui-iphone-macos-vi.md).
 
+Backend Express/PostgreSQL v2, API versioning, cursor pagination, session expiration, RLS, idempotency, anti-cheat, HTTPS, monitoring và backup được mô tả tại [`docs/backend-v2.md`](docs/backend-v2.md). Endpoint mới dùng `/api/v1`; alias `/api` chỉ giữ tạm cho client cũ.
+
 ## Quy chuẩn giao diện
 
 Mọi biểu tượng trong giao diện phải dùng **SVG inline hoặc SVG sprite**, không dùng emoji hoặc ký tự biểu tượng thay thế. Icon tương tác cần có `aria-label` hoặc nhãn văn bản đi kèm, trạng thái trang trí dùng `aria-hidden="true"`, và SVG phải kế thừa màu giao diện qua `currentColor` khi phù hợp.

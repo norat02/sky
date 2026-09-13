@@ -7,6 +7,9 @@ assert.equal(await verifyPassword('correct horse battery staple', encoded), true
 assert.equal(await verifyPassword('wrong password', encoded), false);
 const token = issueToken({ id: '00000000-0000-0000-0000-000000000001', email: 'player@example.com', role: 'player' });
 assert.equal(readToken(token).role, 'player');
+assert.equal(readToken(token).iss, 'sky-bird-api');
+assert.equal(readToken(token).aud, 'sky-bird-client');
+assert.equal(readToken(issueToken({ id: '00000000-0000-0000-0000-000000000001', email: 'player@example.com', role: 'player' }, { ttlSeconds: -1 })), null);
 assert.equal(readToken(`${token.slice(0, -1)}x`), null);
 const first = await rateLimit('smoke-test', 2, 60);
 const second = await rateLimit('smoke-test', 2, 60);

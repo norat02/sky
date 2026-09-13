@@ -9,6 +9,7 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
       - ./server/migrations/001_sky_bird_v2.sql:/docker-entrypoint-initdb.d/001_sky_bird_v2.sql:ro
+      - ./server/migrations/002_security_hardening.sql:/docker-entrypoint-initdb.d/002_security_hardening.sql:ro
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U sky -d sky"]
       interval: 5s
@@ -30,7 +31,7 @@ services:
       DATABASE_URL: postgres://sky:sky@postgres:5432/sky
       REDIS_URL: redis://redis:6379
       RABBITMQ_URL: amqp://sky:sky@rabbitmq:5672
-      JWT_SECRET: change-this-in-production
+      JWT_SECRET: change-this-in-production-with-at-least-32-characters
       PORT: 4000
     depends_on:
       postgres: { condition: service_healthy }
