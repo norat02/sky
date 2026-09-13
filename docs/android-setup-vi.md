@@ -36,6 +36,26 @@ npx cap sync android
 
 `env.js` chỉ là artifact public được sinh tự động từ `.env.local` trong lúc build, bị ignore bởi Git và không được tự sửa/commit. Repository không dùng `config.js`.
 
+### Build Android tự động trên GitHub Actions
+
+Nếu build qua workflow `.github/workflows/android.yml`, không cần commit `.env.local`. Vào **GitHub repository → Settings → Secrets and variables → Actions → Variables → New repository variable** và tạo các **Variables** sau:
+
+| Variable | Giá trị |
+|---|---|
+| `VITE_PUBLIC_SITE_URL` | URL website production, ví dụ `https://your-project.vercel.app/` |
+| `VITE_API_BASE_URL` | URL Vercel không có dấu `/` cuối, ví dụ `https://your-project.vercel.app` |
+| `VITE_SUPABASE_URL` | Supabase Project URL |
+| `VITE_SUPABASE_ANON_KEY` | Supabase publishable/anon key |
+| `VITE_SUPABASE_REDIRECT_URL` | URL production đầy đủ, nếu dùng redirect cố định |
+| `VITE_NATIVE_OAUTH_REDIRECT_SCHEME` | `com.norat02.skybird` |
+| `ADSENSE_PUBLISHER_ID` | Publisher ID public nếu dùng AdSense |
+
+Workflow sẽ tạo `.env.local` tạm thời trong runner, chạy build và đồng bộ Capacitor. File này không được commit. Các giá trị `VITE_*`, anon key và AdSense ID là cấu hình public, nên GitHub **Actions Variables** là phù hợp; không đặt service-role key vào đây.
+
+### Cấu hình Vercel
+
+Vào **Vercel → Project → Settings → Environment Variables**. Đặt các biến `VITE_*` ở trên cho **Build time**. Đặt các biến server-only như `DATABASE_URL`, `JWT_SECRET`, `SUPABASE_SERVICE_ROLE_KEY` và `SCORE_SIGNING_SECRET` ở **Server/Runtime**; không đưa chúng vào APK, `.env.local` hoặc GitHub Actions Variables.
+
 ## 3. Tạo keystore release
 
 Keystore là chìa khóa ký APK/AAB. Nếu mất keystore hoặc đổi alias/password, bản cập nhật có thể không cài đè lên bản cũ.
