@@ -2,6 +2,12 @@
   "buildCommand": "npm run build",
   "outputDirectory": ".",
   "cleanUrls": true,
+  "functions": {
+    "api/v1/[...path].mjs": {
+      "runtime": "nodejs22.x",
+      "maxDuration": 30
+    }
+  },
   "headers": [
     {
       "source": "/(.*\\.(js|css|png|jpg|jpeg|webp|svg|woff2))",

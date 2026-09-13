@@ -21,6 +21,24 @@ openssl rand -base64 48
 
 Vercel chạy `npm run build`. Script `scripts/generate-config.mjs` chỉ đưa các biến public vào `env.js`. Các biến server-only được đọc trực tiếp bởi Vercel Functions.
 
+## 1.1. Express API v2 trên Vercel
+
+Repository đã có adapter [`api/v1/[...path].mjs`](../api/v1/%5B...path%5D.mjs), vì vậy các endpoint Express v2 có thể chạy trên Vercel Functions:
+
+```text
+GET  /api/v1/leaderboard?limit=10&cursor=...
+POST /api/v1/auth/register
+POST /api/v1/auth/login
+POST /api/v1/auth/logout
+POST /api/v1/runs
+POST /api/v1/runs/:runId/score
+GET  /api/v1/admin/stats
+```
+
+Vercel cần các biến server-only `DATABASE_URL`, `JWT_SECRET`, `JWT_TTL_SECONDS`, `JWT_ISSUER`, `JWT_AUDIENCE`, `CORS_ORIGIN`, `RATE_LIMIT`, `MAX_SCORE_PER_SECOND` và tùy chọn `REDIS_URL`. Dùng PostgreSQL/Neon bên ngoài Vercel; không dùng database local trong `docker-compose.yml`. Để rate limiting nhất quán giữa nhiều Function instances, production phải cấu hình Redis; fallback memory chỉ phù hợp development/single instance.
+
+Các Function Vercel là stateless và không giữ process lâu dài. Vì vậy `server/worker.mjs`/RabbitMQ outbox publisher không chạy tự động trong Function; cần triển khai worker riêng hoặc một scheduler/consumer bên ngoài. Legacy endpoints `/api/run-ticket`, `/api/submit-score`, `/api/leaderboard` vẫn được giữ nguyên trong giai đoạn migration. Không chạy song song hai nguồn auth cho cùng client nếu chưa có kế hoạch migration.
+
 ## 2. Neon Database và Supabase Auth
 
 Supabase chỉ dùng cho Auth. Trong Neon Console, chạy [`neon/schema.sql`](../neon/schema.sql) để tạo `scores` và `score_runs`. Neon không cấp quyền database cho client; việc đọc Leaderboard và ghi điểm đều đi qua Vercel API server.
