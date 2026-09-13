@@ -45,12 +45,12 @@ var cv=document.getElementById('game');
 var ctx=cv.getContext('2d',{alpha:false});
 function $(id){return document.getElementById(id);}
 var hud=$('hud'),scoreEl=$('score'),bestHud=$('bestHud'),comboEl=$('combo'),hint=$('hint');
-var titleSc=$('titleScreen'),overSc=$('overScreen'),lbSc=$('lbScreen'),bestTitle=$('bestTitle');
+var titleSc=$('titleScreen'),overSc=$('overScreen'),lbSc=$('lbScreen'),accountSc=$('accountScreen'),shopSc=$('shopScreen'),bestTitle=$('bestTitle');
 var settingsOverlay=$('settingsOverlay'),settingsBtn=$('settingsBtn'),settingsClose=$('settingsClose'),languageSelect=$('languageSelect'),volumeRange=$('volumeRange'),volumeValue=$('volumeValue'),muteToggle=$('muteToggle');
 var localeSuggest=$('localeSuggest'),localeSuggestText=$('localeSuggestText'),localeSuggestApply=$('localeSuggestApply'),localeSuggestDismiss=$('localeSuggestDismiss');
 var pauseBtn=$('pauseBtn'),pauseOverlay=$('pauseOverlay'),resumeBtn=$('resumeBtn');
 var reviveOverlay=$('reviveOverlay'),reviveAdBtn=$('reviveAdBtn'),reviveSkip=$('reviveSkip'),reviveAdBox=$('reviveAdBox'),reviveStatus=$('reviveStatus');
-var authModal=$('authModal'),authEmail=$('authEmail'),authPassword=$('authPassword'),authMsg=$('authMsg'),authState=$('authState'),authOpen=$('authOpen'),authLogout=$('authLogout');
+var authModal=$('authModal'),authEmail=$('authEmail'),authPassword=$('authPassword'),authMsg=$('authMsg'),authState=$('authState'),authOpen=$('authOpen'),authLogout=$('authLogout'),authMode=$('authMode'),authIntro=$('authIntro'),authModeSwitch=$('authModeSwitch'),emailLogin=$('emailLogin'),emailSignup=$('emailSignup');
 var finalScore=$('finalScore'),finalBest=$('finalBest'),newBestEl=$('newBest'),securityOverlay=$('securityOverlay'),securityMessage=$('securityMessage');
 var netDot=$('netDot'),netTxt=$('netTxt');
 var evBanner=$('evBanner'),evK=$('evKanji'),evName=$('evName'),evDesc=$('evDesc'),evBarI=$('evBarI');
@@ -59,7 +59,9 @@ var miniLb=$('miniLb'),lbStatus=$('lbStatus'),fullLb=$('fullLb'),fullStatus=$('f
 var exportBtn=$('exportBtn'),importBtn=$('importBtn'),importFile=$('importFile'),dataMsg=$('dataMsg');
 var runTag=$('runTag'),runNoEl=$('runNo'),runKjEl=$('runKj'),runVnEl=$('runVn');
 var overRunK=$('overRunKj'),overRunV=$('overRunVn'),runsTitle=$('runsTitle'),coinWallet=$('coinWallet'),coinCount=$('coinCount');
-var charGrid=$('charGrid'),mapGrid=$('mapGrid'),shopMsg=$('shopMsg');
+var charGrid=$('charGrid'),mapGrid=$('mapGrid'),shopMsg=$('shopMsg'),shopGrid=$('shopGrid'),shopScreenMsg=$('shopScreenMsg'),shopCoinCount=$('shopCoinCount');
+var accountStatus=$('accountStatus'),accountEmail=$('accountEmail'),accountPlan=$('accountPlan'),accountAvatar=$('accountAvatar'),accountBest=$('accountBest'),accountRuns=$('accountRuns'),accountCoins=$('accountCoins');
+var authSignupMode=false;
 
 /* ═══ STORE ═══ */
 var store={get:function(k){try{return localStorage.getItem(k)}catch(e){return null}},set:function(k,v){try{localStorage.setItem(k,v)}catch(e){}}};
@@ -112,7 +114,7 @@ function pad2(n){var s=''+n;while(s.length<2)s='0'+s;return s;}
 
 /* ═══ I18N ═══ */
 var locale='vi';
-var LANG={vi:{connecting:'đang kết nối…',bird:'chim',sky:'trời',start:'bắt đầu bay',leaderboard:'bảng thiên hạ',settings:'cài đặt',onlineLeaderboard:'bảng trực tuyến',preparing:'đang chuẩn bị…',playerData:'dữ liệu người chơi',exportBackup:'xuất backup',importBackup:'nhập backup',offlineLogin:'chơi offline — đăng nhập để lưu điểm online',login:'đăng nhập',logout:'đăng xuất',complete:'HOÀN TẤT',score:'điểm',record:'kỷ lục',newRecord:'— kỷ lục mới —',submitScore:'ghi danh',retry:'bay lại',home:'màn chính',close:'đóng',language:'ngôn ngữ',apply:'áp dụng',dismiss:'bỏ qua',suggest:'Ngôn ngữ IP có vẻ là {lang}. Đổi giao diện?',browser:'ngôn ngữ trình duyệt',title:'SKY BIRD',subtitle:'Chuyến Bay Bầu Trời qua hoa anh đào',noRecord:'chưa có kỷ lục',touchHint:'chạm để vỗ cánh',best:'kỷ lục',authTitle:'TÀI KHOẢN',authSubtitle:'Đăng nhập để ghi danh bảng thiên hạ',password:'mật khẩu',pauseTitle:'TẠM DỪNG',pauseHint:'Nhấn P hoặc nút tiếp tục để bay lại',resume:'tiếp tục',reviveTitle:'HỒI SINH?',reviveHint:'Xem quảng cáo hợp lệ để tiếp tục ván này một lần.',adArea:'khu vực quảng cáo',watchAd:'xem quảng cáo',endFlight:'kết thúc ván',namePlaceholder:'tên người bay',email:'email',password:'mật khẩu',signup:'tạo tài khoản',google:'Google'},en:{connecting:'connecting…',bird:'bird',sky:'sky',start:'start flight',leaderboard:'leaderboard',settings:'settings',onlineLeaderboard:'online leaderboard',preparing:'preparing…',playerData:'player data',exportBackup:'export backup',importBackup:'import backup',offlineLogin:'playing offline — sign in to save online scores',login:'sign in',logout:'sign out',complete:'FLIGHT COMPLETE',score:'score',record:'best',newRecord:'— new record —',submitScore:'submit score',retry:'fly again',home:'home',close:'close',language:'language',apply:'apply',dismiss:'dismiss',suggest:'Your IP suggests {lang}. Change the interface?',browser:'browser language',title:'SKY BIRD',subtitle:'a flight beneath the cherry blossoms',noRecord:'no record yet',touchHint:'tap to flap',best:'best',authTitle:'ACCOUNT',authSubtitle:'Sign in to submit to the leaderboard',password:'password',pauseTitle:'PAUSED',pauseHint:'Press P or resume to fly again',resume:'resume',reviveTitle:'REVIVE?',reviveHint:'Watch a valid rewarded ad to continue this flight once.',adArea:'ad area',watchAd:'watch ad',endFlight:'end flight',namePlaceholder:'player name',email:'email',password:'password',signup:'create account',google:'Google'},ja:{connecting:'接続中…',bird:'鳥',sky:'空',start:'飛び立つ',leaderboard:'ランキング',settings:'設定',onlineLeaderboard:'オンラインランキング',preparing:'準備中…',playerData:'プレイヤーデータ',exportBackup:'バックアップを書き出す',importBackup:'バックアップを読み込む',offlineLogin:'オフライン — ログインするとオンライン保存できます',login:'ログイン',logout:'ログアウト',complete:'飛行終了',score:'得点',record:'記録',newRecord:'— 新記録 —',submitScore:'登録',retry:'もう一度飛ぶ',home:'ホーム',close:'閉じる',language:'言語',apply:'適用',dismiss:'閉じる',suggest:'IPでは{lang}が推奨されています。表示言語を変更しますか？',browser:'ブラウザの言語',title:'スカイバード',subtitle:'空を飛ぶ旅',noRecord:'まだ記録はありません',touchHint:'タップして羽ばたく',best:'記録',authTitle:'アカウント',authSubtitle:'ログインしてランキングに登録',password:'パスワード',pauseTitle:'一時停止',pauseHint:'Pキーまたは再開ボタンで飛行を続けます',resume:'再開',reviveTitle:'復活しますか？',reviveHint:'広告を最後まで見ると、この飛行で一度だけ復活できます。',adArea:'広告エリア',watchAd:'広告を見る',endFlight:'飛行を終了',namePlaceholder:'プレイヤー名',email:'メールアドレス',password:'パスワード',signup:'アカウントを作成',google:'Google'}};
+var LANG={vi:{connecting:'đang kết nối…',bird:'chim',sky:'trời',start:'bắt đầu bay',leaderboard:'bảng thiên hạ',settings:'cài đặt',onlineLeaderboard:'bảng trực tuyến',preparing:'đang chuẩn bị…',playerData:'dữ liệu người chơi',exportBackup:'xuất backup',importBackup:'nhập backup',offlineLogin:'chơi offline — đăng nhập để lưu điểm online',login:'đăng nhập',logout:'đăng xuất',complete:'HOÀN TẤT',score:'điểm',record:'kỷ lục',newRecord:'— kỷ lục mới —',submitScore:'ghi danh',retry:'bay lại',home:'màn chính',close:'đóng',language:'ngôn ngữ',apply:'áp dụng',dismiss:'bỏ qua',suggest:'Ngôn ngữ IP có vẻ là {lang}. Đổi giao diện?',browser:'ngôn ngữ trình duyệt',title:'SKY BIRD',subtitle:'Chuyến Bay Bầu Trời qua hoa anh đào',noRecord:'chưa có kỷ lục',touchHint:'chạm để vỗ cánh',best:'kỷ lục',authTitle:'TÀI KHOẢN',authSubtitle:'Đăng nhập để ghi danh bảng thiên hạ',password:'mật khẩu',pauseTitle:'TẠM DỪNG',pauseHint:'Nhấn P hoặc nút tiếp tục để bay lại',resume:'tiếp tục',reviveTitle:'HỒI SINH?',reviveHint:'Xem quảng cáo hợp lệ để tiếp tục ván này một lần.',adArea:'khu vực quảng cáo',watchAd:'xem quảng cáo',endFlight:'kết thúc ván',namePlaceholder:'tên người bay',email:'email',password:'mật khẩu',signup:'tạo tài khoản',google:'Google',account:'tài khoản',shop:'cửa hàng'},en:{connecting:'connecting…',bird:'bird',sky:'sky',start:'start flight',leaderboard:'leaderboard',settings:'settings',onlineLeaderboard:'online leaderboard',preparing:'preparing…',playerData:'player data',exportBackup:'export backup',importBackup:'import backup',offlineLogin:'playing offline — sign in to save online scores',login:'sign in',logout:'sign out',complete:'FLIGHT COMPLETE',score:'score',record:'best',newRecord:'— new record —',submitScore:'submit score',retry:'fly again',home:'home',close:'close',language:'language',apply:'apply',dismiss:'dismiss',suggest:'Your IP suggests {lang}. Change the interface?',browser:'browser language',title:'SKY BIRD',subtitle:'a flight beneath the cherry blossoms',noRecord:'no record yet',touchHint:'tap to flap',best:'best',authTitle:'ACCOUNT',authSubtitle:'Sign in to submit to the leaderboard',password:'password',pauseTitle:'PAUSED',pauseHint:'Press P or resume to fly again',resume:'resume',reviveTitle:'REVIVE?',reviveHint:'Watch a valid rewarded ad to continue this flight once.',adArea:'ad area',watchAd:'watch ad',endFlight:'end flight',namePlaceholder:'player name',email:'email',password:'password',signup:'create account',google:'Google',account:'account',shop:'shop'},ja:{connecting:'接続中…',bird:'鳥',sky:'空',start:'飛び立つ',leaderboard:'ランキング',settings:'設定',onlineLeaderboard:'オンラインランキング',preparing:'準備中…',playerData:'プレイヤーデータ',exportBackup:'バックアップを書き出す',importBackup:'バックアップを読み込む',offlineLogin:'オフライン — ログインするとオンライン保存できます',login:'ログイン',logout:'ログアウト',complete:'飛行終了',score:'得点',record:'記録',newRecord:'— 新記録 —',submitScore:'登録',retry:'もう一度飛ぶ',home:'ホーム',close:'閉じる',language:'言語',apply:'適用',dismiss:'閉じる',suggest:'IPでは{lang}が推奨されています。表示言語を変更しますか？',browser:'ブラウザの言語',title:'スカイバード',subtitle:'空を飛ぶ旅',noRecord:'まだ記録はありません',touchHint:'タップして羽ばたく',best:'記録',authTitle:'アカウント',authSubtitle:'ログインしてランキングに登録',password:'パスワード',pauseTitle:'一時停止',pauseHint:'Pキーまたは再開ボタンで飛行を続けます',resume:'再開',reviveTitle:'復活しますか？',reviveHint:'広告を最後まで見ると、この飛行で一度だけ復活できます。',adArea:'広告エリア',watchAd:'広告を見る',endFlight:'飛行を終了',namePlaceholder:'プレイヤー名',email:'メールアドレス',password:'パスワード',signup:'アカウントを作成',google:'Google',account:'アカウント',shop:'ショップ'}};
 var LOCALES=[
  ['vi','Tiếng Việt'],['en','English'],['ja','日本語'],['zh','简体中文'],['hi','हिन्दी'],
  ['af','Afrikaans'],['am','አማርኛ'],['ar','العربية'],['az','Azərbaycan'],['be','Беларуская'],['bg','Български'],['bn','বাংলা'],['bs','Bosanski'],['ca','Català'],['ceb','Cebuano'],['co','Corsu'],['cs','Čeština'],['cy','Cymraeg'],['da','Dansk'],['de','Deutsch'],['el','Ελληνικά'],['eo','Esperanto'],['es','Español'],['et','Eesti'],['eu','Euskara'],['fa','فارسی'],['fi','Suomi'],['fil','Filipino'],['fj','Fijian'],['fo','Føroyskt'],['fr','Français'],['fy','Frysk'],['ga','Gaeilge'],['gd','Gàidhlig'],['gl','Galego'],['gu','ગુજરાતી'],['ha','Hausa'],['he','עברית'],['hr','Hrvatski'],['ht','Kreyòl ayisyen'],['hu','Magyar'],['hy','Հայերեն'],['id','Bahasa Indonesia'],['ig','Igbo'],['is','Íslenska'],['it','Italiano'],['ka','ქართული'],['kk','Қазақша'],['km','ខ្មែរ'],['kn','ಕನ್ನಡ'],['ko','한국어'],['ku','Kurdî'],['ky','Кыргызча'],['la','Latina'],['lb','Lëtzebuergesch'],['lo','ລາວ'],['lt','Lietuvių'],['lv','Latviešu'],['mg','Malagasy'],['mi','Māori'],['mk','Македонски'],['ml','മലയാളം'],['mn','Монгол'],['mr','मराठी'],['ms','Bahasa Melayu'],['mt','Malti'],['my','မြန်မာ'],['ne','नेपाली'],['nl','Nederlands'],['no','Norsk'],['ny','Chichewa'],['or','ଓଡ଼ିଆ'],['pa','ਪੰਜਾਬੀ'],['pl','Polski'],['ps','پښتو'],['pt','Português'],['ro','Română'],['ru','Русский'],['rw','Kinyarwanda'],['sd','سنڌي'],['si','සිංහල'],['sk','Slovenčina'],['sl','Slovenščina'],['sm','Samoan'],['sn','Shona'],['so','Soomaali'],['sq','Shqip'],['sr','Српски'],['st','Sesotho'],['su','Sundanese'],['sv','Svenska'],['sw','Kiswahili'],['ta','தமிழ்'],['te','తెలుగు'],['tg','Тоҷикӣ'],['th','ไทย'],['tk','Türkmen'],['tl','Tagalog'],['tr','Türkçe'],['tt','Татарча'],['ug','ئۇيغۇرچە'],['uk','Українська'],['ur','اردو'],['uz','O‘zbek'],['xh','isiXhosa'],['yi','ייִדיש'],['yo','Yorùbá'],['zu','isiZulu'],['jv','Basa Jawa'],['su','Basa Sunda'],['ku','Kurdî'],['pa','ਪੰਜਾਬੀ'],['mo','Moldovan']
@@ -254,9 +256,15 @@ var AU={
 function withTimeout(p,ms){return new Promise(function(res,rej){var to=setTimeout(function(){rej(new Error('timeout'));},ms);p.then(function(v){clearTimeout(to);res(v);},function(e){clearTimeout(to);rej(e);});});}
 function setNet(on,txt){netDot.classList.toggle('on',!!on);netTxt.textContent=txt||tx(on?'online':'offline');}
 function authMessage(e){var m=(e&&e.message)||'request_failed';return m.replace('Invalid login credentials',tx('invalidCredentials')).replace('Email not confirmed',tx('notConfirmed')).replace('User already registered',tx('registered'));}
-function updateAuthUI(){if(!authState)return;if(authUser){authState.textContent=tx('loggedIn')+(authUser.email||'Google');authOpen.classList.add('hidden');authLogout.classList.remove('hidden');}else{authState.textContent=DB.online?tx('onlineNoAuth'):tx('offline');authOpen.classList.remove('hidden');authLogout.classList.add('hidden');}}
+function updateAccountScreen(){if(!accountStatus)return;var email=authUser&&authUser.email||'Khách';accountEmail.textContent=email;accountAvatar.textContent=authUser?(email.charAt(0)||'G').toUpperCase():'?';accountStatus.textContent=authUser?tx('loggedIn')+email:(DB.online?tx('onlineNoAuth'):tx('offline'));accountPlan.textContent=authUser?'tài khoản đã đồng bộ':'chơi cục bộ';accountBest.textContent=String(Math.max(0,Number(best)||0));accountRuns.textContent=String(runHistory.length);accountCoins.textContent=String(coinsBank);if(shopCoinCount)shopCoinCount.textContent=String(coinsBank);}
+function updateAuthUI(){if(!authState)return;if(authUser){authState.textContent=tx('loggedIn')+(authUser.email||'Google');authOpen.classList.add('hidden');authLogout.classList.remove('hidden');}else{authState.textContent=DB.online?tx('onlineNoAuth'):tx('offline');authOpen.classList.remove('hidden');authLogout.classList.add('hidden');}updateAccountScreen();}
 function closeAuth(){authModal.classList.add('hidden');authMsg.textContent='';}
-function openAuth(){authMsg.textContent='';authModal.classList.remove('hidden');}
+function setAuthMode(signup){authSignupMode=!!signup;authMode.textContent=tx(signup?'signup':'login');authIntro.textContent=signup?'Tạo tài khoản để lưu điểm và đồng bộ coin':'Đăng nhập để ghi danh bảng thiên hạ';emailLogin.classList.toggle('hidden',signup);emailSignup.classList.toggle('hidden',!signup);authModeSwitch.textContent=signup?'đã có tài khoản? đăng nhập':'tạo tài khoản mới';}
+function openAuth(signup){authMsg.textContent='';setAuthMode(!!signup);authModal.classList.remove('hidden');setTimeout(function(){authEmail.focus();},0);}
+function openAccount(){updateAccountScreen();accountSc.classList.remove('hidden');titleSc.classList.add('hidden');}
+function closeAccount(){accountSc.classList.add('hidden');if(titleSc.classList.contains('hidden')&&overSc.classList.contains('hidden'))titleSc.classList.remove('hidden');}
+function openShop(){buildShop();shopSc.classList.remove('hidden');titleSc.classList.add('hidden');}
+function closeShop(){shopSc.classList.add('hidden');if(titleSc.classList.contains('hidden')&&overSc.classList.contains('hidden'))titleSc.classList.remove('hidden');}
 function authEmailAction(signup){
   if(!authClient){authMsg.textContent=tx('authOffline');return;}
   var email=(authEmail.value||'').trim(),password=authPassword.value||'';
@@ -716,6 +724,15 @@ function closeLb(){lbSc.classList.add('hidden');if(titleSc.classList.contains('h
  $('retryBtn').addEventListener('click',function(e){AU.unlock();startGame();e.currentTarget.blur();});
  $('homeBtn').addEventListener('click',function(e){goTitle();e.currentTarget.blur();});
  $('lbBtn').addEventListener('click',function(e){lbSc.classList.remove('hidden');titleSc.classList.add('hidden');refreshFull();e.currentTarget.blur();});
+ $('shopBtn').addEventListener('click',function(e){openShop();e.currentTarget.blur();});
+ $('shopClose').addEventListener('click',function(e){closeShop();e.currentTarget.blur();});
+ $('shopScreen').addEventListener('click',function(e){if(e.target===shopSc)closeShop();});
+ $('accountBtn').addEventListener('click',function(e){openAccount();e.currentTarget.blur();});
+ $('accountClose').addEventListener('click',function(e){closeAccount();e.currentTarget.blur();});
+ $('accountLogin').addEventListener('click',function(){closeAccount();openAuth(false);});
+ $('accountRegister').addEventListener('click',function(){closeAccount();openAuth(true);});
+ $('accountExport').addEventListener('click',function(){exportBackup();});
+ $('accountScreen').addEventListener('click',function(e){if(e.target===accountSc)closeAccount();});
  settingsBtn.addEventListener('click',function(){settingsOverlay.classList.add('show');});
  settingsClose.addEventListener('click',function(){settingsOverlay.classList.remove('show');});
  settingsOverlay.addEventListener('click',function(e){if(e.target===settingsOverlay)settingsOverlay.classList.remove('show');});
@@ -727,11 +744,12 @@ function closeLb(){lbSc.classList.add('hidden');if(titleSc.classList.contains('h
   reviveAdBtn.addEventListener('click',watchReviveAd);
   reviveSkip.addEventListener('click',function(){if(!reviveBusy){reviveUsed=true;finishGame();}});
 
- authOpen.addEventListener('click',function(){openAuth();});
+ authOpen.addEventListener('click',function(){openAuth(false);});
  authLogout.addEventListener('click',function(){if(authClient)authClient.auth.signOut().catch(function(){});});
  $('authClose').addEventListener('click',closeAuth);
- $('emailLogin').addEventListener('click',function(){authEmailAction(false);});
- $('emailSignup').addEventListener('click',function(){authEmailAction(true);});
+ emailLogin.addEventListener('click',function(){authEmailAction(false);});
+ emailSignup.addEventListener('click',function(){authEmailAction(true);});
+ authModeSwitch.addEventListener('click',function(){setAuthMode(!authSignupMode);});
  $('googleLogin').addEventListener('click',authGoogle);
  authModal.addEventListener('click',function(e){if(e.target===authModal)closeAuth();});
  exportBtn.addEventListener('click',function(){exportBackup();});
@@ -746,6 +764,7 @@ detectLocale();
 document.addEventListener('visibilitychange',function(){if(document.hidden&&state==='PLAY'){pausedFromVisibility=true;setPaused(true);}else if(!document.hidden){lastT=0;}});
 
 /* ═══ SELECTOR UI ═══ */
+function buildShop(){if(!shopGrid)return;shopGrid.innerHTML='';if(shopCoinCount)shopCoinCount.textContent=String(coinsBank);CHARS.forEach(function(ch){var open=isCharUnlocked(ch.id),selected=ch.id===charId,d=document.createElement('div');d.className='selCard shop-item'+(selected?' on ':' ')+(open?'':' locked');d.setAttribute('role','button');d.setAttribute('tabindex','0');d.setAttribute('aria-pressed',selected?'true':'false');var k=document.createElement('span');k.className='kj';k.textContent=open?ch.kj:'?';var n=document.createElement('span');n.className='nm';n.textContent=selected?ch.vn+' · đang chọn':(open?ch.vn:'mở với '+ch.cost+' coin');var meta=document.createElement('span');meta.className='meta';meta.textContent=open?'đã mở · '+ch.adv+' · '+ch.dis:'giá '+ch.cost+' coin · '+ch.adv;d.appendChild(k);d.appendChild(n);d.appendChild(meta);d.addEventListener('click',function(){if(!isCharUnlocked(ch.id)&&!unlockChar(ch.id)){if(shopScreenMsg)shopScreenMsg.textContent=shopMsg.textContent;return;}charId=ch.id;store.set('chimse.char',ch.id);applyChar();buildSelectors();buildShop();updateAccountScreen();if(shopScreenMsg)shopScreenMsg.textContent=ch.vn+' đang được chọn';});d.addEventListener('keydown',function(e){if(e.key==='Enter'||e.key===' '){e.preventDefault();d.click();}});shopGrid.appendChild(d);});}
 function buildSelectors(){
   charGrid.innerHTML='';mapGrid.innerHTML='';updateCoinWallet();
   CHARS.forEach(function(ch){
@@ -766,6 +785,7 @@ function buildSelectors(){
     d.addEventListener('click',function(){mapId=m.id;store.set('chimse.map',m.id);applyMap();genScenery();buildSelectors();});
     mapGrid.appendChild(d);
   });
+  buildShop();
 }
 
 /* ═══ KHỞI ĐỘNG ═══ */
