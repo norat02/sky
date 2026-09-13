@@ -101,6 +101,8 @@ assert(readFileSync('api/locale.mjs', 'utf8').includes('x-vercel-ip-country'));
 assert(readFileSync('docs/vercel-supabase-google-oauth.md', 'utf8').includes('SUPABASE_SERVICE_ROLE_KEY'));
 assert(vercel.includes('Content-Security-Policy'));
 assert(vercel.includes('X-Frame-Options'));
+assert(vercel.includes('Strict-Transport-Security'));
+assert(readFileSync('docs/security-controls-100-vi.md', 'utf8').includes('| 100 | Backup & Recovery |'));
 assert(vercel.includes('fundingchoicesmessages.google.com'), 'Google CMP endpoint missing from CSP');
 assert(readFileSync('.env.example', 'utf8').includes('ADSENSE_PUBLISHER_ID='), 'AdSense publisher ID env example missing');
 assert(readFileSync('.env.example', 'utf8').includes('VITE_API_BASE_URL='), 'Native API base env example missing');

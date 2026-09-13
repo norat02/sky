@@ -55,6 +55,8 @@ Migration `002_security_hardening.sql` tạo `auth_sessions`, bật RLS cho các
 
 Production nên bật PostgreSQL point-in-time recovery hoặc snapshot mã hóa, giữ một bản sao ngoài vùng lỗi và chạy restore drill định kỳ. `/health` chỉ trả `200` khi API truy vấn được database; log JSON có `requestId`, route, status, duration và user ID, không có token. Theo dõi 5xx, 401/403 tăng đột biến, 429, latency p95, pool exhaustion và backup freshness.
 
+Ma trận đầy đủ 100 kiểm soát bảo mật, trạng thái hiện tại và ưu tiên còn lại nằm tại [`docs/security-controls-100-vi.md`](security-controls-100-vi.md).
+
 > API v2 là backend reference độc lập. Khi cutover production, chọn một nguồn xác thực duy nhất hoặc xây migration user rõ ràng trước khi bật song song.
 
 ## Kiểm thử nhanh

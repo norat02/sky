@@ -20,6 +20,8 @@ Backend Express/PostgreSQL v2, API versioning, cursor pagination, session expira
 
 Vercel được hỗ trợ qua adapter [`api/v1/[...path].mjs`](api/v1/%5B...path%5D.mjs). Cấu hình deploy và các giới hạn stateless của Vercel nằm trong [`docs/vercel-supabase-google-oauth.md`](docs/vercel-supabase-google-oauth.md).
 
+Ma trận 100 lớp bảo mật và các mục còn cần triển khai nằm tại [`docs/security-controls-100-vi.md`](docs/security-controls-100-vi.md).
+
 ## Quy chuẩn giao diện
 
 Mọi biểu tượng trong giao diện phải dùng **SVG inline hoặc SVG sprite**, không dùng emoji hoặc ký tự biểu tượng thay thế. Icon tương tác cần có `aria-label` hoặc nhãn văn bản đi kèm, trạng thái trang trí dùng `aria-hidden="true"`, và SVG phải kế thừa màu giao diện qua `currentColor` khi phù hợp.
