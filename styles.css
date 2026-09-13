@@ -212,3 +212,107 @@ kbd{font-style:normal;border:1px solid var(--ink2);padding:1px 6px;font-size:11p
 .android-app #hint{bottom:calc(12% + env(safe-area-inset-bottom));color:#e5f7ff}
 .android-app #hint span{color:#b9eaff}
 @media (max-width:460px){.android-app .home-panel{padding:22px 14px}.android-app .hero-stats{gap:6px}.android-app .hero-stat{min-height:62px}.android-app .home-side{padding-top:18px}}
+
+
+/* Sky Bird UI/UX Pro Max responsive layer — Moonlit Sakura Arcade */
+:root{
+  --space-1:4px;--space-2:8px;--space-3:12px;--space-4:16px;--space-5:24px;--space-6:32px;
+  --focus:#ff6685;--surface-glass:rgba(14,34,57,.88);--surface-soft:rgba(247,240,222,.07);
+}
+html{scroll-padding-top:24px}
+button,.btn,.selCard,#muteBtn,#pauseBtn,select,input{min-height:44px}
+button,.btn,.selCard,#muteBtn,#pauseBtn{touch-action:manipulation}
+:focus-visible{outline:3px solid var(--focus);outline-offset:3px}
+
+/* Desktop / web: asymmetric two-column command deck */
+@media (min-width:1101px){
+  #titleScreen{padding:32px;align-items:center}
+  .home-panel{grid-template-columns:minmax(0,1.38fr) minmax(300px,.62fr);gap:48px;padding:40px 48px;border-radius:2px}
+  .home-primary{padding-right:8px}
+  .home-side{padding-left:32px;gap:18px}
+  .hero-stats{gap:10px;margin:18px 0 20px}
+  .hero-stat{min-height:64px;padding:11px 13px}
+  .selector{margin:14px 0 4px}
+  .selGrid{gap:8px;max-height:210px}
+  .selCard{min-height:64px;padding:9px 8px}
+  .home-actions{margin-top:22px}
+  .home-actions .btn{min-width:180px}
+}
+
+/* Tablet: preserve game focus while moving support modules below */
+@media (min-width:601px) and (max-width:1100px){
+  #titleScreen{padding:20px}
+  .home-panel{width:min(94vw,780px);grid-template-columns:minmax(0,1fr) minmax(250px,.72fr);gap:24px;padding:28px 30px}
+  .home-side{padding-left:22px}
+  .home-panel h1{font-size:clamp(40px,7vw,58px)}
+  .hero-stats{gap:7px}
+  .selGrid{grid-template-columns:repeat(3,minmax(0,1fr));max-height:236px}
+  .home-actions .btn{min-width:150px}
+}
+
+/* Small tablet / large phone: one-column, scroll-first layout */
+@media (min-width:461px) and (max-width:600px){
+  html,body{overflow:hidden}
+  #titleScreen{align-items:flex-start;padding:18px 14px;overflow-y:auto}
+  .home-panel{grid-template-columns:1fr;width:min(100%,520px);gap:20px;padding:28px 24px;border-radius:12px}
+  .home-side{padding:20px 0 0;border-left:0;border-top:1px solid rgba(38,34,28,.2)}
+  .home-panel h1{font-size:clamp(38px,11vw,52px)}
+  .selGrid{grid-template-columns:repeat(3,minmax(0,1fr));max-height:none}
+  .selCard{min-height:64px}
+  .home-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:18px}
+  #startBtn{grid-column:1/-1}
+  .home-actions br{display:none}
+  .home-actions .btn{width:100%;margin:0}
+}
+
+/* Phone web: thumb-zone controls, no horizontal overflow, readable cards */
+@media (max-width:460px){
+  #titleScreen{align-items:flex-start;padding:calc(12px + env(safe-area-inset-top)) 10px calc(16px + env(safe-area-inset-bottom));overflow-y:auto}
+  .home-panel{width:100%;max-width:none;padding:24px 14px 20px;border-radius:14px}
+  .home-panel:before{inset:6px}
+  .kanjiBg{font-size:32vh;top:9%;right:-7%}
+  .home-panel h1{font-size:clamp(34px,12vw,48px)}
+  .sub{font-size:15px;line-height:1.45}
+  .hero-stats{gap:5px;margin:14px 0 17px}
+  .hero-stat{min-height:62px;padding:8px 6px;text-align:center}
+  .hero-stat .stat-label{font-size:8px;letter-spacing:.08em}
+  .hero-stat .stat-value{font-size:15px;margin-top:5px}
+  .selector{margin:15px 0 4px}
+  .selGrid{grid-template-columns:repeat(2,minmax(0,1fr));gap:7px;max-height:none;overflow:visible}
+  .selCard{min-height:62px;padding:9px 6px;border-radius:8px}
+  .selCard .nm{font-size:10px}
+  .selCard .meta{font-size:9px}
+  .home-actions{display:grid;gap:8px;margin-top:18px}
+  .home-actions br{display:none}
+  .home-actions .btn{width:100%;margin:0;min-height:50px}
+  .home-side{padding-top:18px;gap:16px}
+  .rules-card{padding:14px}
+  .rules-list{font-size:13px;line-height:1.45}
+  #homeLeaderboard,#dataTools,#authPanel{padding-top:14px}
+  .policy-links{display:flex;justify-content:center;gap:16px;flex-wrap:wrap}
+  #netDot{top:calc(10px + env(safe-area-inset-top));left:12px;font-size:9px}
+  #muteBtn,#pauseBtn{top:calc(10px + env(safe-area-inset-top));width:44px;height:44px}
+  #muteBtn{right:12px}
+  #pauseBtn{right:64px}
+  .authBox,#settingsOverlay .settingsCard,#pauseOverlay .pauseCard,#reviveOverlay .reviveCard{max-height:calc(100dvh - 32px);overflow:auto}
+}
+
+/* Native iOS: system typography, translucent surfaces, safe-area-first */
+.ios-app body{background:#080d16;color:#f7f9fc;font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display",system-ui,sans-serif}
+.ios-app #titleScreen{align-items:flex-start;padding:calc(20px + env(safe-area-inset-top)) 16px calc(24px + env(safe-area-inset-bottom));overflow-y:auto;background:radial-gradient(circle at 80% 8%,rgba(255,102,133,.14),transparent 36%),linear-gradient(160deg,#101a2a,#070d16 72%)}
+.ios-app .home-panel{width:min(100%,620px);max-width:620px;margin:auto;background:rgba(18,28,45,.82);border:1px solid rgba(255,255,255,.14);border-radius:26px;box-shadow:0 20px 70px rgba(0,0,0,.42);padding:26px 18px;backdrop-filter:blur(18px)}
+.ios-app .home-panel:before{inset:8px;border:1px solid rgba(255,255,255,.06);border-radius:20px}
+.ios-app h1,.ios-app h2,.ios-app .rules-card h3{font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display",system-ui,sans-serif;letter-spacing:.02em}
+.ios-app .kana,.ios-app .runKj,.ios-app .runLine .kj,.ios-app .selCard .kj{color:#ff88a0}
+.ios-app .hero-stat,.ios-app .rules-card{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:16px}
+.ios-app .selGrid{gap:9px;max-height:none}.ios-app .selCard{min-height:70px;padding:11px 8px;border:1px solid rgba(255,255,255,.14);border-radius:14px;background:rgba(255,255,255,.05)}
+.ios-app .selCard.on{background:linear-gradient(135deg,#e05275,#a72f55);border-color:#ffb0bf;box-shadow:0 8px 20px rgba(224,82,117,.25)}
+.ios-app .btn{min-height:50px;border-radius:15px;border:1px solid rgba(255,255,255,.18);font-family:inherit;letter-spacing:.08em}.ios-app .btn.solid{background:linear-gradient(135deg,#ff6685,#b9355c);color:#fff;box-shadow:0 8px 20px rgba(255,102,133,.22)}.ios-app .btn.ghost{background:rgba(255,255,255,.06);color:#ffdce4}
+.ios-app .home-actions{display:grid;gap:9px;margin-top:20px}.ios-app .home-actions .btn{width:100%;margin:0}.ios-app #netDot{top:calc(14px + env(safe-area-inset-top))}.ios-app #muteBtn,.ios-app #pauseBtn{top:calc(14px + env(safe-area-inset-top));border-radius:14px;background:rgba(18,28,45,.9);color:#fff}.ios-app #hint{bottom:calc(12% + env(safe-area-inset-bottom))}
+.ios-app .authModal,.ios-app #settingsOverlay,.ios-app #pauseOverlay,.ios-app #reviveOverlay{background:rgba(4,8,15,.76);padding:16px}.ios-app .authBox,.ios-app #settingsOverlay .settingsCard,.ios-app #pauseOverlay .pauseCard,.ios-app #reviveOverlay .reviveCard{width:min(100%,420px);border:1px solid rgba(255,255,255,.16);border-radius:22px;background:#121c2d;box-shadow:0 20px 60px rgba(0,0,0,.5);padding:24px 18px}.ios-app .authActions{display:grid;gap:8px}.ios-app .authActions .btn{width:100%;margin:0}.ios-app .authBox input,.ios-app #settingsOverlay select,.ios-app .nameRow input{min-height:50px;border:1px solid rgba(255,255,255,.2);border-radius:12px;background:#0b1422;color:#fff}
+
+/* Reduced motion and keyboard quality gates */
+@media (prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.001ms!important;animation-iteration-count:1!important;scroll-behavior:auto!important;transition-duration:.001ms!important}}
+@media (hover:none){.btn:hover,.selCard:hover,#muteBtn:hover,#pauseBtn:hover{transform:none;box-shadow:none}.selCard{cursor:pointer}}
+@media (max-height:620px) and (orientation:landscape){#titleScreen{align-items:flex-start}.home-panel{margin:10px auto}.home-side{display:none}.home-panel{grid-template-columns:1fr}.home-primary{max-width:680px;margin:auto}}
+@media (max-height:620px) and (orientation:landscape){#titleScreen{overflow-y:auto;padding:14px 18px}.home-panel{max-height:none;width:min(100%,760px);padding:22px 28px}.hero-stats{margin:10px 0 12px}.selector{margin:10px 0 2px}.home-actions{margin-top:14px}}

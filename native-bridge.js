@@ -4,7 +4,11 @@
   var native = !!(window.Capacitor && typeof window.Capacitor.isNativePlatform === 'function' && window.Capacitor.isNativePlatform());
   if (native) {
     document.documentElement.classList.add('native-app');
-    if (window.Capacitor.getPlatform && window.Capacitor.getPlatform() === 'android') document.documentElement.classList.add('android-app');
+    if (window.Capacitor.getPlatform) {
+      var platform = window.Capacitor.getPlatform();
+      if (platform === 'android') document.documentElement.classList.add('android-app');
+      if (platform === 'ios') document.documentElement.classList.add('ios-app');
+    }
   }
   var callbackScheme = (window.SKY_ENV && window.SKY_ENV.NATIVE_OAUTH_REDIRECT_SCHEME) || 'com.norat02.skybird';
   var callbackUrl = null;

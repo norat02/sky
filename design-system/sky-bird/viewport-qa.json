@@ -1,0 +1,222 @@
+[
+  {
+    "name": "desktop",
+    "metrics": {
+      "viewport": [
+        1440,
+        900
+      ],
+      "scrollWidth": 1440,
+      "clientWidth": 1440,
+      "bodyHeight": 900,
+      "titleScreen": {
+        "scrollHeight": 900,
+        "clientHeight": 900,
+        "overflow": "auto"
+      },
+      "h1": "SKY BIRD",
+      "buttons": [
+        {
+          "text": "start flight",
+          "w": 196.96875,
+          "h": 45
+        },
+        {
+          "text": "leaderboard",
+          "w": 180,
+          "h": 44
+        },
+        {
+          "text": "settings",
+          "w": 180,
+          "h": 44
+        },
+        {
+          "text": "apply",
+          "w": 61,
+          "h": 44
+        },
+        {
+          "text": "dismiss",
+          "w": 72.40625,
+          "h": 44
+        }
+      ],
+      "activePanel": {
+        "x": 0,
+        "y": 0,
+        "width": 1440,
+        "height": 900,
+        "top": 0,
+        "right": 1440,
+        "bottom": 900,
+        "left": 0
+      }
+    }
+  },
+  {
+    "name": "tablet",
+    "metrics": {
+      "viewport": [
+        820,
+        1180
+      ],
+      "scrollWidth": 820,
+      "clientWidth": 820,
+      "bodyHeight": 1180,
+      "titleScreen": {
+        "scrollHeight": 1180,
+        "clientHeight": 1180,
+        "overflow": "auto"
+      },
+      "h1": "SKY BIRD",
+      "buttons": [
+        {
+          "text": "start flight",
+          "w": 196.96875,
+          "h": 45
+        },
+        {
+          "text": "leaderboard",
+          "w": 160.046875,
+          "h": 44
+        },
+        {
+          "text": "settings",
+          "w": 150,
+          "h": 44
+        },
+        {
+          "text": "apply",
+          "w": 61,
+          "h": 44
+        },
+        {
+          "text": "dismiss",
+          "w": 72.40625,
+          "h": 44
+        }
+      ],
+      "activePanel": {
+        "x": 0,
+        "y": 0,
+        "width": 820,
+        "height": 1180,
+        "top": 0,
+        "right": 820,
+        "bottom": 1180,
+        "left": 0
+      }
+    }
+  },
+  {
+    "name": "mobile",
+    "metrics": {
+      "viewport": [
+        390,
+        844
+      ],
+      "scrollWidth": 390,
+      "clientWidth": 390,
+      "bodyHeight": 844,
+      "titleScreen": {
+        "scrollHeight": 844,
+        "clientHeight": 844,
+        "overflow": "auto"
+      },
+      "h1": "SKY BIRD",
+      "buttons": [
+        {
+          "text": "start flight",
+          "w": 338,
+          "h": 50
+        },
+        {
+          "text": "leaderboard",
+          "w": 338,
+          "h": 50
+        },
+        {
+          "text": "settings",
+          "w": 338,
+          "h": 50
+        },
+        {
+          "text": "apply",
+          "w": 61,
+          "h": 44
+        },
+        {
+          "text": "dismiss",
+          "w": 72.40625,
+          "h": 44
+        }
+      ],
+      "activePanel": {
+        "x": 0,
+        "y": 0,
+        "width": 390,
+        "height": 844,
+        "top": 0,
+        "right": 390,
+        "bottom": 844,
+        "left": 0
+      }
+    }
+  },
+  {
+    "name": "landscape",
+    "metrics": {
+      "viewport": [
+        844,
+        390
+      ],
+      "scrollWidth": 844,
+      "clientWidth": 844,
+      "bodyHeight": 390,
+      "titleScreen": {
+        "scrollHeight": 846,
+        "clientHeight": 390,
+        "overflow": "auto"
+      },
+      "h1": "SKY BIRD",
+      "buttons": [
+        {
+          "text": "start flight",
+          "w": 196.96875,
+          "h": 45
+        },
+        {
+          "text": "leaderboard",
+          "w": 160.046875,
+          "h": 44
+        },
+        {
+          "text": "settings",
+          "w": 150,
+          "h": 44
+        },
+        {
+          "text": "apply",
+          "w": 0,
+          "h": 0
+        },
+        {
+          "text": "dismiss",
+          "w": 0,
+          "h": 0
+        }
+      ],
+      "activePanel": {
+        "x": 0,
+        "y": 0,
+        "width": 844,
+        "height": 390,
+        "top": 0,
+        "right": 844,
+        "bottom": 390,
+        "left": 0
+      }
+    }
+  }
+]
