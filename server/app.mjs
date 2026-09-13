@@ -2,9 +2,9 @@ import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
 import { z } from 'zod';
-import { pool, withTransaction } from './db.mjs';
+import { pool, withTransaction, dbErrorStatus } from './db.mjs';
 import { hashPassword, verifyPassword, issueToken, requireAuth, requireRole, hashRequest, ttlSeconds } from './auth.mjs';
-import { getJson, setJson, rateLimit } from './cache.mjs';
+import { getJson, setJson, rateLimit, cacheCircuitState } from './cache.mjs';
 import { requestId, versionHeaders, validateSession, noStore, encodeCursor, decodeCursor } from './security.mjs';
 import { isScorePlausible } from './game-rules.mjs';
 
@@ -21,6 +21,14 @@ const credentials = z.object({ email: z.string().email().max(254), password: z.s
 const nameSchema = z.string().trim().min(1).max(32).regex(/^[\p{L}\p{N} _-]+$/u);
 const scoreSchema = z.object({ playerName: nameSchema, score: z.number().int().min(0).max(100000) }).strict();
 const paginationSchema = z.object({ limit: z.coerce.number().int().min(1).max(100).default(10), cursor: z.string().max(512).optional() });
+const userSchema = z.object({ id: z.string().uuid(), email: z.string().email(), role: z.enum(['player', 'admin']) });
+const authResponseSchema = z.object({ user: userSchema, token: z.string().min(32), expiresIn: z.number().int().positive() });
+const leaderboardResponseSchema = z.object({ rows: z.array(z.object({ id: z.number().int(), playerName: nameSchema, score: z.number().int(), createdAt: z.coerce.date().transform((value) => value.toISOString()) })), pagination: z.object({ limit: z.number().int(), hasMore: z.boolean(), nextCursor: z.string().nullable() }) });
+
+function auditIp(req) { return hashRequest(req.ip || 'unknown'); }
+async function audit(req, eventType, userId = null, metadata = {}) {
+  await pool.query('INSERT INTO security_audit_events(event_type, user_id, request_id, ip_hash, metadata) VALUES ($1, $2, $3, $4, $5)', [eventType, userId, req.requestId, auditIp(req), JSON.stringify(metadata)]).catch(() => {});
+}
 
 async function guardRate(req, res, next) {
   const identity = req.user?.sub || req.ip;
@@ -32,9 +40,17 @@ async function guardRate(req, res, next) {
 app.use('/api', guardRate);
 
 app.get('/health', async (_req, res) => {
-  try { await pool.query('SELECT 1'); res.json({ status: 'ok', service: 'sky-bird-api', version: 'v1' }); }
+  try { await pool.query('SELECT 1'); res.json({ status: 'ok', service: 'sky-bird-api', version: 'v1', dependencies: { cache: cacheCircuitState() } }); }
   catch { res.status(503).json({ status: 'degraded', service: 'sky-bird-api' }); }
 });
+app.get('/ready', async (_req, res) => {
+  try {
+    const { rows } = await pool.query("SELECT to_regclass('public.auth_sessions') AS sessions, to_regclass('public.security_audit_events') AS audit");
+    if (!rows[0]?.sessions || !rows[0]?.audit) return res.status(503).json({ status: 'not_ready', reason: 'migration_pending' });
+    res.json({ status: 'ready', service: 'sky-bird-api', version: 'v1' });
+  } catch { res.status(503).json({ status: 'not_ready', reason: 'database_unavailable' }); }
+});
+app.get('/live', (_req, res) => res.json({ status: 'alive', service: 'sky-bird-api' }));
 
 const api = express.Router();
 api.use(versionHeaders('v1'));
@@ -51,20 +67,32 @@ api.post('/auth/register', noStore, async (req, res, next) => {
       await client.query('INSERT INTO auth_sessions(user_id, jti, expires_at) VALUES ($1, $2, to_timestamp($3))', [user.id, parsed.jti, parsed.exp]);
       return { user, token, expiresIn: ttlSeconds };
     });
-    res.status(201).json(result);
+    await audit(req, 'account.registered', result.user.id);
+    res.status(201).json(authResponseSchema.parse(result));
   } catch (error) { if (error.code === '23505') return res.status(409).json({ error: 'email_already_exists' }); next(error); }
 });
 
 api.post('/auth/login', noStore, async (req, res, next) => {
   try {
     const { email, password } = credentials.parse(req.body);
+    const lockKey = hashRequest({ email: email.toLowerCase(), ip: req.ip || 'unknown' });
+    const attempt = await pool.query('SELECT failed_count, locked_until FROM auth_login_attempts WHERE key = $1 FOR UPDATE', [lockKey]);
+    if (attempt.rows[0]?.locked_until && new Date(attempt.rows[0].locked_until).getTime() > Date.now()) return res.status(429).json({ error: 'account_temporarily_locked', retryAfterSeconds: Math.ceil((new Date(attempt.rows[0].locked_until).getTime() - Date.now()) / 1000) });
     const { rows } = await pool.query('SELECT id, email, role, password_hash FROM users WHERE email = $1', [email.toLowerCase()]);
-    if (!rows[0] || !(await verifyPassword(password, rows[0].password_hash))) return res.status(401).json({ error: 'invalid_credentials' });
+    if (!rows[0] || !(await verifyPassword(password, rows[0].password_hash))) {
+      const nextCount = Number(attempt.rows[0]?.failed_count || 0) + 1;
+      const lockMinutes = nextCount >= 5 ? 15 : 0;
+      await pool.query("INSERT INTO auth_login_attempts(key, failed_count, locked_until, last_failed_at) VALUES ($1, $2, CASE WHEN $3 > 0 THEN now() + ($3 || ' minutes')::interval ELSE NULL END, now()) ON CONFLICT (key) DO UPDATE SET failed_count = EXCLUDED.failed_count, locked_until = EXCLUDED.locked_until, last_failed_at = now(), updated_at = now()", [lockKey, nextCount, lockMinutes]);
+      await audit(req, 'auth.login_failed', rows[0]?.id || null, { count: nextCount });
+      return res.status(401).json({ error: 'invalid_credentials' });
+    }
+    await pool.query('DELETE FROM auth_login_attempts WHERE key = $1', [lockKey]);
     const { password_hash: _, ...user } = rows[0];
     const token = issueToken(user);
     const parsed = JSON.parse(Buffer.from(token.split('.')[1], 'base64url').toString('utf8'));
     await pool.query('INSERT INTO auth_sessions(user_id, jti, expires_at) VALUES ($1, $2, to_timestamp($3))', [user.id, parsed.jti, parsed.exp]);
-    res.json({ user, token, expiresIn: ttlSeconds });
+    await audit(req, 'auth.login_succeeded', user.id);
+    res.json(authResponseSchema.parse({ user, token, expiresIn: ttlSeconds }));
   } catch (error) { next(error); }
 });
 
@@ -80,14 +108,14 @@ api.get('/leaderboard', async (req, res, next) => {
     if (rawCursor && !cursor) return res.status(400).json({ error: 'invalid_cursor' });
     const cacheKey = `leaderboard:v1:${limit}:${rawCursor || 'first'}`;
     const cached = await getJson(cacheKey);
-    if (cached) return res.json({ ...cached, cache: 'hit' });
+    if (cached) return res.json({ ...leaderboardResponseSchema.parse(cached), cache: 'hit' });
     const params = [limit + 1];
     let where = '';
     if (cursor) { params.push(cursor.score, cursor.createdAt, cursor.id); where = 'WHERE (score, created_at, id) < ($2, $3, $4)'; }
     const { rows } = await pool.query(`SELECT id, player_name AS "playerName", score, created_at AS "createdAt" FROM scores ${where} ORDER BY score DESC, created_at ASC, id ASC LIMIT $1`, params);
     const hasMore = rows.length > limit;
     const page = rows.slice(0, limit);
-    const response = { rows: page, pagination: { limit, hasMore, nextCursor: hasMore ? encodeCursor(page.at(-1)) : null } };
+    const response = leaderboardResponseSchema.parse({ rows: page, pagination: { limit, hasMore, nextCursor: hasMore ? encodeCursor(page.at(-1)) : null } });
     await setJson(cacheKey, response, 15);
     res.json({ ...response, cache: 'miss' });
   } catch (error) { next(error); }
@@ -123,7 +151,7 @@ api.post('/runs/:runId/score', requireAuth, validateSession, async (req, res, ne
       const response = { accepted: true, runId: req.params.runId, score: input.score };
       await client.query('UPDATE idempotency_keys SET status_code = 201, response = $1 WHERE user_id = $2 AND key = $3', [JSON.stringify(response), req.user.sub, key]);
       return { replay: false, statusCode: 201, response };
-    });
+    }, req.user.sub);
     if (!result.replay) await setJson('leaderboard:v1:10:first', null, 1);
     res.status(result.statusCode).json({ ...result.response, idempotentReplay: result.replay });
   } catch (error) { next(error); }
@@ -139,7 +167,7 @@ app.use('/api/v1', api);
 app.use('/api', api);
 
 app.use((error, req, res, _next) => {
-  const status = error.status || (error instanceof z.ZodError ? 400 : 500);
+  const status = error.status || (error instanceof z.ZodError ? 400 : dbErrorStatus(error));
   if (status >= 500) console.error(JSON.stringify({ event: 'api_error', requestId: req.requestId, error: error.message, stack: error.stack }));
   res.status(status).json({ error: error instanceof z.ZodError ? 'validation_error' : status === 500 ? 'internal_error' : error.message });
 });

@@ -1,0 +1,71 @@
+name: Security Checks
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  security-events: write
+  actions: read
+
+jobs:
+  dependency-and-sast:
+    name: Dependency audit and CodeQL
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Production dependency audit
+        run: npm audit --omit=dev --audit-level=high
+
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v3
+        with:
+          languages: javascript
+
+      - name: CodeQL analysis
+        uses: github/codeql-action/analyze@v3
+
+  api-security-smoke:
+    name: API security smoke checks
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run static verification and integration tests
+        run: |
+          npm run verify
+          npm run test:api:integration
+
+      - name: Validate migration chain and sensitive-file policy
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -f server/migrations/001_sky_bird_v2.sql
+          test -f server/migrations/002_security_hardening.sql
+          test -f server/migrations/003_security_operations.sql
+          ! git ls-files | grep -E '(^|/)(\.env|.*\.jks|.*\.keystore)$'

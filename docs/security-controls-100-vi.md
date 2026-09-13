@@ -24,7 +24,7 @@ Tài liệu này chuyển checklist 100 mục thành ma trận kiểm soát cho 
 | 12 | Rate Limiting | Đã có | Redis counter, memory fallback cho development. |
 | 13 | Request Throttling | Một phần | Có từ chối 429; chưa có adaptive slowdown. |
 | 14 | Input Validation | Đã có | Zod schema và kiểm tra header/body. |
-| 15 | Output Validation | Một phần | Query chọn cột rõ ràng; cần schema response tự động nếu API mở rộng. |
+| 15 | Output Validation | Đã có | Leaderboard và auth responses được parse bằng Zod trước khi trả về. |
 | 16 | Schema Validation | Đã có | Zod và PostgreSQL constraints. |
 | 17 | CORS | Đã có | Allowlist từ `CORS_ORIGIN`; production không dùng wildcard. |
 | 18 | CSRF Protection | Một phần | API dùng Bearer token; không dùng cookie auth cho API v2. Cần CSRF middleware nếu thêm cookie. |
@@ -49,10 +49,10 @@ Tài liệu này chuyển checklist 100 mục thành ma trận kiểm soát cho 
 | 37 | Score Validation | Đã có | Zod, PostgreSQL range check và plausibility check. |
 | 38 | Game Session Validation | Đã có | Run phải thuộc user và còn trạng thái `started`. |
 | 39 | Score Integrity | Đã có | Score insert cùng transaction với run state và outbox. |
-| 40 | Leaderboard Integrity | Một phần | Chỉ API server ghi điểm; cần monitoring/quarantine cho dữ liệu đáng ngờ. |
+| 40 | Leaderboard Integrity | Một phần | Chỉ API server ghi điểm và response schema được kiểm tra; cần quarantine/review cho dữ liệu đáng ngờ. |
 | 41 | Suspicious Score Detection | Một phần | Có ngưỡng score/second; chưa có risk scoring dài hạn. |
 | 42 | Bot Detection | Cần triển khai | Chưa có bot challenge hoặc behavioral model. |
-| 43 | Abuse Detection | Một phần | Có 401/429 và request logs; cần alert rules. |
+| 43 | Abuse Detection | Một phần | Có 401/429, login lockout và security audit events; cần alert rules production. |
 | 44 | Fraud Detection | Cần triển khai | Cần pipeline phân tích nhiều tín hiệu và quy trình review. |
 | 45 | IP Rate Limiting | Đã có | Rate key có IP khi chưa xác thực. |
 | 46 | Account Rate Limiting | Đã có | Rate key dùng user id khi middleware nhận diện được user; route middleware toàn cục hiện ưu tiên IP trước auth. |
@@ -85,28 +85,28 @@ Tài liệu này chuyển checklist 100 mục thành ma trận kiểm soát cho 
 | 73 | PKCE | Một phần | Cần xác nhận flow PKCE cho native redirect trong Supabase production. |
 | 74 | Email Verification | Nền tảng | Supabase có email confirmation; cần bật theo policy production. |
 | 75 | Account Recovery | Cần triển khai | Cần UI và flow reset password rõ ràng cho web/mobile. |
-| 76 | Account Lockout | Cần triển khai | Có rate limit nhưng chưa có persistent failed-login lockout. |
-| 77 | Audit Logging | Một phần | Request logs có requestId/userId; cần audit event store cho admin/security actions. |
-| 78 | Security Logging | Một phần | Có log lỗi và status; cần event taxonomy và redaction review. |
+| 76 | Account Lockout | Đã có | Migration 003 lưu failed attempts theo email/IP và khóa 15 phút sau 5 lần sai. |
+| 77 | Audit Logging | Đã có | Migration 003 lưu account registration, login success/failure, requestId và IP hash. Cần mở rộng event coverage cho admin. |
+| 78 | Security Logging | Đã có | Structured request/error logs và security audit events; cần alert/redaction review production. |
 | 79 | Access Logging | Đã có | Structured `http_request` log. |
 | 80 | Error Logging | Đã có | Structured `api_error` log với requestId. |
-| 81 | API Monitoring | Một phần | `/health`, request log; cần dashboard/alert production. |
+| 81 | API Monitoring | Một phần | `/health` báo trạng thái database/cache breaker và request log; cần dashboard/alert production. |
 | 82 | Error Monitoring | Cần triển khai | Nên nối Sentry hoặc hệ thống tương đương, không ghi secret. |
 | 83 | Security Monitoring | Cần triển khai | Cần alert cho 401/403/429, replay, score anomalies và admin actions. |
 | 84 | Health Check | Đã có | `/health` kiểm tra database. |
-| 85 | Readiness Check | Một phần | `/health` gần với readiness; cần endpoint riêng nếu có worker/dependencies. |
-| 86 | Liveness Check | Một phần | Process endpoint có thể đáp ứng; cần probe riêng trong deployment. |
+| 85 | Readiness Check | Đã có | `/ready` kiểm tra database và các migration bắt buộc. |
+| 86 | Liveness Check | Đã có | `/live` không phụ thuộc database, phù hợp liveness probe. |
 | 87 | Request Timeout | Đã có | Vercel `maxDuration`, Express body limit và pool timeout. |
 | 88 | Connection Timeout | Đã có | PostgreSQL connection timeout 5 giây. |
 | 89 | Retry Policy | Một phần | Queue/client retry có kiểm soát; không retry auth/validation. |
 | 90 | Exponential Backoff | Một phần | Client pending retry có delay; cần backoff chuẩn cho worker. |
-| 91 | Circuit Breaker | Cần triển khai | Chưa có circuit breaker cho Redis/RabbitMQ/external providers. |
+| 91 | Circuit Breaker | Đã có | Redis cache/rate-limit có breaker 3 lỗi mở 15 giây và memory fallback; RabbitMQ vẫn cần breaker riêng. |
 | 92 | Graceful Degradation | Đã có | Cache/Redis có memory fallback; game vẫn chơi offline. |
 | 93 | Dependency Security | Đã có | Lockfile và dependency separation. |
 | 94 | Dependency Auditing | Đã có | `npm audit --omit=dev --audit-level=high` chạy trong kiểm tra. |
-| 95 | Vulnerability Scanning | Một phần | npm audit có; cần bổ sung CodeQL/container scan nếu deploy container. |
-| 96 | SCA | Một phần | npm audit là SCA cơ bản; cần policy review định kỳ. |
-| 97 | SAST | Cần triển khai | Chưa có CodeQL hoặc Semgrep workflow. |
+| 95 | Vulnerability Scanning | Một phần | CI chạy npm audit và CodeQL; container/deployed scan vẫn cần nếu dùng container. |
+| 96 | SCA | Đã có | CI chạy `npm audit --omit=dev --audit-level=high`. |
+| 97 | SAST | Đã có | GitHub CodeQL JavaScript workflow đã được thêm vào CI. |
 | 98 | DAST | Cần triển khai | Chưa có scan endpoint đã deploy. |
 | 99 | SSDLC | Một phần | Có test/CI/docs; cần threat model, review gate và release checklist chính thức. |
 | 100 | Backup & Recovery | Một phần | Có backup client và runbook; cần backup database production và restore drill có bằng chứng. |

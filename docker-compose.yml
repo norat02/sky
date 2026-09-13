@@ -10,6 +10,7 @@ services:
       - postgres_data:/var/lib/postgresql/data
       - ./server/migrations/001_sky_bird_v2.sql:/docker-entrypoint-initdb.d/001_sky_bird_v2.sql:ro
       - ./server/migrations/002_security_hardening.sql:/docker-entrypoint-initdb.d/002_security_hardening.sql:ro
+      - ./server/migrations/003_security_operations.sql:/docker-entrypoint-initdb.d/003_security_operations.sql:ro
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U sky -d sky"]
       interval: 5s

@@ -7,6 +7,9 @@ process.env.JWT_SECRET = 'integration-test-secret-that-is-at-least-32-chars';
 
 const { app } = await import('../server/app.mjs');
 const { maxPlausibleScore, isScorePlausible } = await import('../server/game-rules.mjs');
+const live = await request(app).get('/live');
+assert.equal(live.status, 200, 'liveness endpoint must not depend on database availability');
+assert.equal(live.body.status, 'alive');
 
 const now = Date.now();
 const startedTenSecondsAgo = new Date(now - 10_000).toISOString();
@@ -27,4 +30,4 @@ assert.equal(third.body.error, 'rate_limited');
 assert.match(third.headers['x-request-id'], /^[0-9a-f-]{36}$/i);
 assert.equal(third.headers['x-ratelimit-remaining'], '0');
 
-console.log('API security integration tests: anti-cheat and rate limiting OK');
+console.log('API security integration tests: anti-cheat, rate limiting, and liveness OK');

@@ -47,13 +47,13 @@ docker compose up --build
 curl http://localhost:8080/health
 ```
 
-Trước production, bắt buộc thay JWT/database/RabbitMQ secrets, giới hạn CORS, bật HTTPS ở reverse proxy, chạy migration `002_security_hardening.sql`, dùng role database riêng không có `SUPERUSER/BYPASSRLS`, bật backup PostgreSQL mã hóa và kiểm tra restore định kỳ. Không ghi token, password, connection string hoặc service-role key vào log.
+Trước production, bắt buộc thay JWT/database/RabbitMQ secrets, giới hạn CORS, bật HTTPS ở reverse proxy, chạy migration `002_security_hardening.sql` và `003_security_operations.sql`, dùng role database riêng không có `SUPERUSER/BYPASSRLS`, bật backup PostgreSQL mã hóa và kiểm tra restore định kỳ. Không ghi token, password, connection string hoặc service-role key vào log.
 
 ## RLS, permissions, secrets và backup
 
 Migration `002_security_hardening.sql` tạo `auth_sessions`, bật RLS cho các bảng nghiệp vụ và cung cấp policy theo `app.user_id`. Khi triển khai, tạo runtime role riêng, revoke quyền client, dùng secrets manager, rồi bật `FORCE ROW LEVEL SECURITY` sau khi xác nhận ứng dụng đã đặt session context đúng cách. Không dùng database owner trong production API.
 
-Production nên bật PostgreSQL point-in-time recovery hoặc snapshot mã hóa, giữ một bản sao ngoài vùng lỗi và chạy restore drill định kỳ. `/health` chỉ trả `200` khi API truy vấn được database; log JSON có `requestId`, route, status, duration và user ID, không có token. Theo dõi 5xx, 401/403 tăng đột biến, 429, latency p95, pool exhaustion và backup freshness.
+Production nên bật PostgreSQL point-in-time recovery hoặc snapshot mã hóa, giữ một bản sao ngoài vùng lỗi và chạy restore drill định kỳ. `/health` chỉ trả `200` khi API truy vấn được database, `/ready` kiểm tra migration bắt buộc và `/live` phục vụ liveness probe; log JSON có `requestId`, route, status, duration và user ID, không có token. Theo dõi 5xx, 401/403 tăng đột biến, 429, latency p95, pool exhaustion và backup freshness.
 
 Ma trận đầy đủ 100 kiểm soát bảo mật, trạng thái hiện tại và ưu tiên còn lại nằm tại [`docs/security-controls-100-vi.md`](security-controls-100-vi.md).
 
