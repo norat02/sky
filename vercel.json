@@ -4,7 +4,6 @@
   "cleanUrls": true,
   "functions": {
     "api/v1/[...path].mjs": {
-      "runtime": "nodejs22.x",
       "maxDuration": 30
     }
   },
