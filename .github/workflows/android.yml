@@ -1,4 +1,4 @@
-name: Build Web and Android
+name: Build Web and Android Release
 
 on:
   workflow_dispatch:
@@ -14,29 +14,20 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # ============================================================
-      # 1. Checkout source code
-      # ============================================================
       - name: Checkout
         uses: actions/checkout@v7
 
-      # ============================================================
-      # 2. Setup Node.js
-      # ============================================================
       - name: Setup Node
         uses: actions/setup-node@v7
         with:
           node-version: 24
           cache: npm
 
-      # ============================================================
-      # 3. Install JavaScript dependencies
-      # ============================================================
       - name: Install JavaScript dependencies
         run: npm ci
 
-      # Public client configuration comes from GitHub Actions Variables.
-      # Never commit .env.local or server-only secrets to the repository.
+      # Public values are GitHub Actions Variables, not repository files.
+      # Server secrets must never be placed in this .env.local file.
       - name: Configure public app environment
         env:
           VITE_PUBLIC_SITE_URL: ${{ vars.VITE_PUBLIC_SITE_URL }}
@@ -59,25 +50,16 @@ jobs:
           ADSENSE_PUBLISHER_ID=${ADSENSE_PUBLISHER_ID}
           EOF
 
-      # ============================================================
-      # 4. Build shared Web client
-      # ============================================================
       - name: Build shared Web client
         run: npm run build
 
-      # ============================================================
-      # 5. Verify source and tests
-      # ============================================================
-      - name: Verify source and tests
+      - name: Verify source and security tests
         run: |
           npm run verify
           npm test
           npm run test:api
           npm run test:api:integration
 
-      # ============================================================
-      # 6. Setup Java
-      # ============================================================
       - name: Setup Java
         uses: actions/setup-java@v6
         with:
@@ -85,296 +67,65 @@ jobs:
           java-version: "21"
           cache: gradle
 
-      # ============================================================
-      # 7. Setup Android SDK
-      # ============================================================
       - name: Setup Android SDK
         uses: android-actions/setup-android@v4
 
-      # ============================================================
-      # 8. Install Android SDK packages
-      # ============================================================
       - name: Install Android SDK packages
         run: |
           sdkmanager "platforms;android-36" \
             "build-tools;35.0.0" \
             "platform-tools"
 
-      # ============================================================
-      # 9. Sync Capacitor Android project
-      # ============================================================
       - name: Sync shared Web client into Capacitor
         run: npx cap sync android
 
-      # ============================================================
-      # 10. Check Android project
-      # ============================================================
       - name: Verify Android project
         working-directory: android
         run: |
           set -euo pipefail
-
-          if [ ! -f "./gradlew" ]; then
-            echo "::error::android/gradlew was not found."
-            exit 1
-          fi
-
+          test -f ./gradlew
           chmod +x ./gradlew
-
-          echo "Android project:"
-          pwd
-
-          echo ""
-          echo "Gradle version:"
           ./gradlew --version
 
-      # ============================================================
-      # 11. Build Debug APK
-      #
-      # This step is intentionally executed BEFORE keytool.
-      # Gradle generates the Android debug keystore here.
-      # ============================================================
-      - name: Generate Android debug keystore
+      # The keystore and passwords are GitHub Actions Secrets.
+      # Create ANDROID_KEYSTORE_BASE64 with: base64 -w 0 sky-release.jks
+      - name: Build signed release APK and AAB
         working-directory: android
+        env:
+          ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+          ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+        run: |
+          set -euo pipefail
+          : "${ANDROID_KEYSTORE_BASE64:?Missing ANDROID_KEYSTORE_BASE64 GitHub Secret}"
+          : "${ANDROID_KEYSTORE_PASSWORD:?Missing ANDROID_KEYSTORE_PASSWORD GitHub Secret}"
+          : "${ANDROID_KEY_ALIAS:?Missing ANDROID_KEY_ALIAS GitHub Secret}"
+          : "${ANDROID_KEY_PASSWORD:?Missing ANDROID_KEY_PASSWORD GitHub Secret}"
+          ./gradlew assembleRelease bundleRelease --no-daemon
+
+      - name: Verify release artifacts
         shell: bash
         run: |
           set -euo pipefail
-
-          echo "========================================"
-          echo "Generating Android debug keystore"
-          echo "========================================"
-
-          ./gradlew assembleDebug --no-daemon
-
-          echo ""
-          echo "Searching for generated debug.keystore..."
-
-          KEYSTORE="$(
-            find "$HOME" \
-              -type f \
-              -name "debug.keystore" \
-              -print -quit
-          )"
-
-          if [ -z "$KEYSTORE" ]; then
-            echo "::error::debug.keystore was not generated."
-
-            echo ""
-            echo "Searching for all keystore files:"
-            find "$HOME" \
-              -type f \
-              \( -name "*.keystore" -o -name "*.jks" \) \
-              -print || true
-
-            exit 1
-          fi
-
-          echo ""
-          echo "Debug keystore found:"
-          echo "$KEYSTORE"
-
-      # ============================================================
-      # 12. Get SHA-1 and SHA-256
-      # ============================================================
-      - name: Get Android certificate fingerprints
-        working-directory: android
-        shell: bash
-        run: |
-          set -euo pipefail
-
-          echo "========================================"
-          echo "Finding Android debug keystore"
-          echo "========================================"
-
-          KEYSTORE="$(
-            find "$HOME" \
-              -type f \
-              -name "debug.keystore" \
-              -print -quit
-          )"
-
-          if [ -z "$KEYSTORE" ]; then
-            echo "::error::Could not find debug.keystore."
-            exit 1
-          fi
-
-          echo "Keystore:"
-          echo "$KEYSTORE"
-
-          ALIAS="AndroidDebugKey"
-          STORE_PASSWORD="android"
-          KEY_PASSWORD="android"
-
-          echo ""
-          echo "========================================"
-          echo "Reading certificate"
-          echo "========================================"
-
-          KEYTOOL_OUTPUT="$(
-            keytool -list -v \
-              -keystore "$KEYSTORE" \
-              -alias "$ALIAS" \
-              -storepass "$STORE_PASSWORD" \
-              -keypass "$KEY_PASSWORD"
-          )"
-
-          echo "$KEYTOOL_OUTPUT"
-
-          SHA1="$(
-            printf '%s\n' "$KEYTOOL_OUTPUT" |
-            grep -m1 'SHA1:' |
-            sed 's/.*SHA1:[[:space:]]*//'
-          )"
-
-          SHA256="$(
-            printf '%s\n' "$KEYTOOL_OUTPUT" |
-            grep -m1 'SHA256:' |
-            sed 's/.*SHA256:[[:space:]]*//'
-          )"
-
-          if [ -z "$SHA1" ]; then
-            echo "::error::SHA-1 fingerprint could not be extracted."
-            exit 1
-          fi
-
-          if [ -z "$SHA256" ]; then
-            echo "::error::SHA-256 fingerprint could not be extracted."
-            exit 1
-          fi
-
-          echo ""
-          echo "========================================"
-          echo "Android Certificate Fingerprints"
-          echo "========================================"
-          echo "Package: com.norat02.skybird"
-          echo "Keystore: $KEYSTORE"
-          echo "Alias: $ALIAS"
-          echo "SHA-1: $SHA1"
-          echo "SHA-256: $SHA256"
-          echo "========================================"
-
-          # Save values to GitHub Step Summary.
+          APK="${{ github.workspace }}/android/app/build/outputs/apk/release/app-release.apk"
+          AAB="${{ github.workspace }}/android/app/build/outputs/bundle/release/app-release.aab"
+          test -s "$APK"
+          test -s "$AAB"
+          sha256sum "$APK" "$AAB"
           {
-            echo "## Android Certificate Fingerprints"
+            echo "## Android Release Artifacts"
             echo ""
-            echo "| Field | Value |"
-            echo "|---|---|"
-            echo "| Package | \`com.norat02.skybird\` |"
-            echo "| Keystore | \`$KEYSTORE\` |"
-            echo "| Alias | \`$ALIAS\` |"
-            echo "| SHA-1 | \`$SHA1\` |"
-            echo "| SHA-256 | \`$SHA256\` |"
-            echo ""
-            echo "### Google OAuth"
-            echo ""
-            echo "Android package name:"
-            echo ""
-            echo "\`com.norat02.skybird\`"
-            echo ""
-            echo "Use the SHA-1 fingerprint above when configuring the Google OAuth Android client."
-            echo ""
-            echo "Redirect URI:"
-            echo ""
-            echo "\`com.norat02.skybird://login-callback\`"
-          } >> "$GITHUB_STEP_SUMMARY"
-
-      # ============================================================
-      # 13. Build Debug AAB
-      #
-      # assembleDebug was already executed above.
-      # Here we only generate the AAB.
-      # ============================================================
-      - name: Build Android debug AAB
-        working-directory: android
-        shell: bash
-        run: |
-          set -euo pipefail
-
-          ./gradlew bundleDebug --no-daemon
-
-      # ============================================================
-      # 14. Verify Android output files
-      # ============================================================
-      - name: Verify Android artifacts
-        shell: bash
-        run: |
-          set -euo pipefail
-
-          APK="${{ github.workspace }}/android/app/build/outputs/apk/debug/app-debug.apk"
-          AAB="${{ github.workspace }}/android/app/build/outputs/bundle/debug/app-debug.aab"
-
-          echo "========================================"
-          echo "Checking Android artifacts"
-          echo "========================================"
-
-          if [ ! -f "$APK" ]; then
-            echo "::error::APK not found:"
-            echo "$APK"
-            exit 1
-          fi
-
-          if [ ! -f "$AAB" ]; then
-            echo "::error::AAB not found:"
-            echo "$AAB"
-            exit 1
-          fi
-
-          echo ""
-          echo "APK:"
-          echo "$APK"
-
-          echo ""
-          echo "AAB:"
-          echo "$AAB"
-
-          echo ""
-          echo "APK size:"
-          du -h "$APK"
-
-          echo ""
-          echo "AAB size:"
-          du -h "$AAB"
-
-          {
-            echo ""
-            echo "## Android Build Artifacts"
-            echo ""
-            echo "| Artifact | Status | Path |"
+            echo "| Artifact | Status | SHA-256 |"
             echo "|---|---|---|"
-            echo "| Debug APK | Ready | \`android/app/build/outputs/apk/debug/app-debug.apk\` |"
-            echo "| Debug AAB | Ready | \`android/app/build/outputs/bundle/debug/app-debug.aab\` |"
+            echo "| app-release.apk | Ready | \\`$(sha256sum "$APK" | cut -d' ' -f1)\\` |"
+            echo "| app-release.aab | Ready | \\`$(sha256sum "$AAB" | cut -d' ' -f1)\\` |"
           } >> "$GITHUB_STEP_SUMMARY"
 
-      # ============================================================
-      # 15. Verify Web output
-      # ============================================================
       - name: Verify Web artifact
         shell: bash
-        run: |
-          set -euo pipefail
+        run: test -s "${{ github.workspace }}/dist/index.html"
 
-          WEB="${{ github.workspace }}/dist"
-
-          echo "========================================"
-          echo "Checking Web build"
-          echo "========================================"
-
-          if [ ! -d "$WEB" ]; then
-            echo "::error::Web dist directory not found:"
-            echo "$WEB"
-            exit 1
-          fi
-
-          echo "Web output:"
-          echo "$WEB"
-
-          echo ""
-          echo "Web files:"
-          find "$WEB" -maxdepth 2 -type f | sort | head -100
-
-      # ============================================================
-      # 16. Upload Web artifact
-      # ============================================================
       - name: Upload Web artifact
         uses: actions/upload-artifact@v7
         with:
@@ -382,14 +133,11 @@ jobs:
           path: ${{ github.workspace }}/dist
           if-no-files-found: error
 
-      # ============================================================
-      # 17. Upload Android APK + AAB
-      # ============================================================
-      - name: Upload Android artifacts
+      - name: Upload signed Android release artifacts
         uses: actions/upload-artifact@v7
         with:
-          name: sky-bird-android-debug
+          name: sky-bird-android-release
           path: |
-            ${{ github.workspace }}/android/app/build/outputs/apk/debug/app-debug.apk
-            ${{ github.workspace }}/android/app/build/outputs/bundle/debug/app-debug.aab
+            ${{ github.workspace }}/android/app/build/outputs/apk/release/app-release.apk
+            ${{ github.workspace }}/android/app/build/outputs/bundle/release/app-release.aab
           if-no-files-found: error

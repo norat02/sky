@@ -52,6 +52,22 @@ Nếu build qua workflow `.github/workflows/android.yml`, không cần commit `.
 
 Workflow sẽ tạo `.env.local` tạm thời trong runner, chạy build và đồng bộ Capacitor. File này không được commit. Các giá trị `VITE_*`, anon key và AdSense ID là cấu hình public, nên GitHub **Actions Variables** là phù hợp; không đặt service-role key vào đây.
 
+Để workflow tạo bản release đã ký, vào **Settings → Secrets and variables → Actions → Secrets** và tạo:
+
+| Secret | Nội dung |
+|---|---|
+| `ANDROID_KEYSTORE_BASE64` | Kết quả `base64 -w 0 sky-release.jks` |
+| `ANDROID_KEYSTORE_PASSWORD` | Store password của keystore |
+| `ANDROID_KEY_ALIAS` | Ví dụ `sky-release` |
+| `ANDROID_KEY_PASSWORD` | Key password của alias |
+
+Các secret này chỉ dùng cho Gradle trong runner, không ghi vào log. Workflow chạy `assembleRelease bundleRelease` và upload:
+
+```text
+android/app/build/outputs/apk/release/app-release.apk
+android/app/build/outputs/bundle/release/app-release.aab
+```
+
 ### Cấu hình Vercel
 
 Vào **Vercel → Project → Settings → Environment Variables**. Đặt các biến `VITE_*` ở trên cho **Build time**. Đặt các biến server-only như `DATABASE_URL`, `JWT_SECRET`, `SUPABASE_SERVICE_ROLE_KEY` và `SCORE_SIGNING_SECRET` ở **Server/Runtime**; không đưa chúng vào APK, `.env.local` hoặc GitHub Actions Variables.
