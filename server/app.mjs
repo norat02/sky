@@ -6,6 +6,7 @@ import { pool, withTransaction } from './db.mjs';
 import { hashPassword, verifyPassword, issueToken, requireAuth, requireRole, hashRequest, ttlSeconds } from './auth.mjs';
 import { getJson, setJson, rateLimit } from './cache.mjs';
 import { requestId, versionHeaders, validateSession, noStore, encodeCursor, decodeCursor } from './security.mjs';
+import { isScorePlausible } from './game-rules.mjs';
 
 export const app = express();
 app.disable('x-powered-by');
@@ -114,9 +115,7 @@ api.post('/runs/:runId/score', requireAuth, validateSession, async (req, res, ne
       await client.query('INSERT INTO idempotency_keys(user_id, key, request_hash) VALUES ($1, $2, $3)', [req.user.sub, key, requestHash]);
       const run = await client.query('SELECT id, status, version, started_at FROM game_runs WHERE id = $1 AND user_id = $2 FOR UPDATE', [req.params.runId, req.user.sub]);
       if (!run.rows[0] || run.rows[0].status !== 'started') { const error = new Error('run_not_available'); error.status = 409; throw error; }
-      const elapsedSeconds = Math.max(1, (Date.now() - new Date(run.rows[0].started_at).getTime()) / 1000);
-      const maxPlausibleScore = Math.min(100000, Math.floor(elapsedSeconds * Number(process.env.MAX_SCORE_PER_SECOND || 25)) + 5);
-      if (input.score > maxPlausibleScore) { const error = new Error('score_validation_failed'); error.status = 422; throw error; }
+      if (!isScorePlausible(input.score, run.rows[0].started_at, Date.now(), Number(process.env.MAX_SCORE_PER_SECOND || 25))) { const error = new Error('score_validation_failed'); error.status = 422; throw error; }
       const updated = await client.query("UPDATE game_runs SET status = 'submitted', score = $1, version = version + 1, submitted_at = now() WHERE id = $2 AND version = $3 AND status = 'started' RETURNING id", [input.score, req.params.runId, run.rows[0].version]);
       if (updated.rowCount !== 1) { const error = new Error('replay_detected'); error.status = 409; throw error; }
       await client.query('INSERT INTO scores(run_id, user_id, player_name, score) VALUES ($1, $2, $3, $4)', [req.params.runId, req.user.sub, input.playerName, input.score]);

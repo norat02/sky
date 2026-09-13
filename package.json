@@ -36,6 +36,7 @@
     "api": "node server/index.mjs",
     "worker": "node server/worker.mjs",
     "test:api": "node scripts/test-api.mjs",
+    "test:api:integration": "node scripts/test-api-security-integration.mjs",
     "build:web": "npm run build",
     "web:dev": "npm run build && python3 -m http.server 4173 -d dist",
     "desktop:dev": "npm run build && electron electron/main.cjs",

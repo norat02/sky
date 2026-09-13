@@ -48,6 +48,8 @@ jobs:
         run: |
           npm run verify
           npm test
+          npm run test:api
+          npm run test:api:integration
 
       # ============================================================
       # 6. Setup Java
