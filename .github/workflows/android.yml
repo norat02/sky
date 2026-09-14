@@ -89,7 +89,7 @@ jobs:
 
       # The keystore and passwords are GitHub Actions Secrets.
       # Create ANDROID_KEYSTORE_BASE64 with: base64 -w 0 sky-release.jks
-      - name: Build signed release APK and AAB
+      - name: Build release APK and AAB
         working-directory: android
         env:
           ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
@@ -98,10 +98,12 @@ jobs:
           ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
         run: |
           set -euo pipefail
-          : "${ANDROID_KEYSTORE_BASE64:?Missing ANDROID_KEYSTORE_BASE64 GitHub Secret}"
-          : "${ANDROID_KEYSTORE_PASSWORD:?Missing ANDROID_KEYSTORE_PASSWORD GitHub Secret}"
-          : "${ANDROID_KEY_ALIAS:?Missing ANDROID_KEY_ALIAS GitHub Secret}"
-          : "${ANDROID_KEY_PASSWORD:?Missing ANDROID_KEY_PASSWORD GitHub Secret}"
+          if [[ -n "$ANDROID_KEYSTORE_BASE64" && -n "$ANDROID_KEYSTORE_PASSWORD" && -n "$ANDROID_KEY_ALIAS" && -n "$ANDROID_KEY_PASSWORD" ]]; then
+            echo "Release signing secrets detected; building signed artifacts."
+          else
+            echo "Release signing secrets are absent; building unsigned validation artifacts."
+            echo "Add ANDROID_KEYSTORE_BASE64, ANDROID_KEYSTORE_PASSWORD, ANDROID_KEY_ALIAS, and ANDROID_KEY_PASSWORD for Play-ready signed output."
+          fi
           ./gradlew assembleRelease bundleRelease --no-daemon
 
       - name: Verify release artifacts
@@ -133,7 +135,7 @@ jobs:
           path: ${{ github.workspace }}/dist
           if-no-files-found: error
 
-      - name: Upload signed Android release artifacts
+      - name: Upload Android release artifacts
         uses: actions/upload-artifact@v7
         with:
           name: sky-bird-android-release

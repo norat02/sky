@@ -56,6 +56,9 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Build generated web artifacts
+        run: npm run build
+
       - name: Run static verification and integration tests
         run: |
           npm run verify
