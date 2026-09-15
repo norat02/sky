@@ -385,3 +385,7 @@ body { color: var(--ink); font-family: 'DM Sans', 'Inter', system-ui, sans-serif
 .ios-app .feature-panel, .ios-app .authBox { background: linear-gradient(145deg, #241D50, #111936); border-color: rgba(155,140,255,.38); }
 .ios-app .account-avatar { background: var(--accent-violet); color: #fff; }
 @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; } }
+
+.seo-fallback{position:relative;z-index:2;min-height:100vh;display:grid;place-content:center;gap:12px;padding:24px;text-align:center;background:var(--paper);color:var(--ink)}
+.seo-fallback h1{font-size:clamp(28px,7vw,52px)}
+.seo-fallback p{max-width:640px;margin:0 auto;color:var(--ink2);font-size:1rem;line-height:1.6}
