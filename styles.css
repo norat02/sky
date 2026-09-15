@@ -390,3 +390,32 @@ body { color: var(--ink); font-family: 'DM Sans', 'Inter', system-ui, sans-serif
 .seo-fallback h1{font-size:clamp(28px,7vw,52px)}
 .seo-fallback p{max-width:640px;margin:0 auto;color:var(--ink2);font-size:1rem;line-height:1.6}
 .seo-fallback{max-width:760px;margin:0 auto;text-align:left}.seo-fallback h1{text-align:center}.seo-fallback h2{margin-top:24px;color:var(--accent-cyan);font-size:clamp(20px,4vw,30px);letter-spacing:.04em}.seo-fallback p,.seo-fallback li{font-size:1rem;line-height:1.65}.seo-fallback .seo-lead{text-align:center;font-size:1.1rem}.seo-fallback ol,.seo-fallback ul{padding-left:1.4rem;margin-top:8px}.seo-fallback li+li{margin-top:5px}.seo-fallback .seo-links{display:flex;flex-wrap:wrap;gap:16px;margin-top:24px}.seo-fallback .seo-links a{color:var(--accent-cyan);font-weight:700}.seo-fallback .seo-note{margin-top:24px;color:var(--ink2);font-size:.9rem}
+
+/* Supplied Sakura palette — shared Web, Android, and iOS app theme */
+:root{--paper:#f0e7d3;--paper2:#f7f0de;--ink:#26221c;--ink2:#5c5445;--red:#c73e3a;--accent-cyan:#c73e3a;--accent-violet:#8d302e;--accent-green:#3f7d4e;--accent-yellow:#9c6d18;--surface-soft:rgba(38,34,28,.06);--border-soft:rgba(38,34,28,.22)}
+html,body{background:var(--paper);color:var(--ink)}
+body{font-family:'Cormorant',Georgia,serif}
+.panel,.authBox,#settingsOverlay .settingsCard,#pauseOverlay .pauseCard,#reviveOverlay .reviveCard{background:var(--paper2);color:var(--ink);border-color:var(--ink);box-shadow:10px 10px 0 rgba(38,34,28,.13)}
+.panel::before{border-color:rgba(38,34,28,.32)}
+.kanjiBg{color:var(--ink);opacity:.05}
+.kana,#runKj,#evBanner .kanji,.runLine .kj,.lbRow .rank,.selCard .kj{color:var(--red)}
+#combo,.newbest,.lbRow.me .nm,.lbRow.me b{color:var(--red)}
+.sub,.best,.selLabel,.keys,.row,#bestHud,#runNo,#authState,#authMsg,.lbEmpty,.lbStatus,#homeLbStatus,#dataMsg,#reviveStatus,#reviveOverlay p,#pauseOverlay p{color:var(--ink2)}
+.rule i{background:var(--ink);opacity:.75}.rule b{background:var(--red);box-shadow:none}
+.btn{border-color:var(--ink);border-radius:0}.btn:focus-visible,.nameRow input:focus{outline-color:var(--red)}
+.btn.solid{background:var(--ink);color:var(--paper2);border-color:var(--ink);box-shadow:5px 5px 0 rgba(38,34,28,.25)}
+.btn.solid:hover{box-shadow:7px 7px 0 rgba(38,34,28,.25)}
+.btn.ghost{background:transparent;color:var(--ink);border-color:var(--ink)}.btn.ghost:hover{background:var(--ink);color:var(--paper2)}
+.selCard,#coinWallet,#localeSuggest,.account-card,.account-stats>div,.shop-wallet{background:var(--surface-soft);border-color:rgba(38,34,28,.25)}
+.selCard.on{background:var(--ink);border-color:var(--ink)}.selCard.on .kj,.selCard.on .nm,.selCard.on .meta{color:var(--paper2)}
+#coinWallet b,.shop-wallet b{color:var(--accent-yellow)}
+#netDot i{background:#9a917c}#netDot.on i{background:var(--accent-green);box-shadow:none}
+#evBanner,#pauseBtn,#muteBtn{background:var(--paper2);border-color:var(--ink);box-shadow:4px 4px 0 rgba(38,34,28,.15)}
+#evBar{background:rgba(38,34,28,.14)}#evBarI{background:var(--red)}
+.hanko{background:var(--red);color:var(--paper2);box-shadow:4px 4px 0 rgba(38,34,28,.2)}
+#securityOverlay{background:rgba(38,34,28,.92);color:var(--paper2)}#securityOverlay .securityCard{border-color:var(--paper2)}#securityOverlay svg{color:#f3c8d2}
+#reviveAdBox{border-color:rgba(38,34,28,.45)}.policy-links a{color:var(--red)}
+.android-app .feature-panel,.android-app .authBox,.ios-app .feature-panel,.ios-app .authBox{background:var(--paper2);color:var(--ink);border-color:var(--ink);box-shadow:10px 10px 0 rgba(38,34,28,.13);border-radius:0}
+.android-app .account-avatar,.ios-app .account-avatar{background:var(--red);color:var(--paper2)}
+.android-app .account-card,.android-app .account-stats>div,.android-app .shop-wallet,.ios-app .account-card,.ios-app .account-stats>div,.ios-app .shop-wallet{border-color:rgba(38,34,28,.25);background:var(--surface-soft)}
+.android-app .shop-wallet b,.ios-app .shop-wallet b{color:var(--accent-yellow)}

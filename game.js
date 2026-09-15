@@ -37,7 +37,7 @@ var CFG={G:1600,FLAP:-465,MAXFALL:640,R:14,SPEEDMUL:1,GAPMUL:1,COINMUL:1};
 for(var k in BASE)CFG[k]=BASE[k];
 
 var TAU=Math.PI*2;
-  var INK='#F8FAFF',PAPER='#080B1A',RED='#FF5C8A',RED_L='#55D6FF';
+  var INK='#26221c',PAPER='#f0e7d3',RED='#c73e3a',RED_L='#df6b66';
 function sm(a,dt){return 1-Math.exp(-a*dt);}
 
 /* ═══ DOM ═══ */
