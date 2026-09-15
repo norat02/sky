@@ -16,6 +16,7 @@ const files = [
   'og-image.png',
   'robots.txt',
   'sitemap.xml',
+  'ads.txt',
   'env.js',
 ];
 
