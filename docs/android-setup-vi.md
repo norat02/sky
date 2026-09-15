@@ -254,3 +254,69 @@ cd android && ./gradlew lint test assembleRelease --no-daemon
 ```
 
 Trước khi upload AAB, mở Google Play Console để kiểm tra App signing, package name `com.norat02.skybird`, version code, privacy policy và Data safety. Không commit secret hoặc keystore vào repository.
+
+
+## 11. Checklist tạo GitHub Actions Secrets để ký release chính thức
+
+Bản APK/AAB unsigned chỉ dùng để kiểm thử. Để phát hành lên Google Play, hãy tạo keystore một lần, sao lưu an toàn ngoài Git, sau đó thêm đúng bốn **Repository secrets**. Không dùng **Variables** cho password hoặc Base64 keystore.
+
+### 11.1 Tạo keystore và mã hóa Base64
+
+Chạy trên máy cá nhân, không chạy trong repository đã public:
+
+```bash
+mkdir -p "$HOME/sky-secrets"
+keytool -genkeypair -v \
+  -keystore "$HOME/sky-secrets/sky-release.jks" \
+  -alias sky-release \
+  -keyalg RSA -keysize 4096 -validity 10000 \
+  -storepass 'MAT_KHAU_STORE_DAI_VA_NGAU_NHIEN' \
+  -keypass 'MAT_KHAU_KEY_DAI_VA_NGAU_NHIEN' \
+  -dname 'CN=Sky Bird, OU=Mobile, O=Norat02, L=VN, ST=VN, C=VN'
+
+base64 -w 0 "$HOME/sky-secrets/sky-release.jks" > "$HOME/sky-secrets/sky-release.jks.base64"
+sha256sum "$HOME/sky-secrets/sky-release.jks"
+```
+
+Lưu ba bản sao được mã hóa của file `.jks`, store password, key password và SHA-256 checksum trong password manager hoặc kho lưu trữ an toàn. **Không commit `.jks`, file Base64 hoặc password.**
+
+### 11.2 Tạo Secrets trên GitHub
+
+Vào `GitHub → norat02/sky → Settings → Secrets and variables → Actions → Secrets → New repository secret` và tạo:
+
+| Secret name | Giá trị cần dán |
+|---|---|
+| `ANDROID_KEYSTORE_BASE64` | Toàn bộ nội dung một dòng của `sky-release.jks.base64` |
+| `ANDROID_KEYSTORE_PASSWORD` | Store password lúc tạo keystore |
+| `ANDROID_KEY_ALIAS` | `sky-release` |
+| `ANDROID_KEY_PASSWORD` | Key password của alias |
+
+Giữ các biến cấu hình public (`VITE_PUBLIC_SITE_URL`, `VITE_API_BASE_URL`, Supabase URL/anon key, OAuth scheme) trong mục **Actions → Variables**. Không đặt `JWT_SECRET`, `DATABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, `SCORE_SIGNING_SECRET` hoặc Google Client Secret vào Variables hay APK.
+
+### 11.3 Kiểm tra trước khi phát hành
+
+1. Xác nhận đủ đúng bốn secret; GitHub chỉ hiển thị `••••••`, không thể đọc lại giá trị.
+2. Chạy workflow `Build Web and Android Release` bằng **Run workflow**.
+3. Kiểm tra job tạo được `app-release.apk` và `app-release.aab`, không in password/keystore vào log.
+4. Tải artifact về và kiểm tra chữ ký:
+
+```bash
+apksigner verify --verbose app-release.apk
+jarsigner -verify -verbose -certs app-release.aab | tail -20
+```
+
+5. Đối chiếu fingerprint với keystore gốc:
+
+```bash
+keytool -list -v -keystore "$HOME/sky-secrets/sky-release.jks" -alias sky-release
+```
+
+6. Chỉ upload **AAB** lên Google Play Console. Không xóa hoặc thay thế keystore sau khi phát hành; mất signing key có thể khiến bản cập nhật không cài đè được bản cũ.
+
+## 12. Kết quả kiểm tra bảo mật CI ngày 2026-09-14
+
+Workflow [Security Checks run 34811779433](https://github.com/norat02/sky/actions/runs/34811779433) đã hoàn thành thành công ở cả hai job: Dependency audit and CodeQL và API security smoke checks. CodeQL không báo finding trong log; `npm audit --omit=dev --audit-level=high` báo **0 lỗ hổng trong production dependency tree**; integration test xác nhận anti-cheat, rate limiting và liveness hoạt động; migration chain và chính sách không commit file nhạy cảm cũng pass.
+
+Tuy nhiên, trạng thái xanh không có nghĩa là tuyệt đối không còn lỗ hổng. Audit toàn bộ development tree vẫn ghi nhận **5 advisory: 3 moderate và 2 high**. Các advisory nằm ở `electron`/`extract-zip` và chuỗi `@capacitor/cli → xcode → uuid`, đều thuộc dependency phát triển/đóng gói desktop hoặc toolchain, không nằm trong production dependency tree mà server deploy sử dụng. Đây là khoản nợ cần theo dõi; không chạy `npm audit fix --force` mù quáng vì npm đề xuất nâng major Electron/Capacitor và có thể phá desktop/mobile build.
+
+Biện pháp hiện tại là: CI chặn high trong production dependencies; CodeQL quét JavaScript; API có test cho authentication, authorization, validation, rate limiting, session expiry, anti-cheat, replay/idempotency; secrets policy chặn `.env`, `.jks` và `.keystore`. Việc còn lại là lập issue nâng Electron/Capacitor theo từng major, chạy đầy đủ desktop/mobile regression tests, cập nhật lockfile có kiểm soát, và bật Dependabot hoặc lịch kiểm tra dependency định kỳ.

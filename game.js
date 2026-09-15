@@ -37,7 +37,7 @@ var CFG={G:1600,FLAP:-465,MAXFALL:640,R:14,SPEEDMUL:1,GAPMUL:1,COINMUL:1};
 for(var k in BASE)CFG[k]=BASE[k];
 
 var TAU=Math.PI*2;
-  var INK='#eaf6ff',PAPER='#07111f',RED='#29add5',RED_L='#63d4f2';
+  var INK='#F8FAFF',PAPER='#080B1A',RED='#FF5C8A',RED_L='#55D6FF';
 function sm(a,dt){return 1-Math.exp(-a*dt);}
 
 /* ═══ DOM ═══ */
@@ -178,27 +178,27 @@ var CHARS=[
 /* ═══ BẢN ĐỒ ═══ */
 var MAPS=[
   {id:'sakura',vn:'hoa anh đào',kj:'桜',
-   tint:null,sun:'199,62,58',ground:'#e7dbbe',mtn:'74,68,54',grassA:.45,
+   tint:null,sun:'199,62,58',ground:'#202B52',mtn:'22,30,62',grassA:.45,
    petalNear:'#f3c8d2',petalFar:'#ecc0ca',petalStroke:'rgba(197,116,138,.5)',
    petalType:'petal',petalTV:[34,88]},
   {id:'autumn',vn:'mùa thu',kj:'楓',
-   tint:'rgba(209,140,70,.055)',sun:'209,140,70',ground:'#d9c4a0',mtn:'84,60,40',grassA:.4,
+   tint:'rgba(209,140,70,.055)',sun:'209,140,70',ground:'#27345E',mtn:'35,29,78',grassA:.4,
    petalNear:'#d4703a',petalFar:'#c4603a',petalStroke:'rgba(140,60,30,.5)',
    petalType:'petal',petalTV:[34,88]},
   {id:'snow',vn:'tuyết',kj:'雪',
-   tint:'rgba(120,140,160,.05)',sun:'220,230,240',ground:'#d8dde2',mtn:'90,100,115',grassA:.25,
+   tint:'rgba(120,140,160,.05)',sun:'220,230,240',ground:'#25345C',mtn:'36,47,88',grassA:.25,
    petalNear:'#e8edf2',petalFar:'#dde4ea',petalStroke:'rgba(120,140,160,.3)',
    petalType:'snow',petalTV:[30,70]},
   {id:'night',vn:'đêm',kj:'夜',
-   tint:'rgba(20,25,45,.10)',sun:'230,235,245',ground:'#2a2535',mtn:'30,35,55',grassA:.2,
+   tint:'rgba(20,25,45,.10)',sun:'230,235,245',ground:'#121A3A',mtn:'12,17,43',grassA:.2,
    petalNear:'#f4e8a0',petalFar:'#d4c870',petalStroke:'rgba(200,180,80,.3)',
    petalType:'firefly',petalTV:[5,25],hasStars:true},
   {id:'rain',vn:'mưa',kj:'雨',
-   tint:'rgba(80,80,90,.05)',sun:'160,165,175',ground:'#c4c8be',mtn:'60,65,60',grassA:.35,
+   tint:'rgba(80,80,90,.05)',sun:'160,165,175',ground:'#263452',mtn:'28,40,70',grassA:.35,
    petalNear:'#a0a8b0',petalFar:'#8a9298',petalStroke:'rgba(80,90,100,.25)',
    petalType:'rain',petalTV:[180,320]},
   {id:'aurora',vn:'cực quang',kj:'極光',
-   tint:'rgba(38,76,116,.12)',sun:'108,196,178',ground:'#182b3d',mtn:'25,48,66',grassA:.18,
+   tint:'rgba(38,76,116,.12)',sun:'108,196,178',ground:'#101D3D',mtn:'15,28,65',grassA:.18,
    petalNear:'#9be7d4',petalFar:'#6bc9c0',petalStroke:'rgba(108,224,205,.38)',
    petalType:'firefly',petalTV:[8,34],hasStars:true}
 ];
