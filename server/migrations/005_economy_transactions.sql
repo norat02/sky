@@ -1,15 +1,16 @@
 -- Server-authoritative economy operations. Never trust client coin totals or prices.
 CREATE TABLE IF NOT EXISTS economy_transactions (
   id BIGSERIAL PRIMARY KEY,
-  user_id UUID NOT NULL,
+  user_id UUID NOT NULL REFERENCES player_profiles(user_id) ON DELETE CASCADE,
   operation TEXT NOT NULL CHECK (operation IN ('score_reward','character_unlock')),
-  reference_id TEXT NOT NULL,
+  reference_id TEXT NOT NULL CHECK (char_length(reference_id) BETWEEN 1 AND 128),
   delta INTEGER NOT NULL,
   balance_after INTEGER NOT NULL CHECK (balance_after >= 0),
   metadata JSONB NOT NULL DEFAULT '{}'::jsonb,
   created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
   UNIQUE (user_id, operation, reference_id)
 );
+CREATE INDEX IF NOT EXISTS economy_transactions_user_created_idx ON economy_transactions(user_id, created_at DESC);
 
 CREATE OR REPLACE FUNCTION public.complete_score_reward(p_user_id UUID, p_reference_id TEXT, p_score INTEGER)
 RETURNS TABLE(coins INTEGER, best_score INTEGER, flights INTEGER)
@@ -49,6 +50,7 @@ REVOKE ALL ON FUNCTION public.complete_score_reward(UUID,TEXT,INTEGER) FROM PUBL
 REVOKE ALL ON FUNCTION public.unlock_character(UUID,TEXT) FROM PUBLIC;
 GRANT EXECUTE ON FUNCTION public.complete_score_reward(UUID,TEXT,INTEGER) TO service_role;
 GRANT EXECUTE ON FUNCTION public.unlock_character(UUID,TEXT) TO service_role;
+REVOKE ALL ON economy_transactions FROM anon, authenticated;
 
 -- Authenticated clients may sync preferences only; coins, scores, flights and unlocks are server-owned.
 REVOKE INSERT, UPDATE ON player_profiles FROM authenticated;

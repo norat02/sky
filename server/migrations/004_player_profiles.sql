@@ -1,6 +1,6 @@
 -- Cross-device player profile. The Supabase Auth user owns exactly one row.
 CREATE TABLE IF NOT EXISTS player_profiles (
-  user_id UUID PRIMARY KEY,
+  user_id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
   display_name TEXT NOT NULL DEFAULT '' CHECK (char_length(display_name) <= 32),
   best_score INTEGER NOT NULL DEFAULT 0 CHECK (best_score BETWEEN 0 AND 100000),
   flights INTEGER NOT NULL DEFAULT 0 CHECK (flights BETWEEN 0 AND 100000000),
