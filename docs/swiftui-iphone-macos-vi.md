@@ -87,7 +87,7 @@ macos/SkyBirdMac/Sky Bird.app.zip
 Mặc định app mở:
 
 ```text
-https://norat02.github.io/sky/
+https://sky.norat.click/
 ```
 
 Có thể đổi URL khi chạy local:

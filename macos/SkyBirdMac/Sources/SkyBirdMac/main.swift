@@ -1,7 +1,7 @@
 import SwiftUI
 import WebKit
 
-private let defaultGameURL = URL(string: "https://norat02.github.io/sky/")!
+private let defaultGameURL = URL(string: "https://sky.norat.click/")!
 
 @main
 struct SkyBirdMacApp: App {
