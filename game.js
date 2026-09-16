@@ -64,7 +64,7 @@ var accountStatus=$('accountStatus'),accountEmail=$('accountEmail'),accountPlan=
 var authSignupMode=false,authReturnScreen='title';
 
 /* ═══ STORE ═══ */
-var store={get:function(k){try{return localStorage.getItem(k)}catch(e){return null}},set:function(k,v){try{localStorage.setItem(k,v)}catch(e){}}};
+var store={get:function(k){try{return localStorage.getItem(k)}catch(e){return null}},set:function(k,v){try{localStorage.setItem(k,v);if(window.SKY_PROFILE_SYNC)window.SKY_PROFILE_SYNC.markDirty();}catch(e){}}};
 function readJson(key,fallback){try{var raw=store.get(key);var value=raw?JSON.parse(raw):fallback;return value===null?fallback:value;}catch(e){return fallback;}}
 function writeJson(key,value){try{store.set(key,JSON.stringify(value));}catch(e){}}
 var HISTORY_KEY='chimse.history',PENDING_KEY='chimse.pending-scores',COINS_KEY='chimse.coins',UNLOCKED_CHARS_KEY='chimse.unlocked-characters';
@@ -228,6 +228,13 @@ var charId=store.get('chimse.char')||'tit';
 var mapId=store.get('chimse.map')||'sakura';
 var currentChar=CHARS[0];
 var currentMap=MAPS[0];
+window.addEventListener('sky-profile-sync',function(event){
+  var profile=event.detail&&event.detail.profile;if(!profile)return;
+  best=Math.max(0,Number(profile.best_score)||0);RUN.total=Math.max(0,Number(profile.flights)||0);coinsBank=Math.max(0,Math.min(1000000,Number(profile.coins)||0));
+  unlockedChars=Array.isArray(profile.unlocked_characters)?profile.unlocked_characters.slice():[];charId=String(profile.selected_character||'tit');mapId=String(profile.selected_map||'sakura');
+  store.set('chimse.best',String(best));store.set('chimse.runs',String(RUN.total));store.set('chimse.coins',String(coinsBank));writeJson(UNLOCKED_CHARS_KEY,unlockedChars);store.set('chimse.char',charId);store.set('chimse.map',mapId);store.set('chimse.name',String(profile.display_name||'').slice(0,10));
+  if(profile.language)locale=String(profile.language);if(Number.isFinite(Number(profile.volume)))AU.setVolume(Number(profile.volume)/100);if(typeof profile.muted==='boolean')AU.setMute(profile.muted);normalizeWallet();applyChar();applyMap();updateCoinWallet();buildSelectors();buildShop();updateAccountScreen();
+});
 
 /* ═══ ÂM THANH ═══ */
 var AU={

@@ -11,6 +11,7 @@ const files = [
   'consent-gate.js',
   'security-integrity.js',
   'native-bridge.js',
+  'player-sync.js',
   'privacy-policy.html',
   'terms-of-use.html',
   'og-image.png',

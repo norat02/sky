@@ -117,6 +117,8 @@ Tài liệu này chuyển checklist 100 mục thành ma trận kiểm soát cho 
 
 ## Bằng chứng hiện có
 
+Migration `004_player_profiles.sql` bổ sung hồ sơ người chơi dùng chung cho Web và app; RLS giới hạn mỗi tài khoản chỉ đọc/ghi hàng dữ liệu của chính mình. Client dùng offline-first và tự đồng bộ khi đăng nhập hoặc có mạng trở lại. Coin/điểm thưởng quan trọng vẫn phải được server xác nhận trước khi coi là dữ liệu kinh tế đáng tin cậy.
+
 Các điểm đã được kiểm thử trong repository gồm API versioning, cursor pagination, JWT expiration, session revocation, idempotency, transaction score submission, anti-cheat plausibility và HTTP rate limiting. Các lệnh xác nhận hiện tại là `npm run build`, `npm run verify`, `npm test`, `npm run test:api` và `npm run test:api:integration`.
 
 ## References
