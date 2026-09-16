@@ -31,7 +31,9 @@
     var current = snapshot(), encoded = JSON.stringify(current);
     if (!force && encoded === lastSnapshot) return Promise.resolve();
     syncing = true;
-    return client.from('player_profiles').upsert(Object.assign({ user_id: userId, updated_at: new Date().toISOString() }, current), { onConflict: 'user_id' }).then(function (result) { if (result.error) throw result.error; lastSnapshot = encoded; }).catch(function () {}).finally(function () { syncing = false; });
+    /* Economic fields are server-owned. Client sync may only persist preferences. */
+    var preferences = { user_id:userId, display_name:current.display_name, selected_character:current.selected_character, selected_map:current.selected_map, language:current.language, volume:current.volume, muted:current.muted, updated_at:new Date().toISOString() };
+    return client.from('player_profiles').upsert(preferences, { onConflict: 'user_id' }).then(function (result) { if (result.error) throw result.error; lastSnapshot = encoded; }).catch(function () {}).finally(function () { syncing = false; });
   }
   function load() {
     if (!client || !userId) return Promise.resolve();
@@ -48,7 +50,7 @@
   function init() {
     if (initialised || !supabaseUrl || !anonKey || window.__SKY_E2E__) return;
     initialised = true;
-    import('https://esm.sh/@supabase/supabase-js@2').then(function (mod) { if (!mod || !mod.createClient) throw new Error('supabase'); client = mod.createClient(supabaseUrl, anonKey, { auth: { persistSession: true, autoRefreshToken: true } }); client.auth.onAuthStateChange(function (_, session) { onSession(session); }); return client.auth.getSession(); }).then(function (result) { onSession(result.data && result.data.session); });
+    import('https://esm.sh/@supabase/supabase-js@2').then(function (mod) { if (!mod || !mod.createClient) throw new Error('supabase'); client = mod.createClient(supabaseUrl, anonKey, { auth: { persistSession: true, autoRefreshToken: true, storageKey: 'sky-bird-auth' } }); client.auth.onAuthStateChange(function (_, session) { onSession(session); }); return client.auth.getSession(); }).then(function (result) { onSession(result.data && result.data.session); }).catch(function () { client = null; });
     window.addEventListener('sky-profile-dirty', function () { upload(false); });
     window.addEventListener('beforeunload', function () { upload(false); });
   }

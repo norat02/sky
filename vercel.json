@@ -5,6 +5,9 @@
   "functions": {
     "api/v1/[...path].mjs": {
       "maxDuration": 30
+    },
+    "api/economy.mjs": {
+      "maxDuration": 30
     }
   },
   "headers": [
