@@ -419,3 +419,10 @@ body{font-family:'Cormorant',Georgia,serif}
 .android-app .account-avatar,.ios-app .account-avatar{background:var(--red);color:var(--paper2)}
 .android-app .account-card,.android-app .account-stats>div,.android-app .shop-wallet,.ios-app .account-card,.ios-app .account-stats>div,.ios-app .shop-wallet{border-color:rgba(38,34,28,.25);background:var(--surface-soft)}
 .android-app .shop-wallet b,.ios-app .shop-wallet b{color:var(--accent-yellow)}
+
+/* Portrait-only experience for phones, tablets, and iPad; desktop remains responsive. */
+.sr-only{position:absolute!important;width:1px!important;height:1px!important;padding:0!important;margin:-1px!important;overflow:hidden!important;clip:rect(0,0,0,0)!important;white-space:nowrap!important;border:0!important}
+.authActions .btn:disabled{opacity:.5;cursor:wait;transform:none;box-shadow:none}
+#portraitNotice{display:none}
+@media (max-width:1024px) and (orientation:landscape){#portraitNotice{position:fixed;inset:0;z-index:100;display:grid;place-items:center;padding:24px;background:var(--paper);color:var(--ink);text-align:center}#portraitNotice .portraitNoticeCard{width:min(90vw,420px);padding:30px 24px;background:var(--paper2);border:2px solid var(--ink);box-shadow:8px 8px 0 rgba(38,34,28,.2)}#portraitNotice span{display:block;color:var(--red);font-size:48px;line-height:1;margin-bottom:12px}#portraitNotice strong{font-size:24px}#portraitNotice p{margin-top:8px;color:var(--ink2);font-size:16px;line-height:1.5}body>*:not(#portraitNotice){visibility:hidden}}
+@media (max-width:600px){.authModal{padding:12px}.authBox{width:min(100%,390px);padding:24px 18px}.authBox input{font-size:16px;min-height:50px}.authActions{gap:8px}.authActions .btn{min-height:44px;width:100%;margin:0}}

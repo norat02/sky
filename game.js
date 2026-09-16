@@ -50,7 +50,7 @@ var settingsOverlay=$('settingsOverlay'),settingsBtn=$('settingsBtn'),settingsCl
 var localeSuggest=$('localeSuggest'),localeSuggestText=$('localeSuggestText'),localeSuggestApply=$('localeSuggestApply'),localeSuggestDismiss=$('localeSuggestDismiss');
 var pauseBtn=$('pauseBtn'),pauseOverlay=$('pauseOverlay'),resumeBtn=$('resumeBtn');
 var reviveOverlay=$('reviveOverlay'),reviveAdBtn=$('reviveAdBtn'),reviveSkip=$('reviveSkip'),reviveAdBox=$('reviveAdBox'),reviveStatus=$('reviveStatus');
-var authModal=$('authModal'),authEmail=$('authEmail'),authPassword=$('authPassword'),authMsg=$('authMsg'),authState=$('authState'),authOpen=$('authOpen'),authLogout=$('authLogout'),authMode=$('authMode'),authIntro=$('authIntro'),authModeSwitch=$('authModeSwitch'),emailLogin=$('emailLogin'),emailSignup=$('emailSignup');
+var authModal=$('authModal'),authEmail=$('authEmail'),authPassword=$('authPassword'),authMsg=$('authMsg'),authState=$('authState'),authOpen=$('authOpen'),authLogout=$('authLogout'),authMode=$('authMode'),authIntro=$('authIntro'),authModeSwitch=$('authModeSwitch'),authRecover=$('authRecover'),emailLogin=$('emailLogin'),emailSignup=$('emailSignup');
 var finalScore=$('finalScore'),finalBest=$('finalBest'),newBestEl=$('newBest'),securityOverlay=$('securityOverlay'),securityMessage=$('securityMessage');
 var netDot=$('netDot'),netTxt=$('netTxt');
 var evBanner=$('evBanner'),evK=$('evKanji'),evName=$('evName'),evDesc=$('evDesc'),evBarI=$('evBarI');
@@ -265,8 +265,8 @@ function setNet(on,txt){netDot.classList.toggle('on',!!on);netTxt.textContent=tx
 function authMessage(e){var m=(e&&e.message)||'request_failed';return m.replace('Invalid login credentials',tx('invalidCredentials')).replace('Email not confirmed',tx('notConfirmed')).replace('User already registered',tx('registered'));}
 function updateAccountScreen(){if(!accountStatus)return;var email=authUser&&authUser.email||'Khách';accountEmail.textContent=email;accountAvatar.textContent=authUser?(email.charAt(0)||'G').toUpperCase():'?';accountStatus.textContent=authUser?tx('loggedIn')+email:(DB.online?tx('onlineNoAuth'):tx('offline'));accountPlan.textContent=authUser?'tài khoản đã đồng bộ':'chơi cục bộ';accountBest.textContent=String(Math.max(0,Number(best)||0));accountRuns.textContent=String(runHistory.length);accountCoins.textContent=String(coinsBank);if(shopCoinCount)shopCoinCount.textContent=String(coinsBank);}
 function updateAuthUI(){if(!authState)return;if(authUser){authState.textContent=tx('loggedIn')+(authUser.email||'Google');authOpen.classList.add('hidden');authLogout.classList.remove('hidden');}else{authState.textContent=DB.online?tx('onlineNoAuth'):tx('offline');authOpen.classList.remove('hidden');authLogout.classList.add('hidden');}updateAccountScreen();}
-function closeAuth(){authModal.classList.add('hidden');authMsg.textContent='';if(authReturnScreen==='account'){accountSc.classList.remove('hidden');titleSc.classList.add('hidden');}authReturnScreen='title';}
-function setAuthMode(signup){authSignupMode=!!signup;authMode.textContent=tx(signup?'signup':'login');authIntro.textContent=LANG[locale][signup?'authSignupIntro':'authLoginIntro'];emailLogin.classList.toggle('hidden',signup);emailSignup.classList.toggle('hidden',!signup);authModeSwitch.textContent=LANG[locale][signup?'switchToLogin':'switchToSignup'];}
+function closeAuth(){authModal.classList.add('hidden');authMsg.textContent='';authEmail.value='';authPassword.value='';if(authReturnScreen==='account'){accountSc.classList.remove('hidden');titleSc.classList.add('hidden');}authReturnScreen='title';}
+function setAuthMode(signup){authSignupMode=!!signup;authMode.textContent=tx(signup?'signup':'login');authIntro.textContent=LANG[locale][signup?'authSignupIntro':'authLoginIntro'];emailLogin.classList.toggle('hidden',signup);emailSignup.classList.toggle('hidden',!signup);authModeSwitch.textContent=LANG[locale][signup?'switchToLogin':'switchToSignup'];authPassword.autocomplete=signup?'new-password':'current-password';authPassword.setAttribute('aria-describedby','authMsg');}
 function openAuth(signup){authMsg.textContent='';setAuthMode(!!signup);authModal.classList.remove('hidden');setTimeout(function(){authEmail.focus();},0);}
 function openAccount(){updateAccountScreen();accountSc.classList.remove('hidden');titleSc.classList.add('hidden');}
 function closeAccount(){accountSc.classList.add('hidden');if(titleSc.classList.contains('hidden')&&overSc.classList.contains('hidden'))titleSc.classList.remove('hidden');}
@@ -275,12 +275,15 @@ function closeShop(){shopSc.classList.add('hidden');if(titleSc.classList.contain
 function authEmailAction(signup){
   if(!authClient){authMsg.textContent=tx('authOffline');return;}
   var email=(authEmail.value||'').trim(),password=authPassword.value||'';
-  if(!email||password.length<6){authMsg.textContent=tx('enterEmail');return;}
+  if(!email||!/^\S+@\S+\.\S+$/.test(email)){authMsg.textContent='hãy nhập email hợp lệ';authEmail.focus();return;}
+  if(password.length<8){authMsg.textContent='mật khẩu phải có ít nhất 8 ký tự';authPassword.focus();return;}
+  emailLogin.disabled=true;emailSignup.disabled=true;authModeSwitch.disabled=true;authRecover.disabled=true;$('googleLogin').disabled=true;
   authMsg.textContent=signup?tx('creating'):tx('signing');
   var action=signup?authClient.auth.signUp({email:email,password:password}):authClient.auth.signInWithPassword({email:email,password:password});
   action.then(function(r){if(r.error)throw r.error;authMsg.textContent=signup&&!r.data.session?tx('confirmEmail'):tx('loginSuccess');
-if(r.data.session)setTimeout(closeAuth,450);}).catch(function(e){authMsg.textContent=authMessage(e);});
+if(r.data.session)setTimeout(closeAuth,450);}).catch(function(e){authMsg.textContent=authMessage(e);}).finally(function(){emailLogin.disabled=false;emailSignup.disabled=false;authModeSwitch.disabled=false;authRecover.disabled=false;$('googleLogin').disabled=false;});
 }
+function authRecoverPassword(){if(!authClient){authMsg.textContent=tx('authOffline');return;}var email=(authEmail.value||'').trim();if(!/^\S+@\S+\.\S+$/.test(email)){authMsg.textContent='nhập email để nhận liên kết đặt lại mật khẩu';authEmail.focus();return;}authRecover.disabled=true;authMsg.textContent='đang gửi liên kết đặt lại mật khẩu…';authClient.auth.resetPasswordForEmail(email,{redirectTo:SUPABASE_REDIRECT_URL||window.location.origin}).then(function(r){if(r.error)throw r.error;authMsg.textContent='đã gửi liên kết đặt lại mật khẩu — hãy kiểm tra email';}).catch(function(e){authMsg.textContent=authMessage(e);}).finally(function(){authRecover.disabled=false;});}
 function handleNativeAuthCallback(raw){if(!raw||!authClient)return Promise.resolve();try{var url=new URL(raw),hash=new URLSearchParams((url.hash||'').replace(/^#/,'')),query=url.searchParams,accessToken=hash.get('access_token')||query.get('access_token'),refreshToken=hash.get('refresh_token')||query.get('refresh_token'),code=query.get('code');if(accessToken&&refreshToken)return authClient.auth.setSession({access_token:accessToken,refresh_token:refreshToken}).then(function(r){if(r.error)throw r.error;return r.data;});if(code)return authClient.auth.exchangeCodeForSession(code).then(function(r){if(r.error)throw r.error;return r.data;});}catch(e){return Promise.reject(e);}return Promise.resolve();}
 function authGoogle(){if(!authClient){authMsg.textContent=tx('authOffline');return;}authMsg.textContent=locale==='ja'?'Googleへ移動中…':locale==='en'?'redirecting to Google…':'đang chuyển đến Google…';var isNative=!!(window.SKY_NATIVE&&window.SKY_NATIVE.isNative),redirectTo=isNative?window.SKY_NATIVE.authRedirectUrl():(SUPABASE_REDIRECT_URL||(window.location.origin+window.location.pathname));authClient.auth.signInWithOAuth({provider:'google',options:{redirectTo:redirectTo}}).then(function(r){if(r.error)throw r.error;}).catch(function(e){authMsg.textContent=authMessage(e);});}
 var DB={
@@ -760,6 +763,7 @@ function closeLb(){lbSc.classList.add('hidden');if(titleSc.classList.contains('h
  emailLogin.addEventListener('click',function(){authEmailAction(false);});
  emailSignup.addEventListener('click',function(){authEmailAction(true);});
  authModeSwitch.addEventListener('click',function(){setAuthMode(!authSignupMode);});
+ authRecover.addEventListener('click',authRecoverPassword);
  $('googleLogin').addEventListener('click',authGoogle);
  authModal.addEventListener('click',function(e){if(e.target===authModal)closeAuth();});
  exportBtn.addEventListener('click',function(){exportBackup();});
