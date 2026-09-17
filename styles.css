@@ -424,3 +424,21 @@ body{font-family:'Cormorant',Georgia,serif}
 @media (max-width:1024px) and (orientation:landscape){#portraitNotice{position:fixed;inset:0;z-index:100;display:grid;place-items:center;padding:24px;background:var(--paper);color:var(--ink);text-align:center}#portraitNotice .portraitNoticeCard{width:min(90vw,420px);padding:30px 24px;background:var(--paper2);border:2px solid var(--ink);box-shadow:8px 8px 0 rgba(38,34,28,.2)}#portraitNotice span{display:block;color:var(--red);font-size:48px;line-height:1;margin-bottom:12px}#portraitNotice strong{font-size:24px}#portraitNotice p{margin-top:8px;color:var(--ink2);font-size:16px;line-height:1.5}body>*:not(#portraitNotice){visibility:hidden}}
 @media (orientation:landscape){#portraitNotice{position:fixed;inset:0;z-index:100;display:grid;place-items:center;padding:24px;background:var(--paper);color:var(--ink);text-align:center}#portraitNotice .portraitNoticeCard{width:min(90vw,460px);padding:32px 26px;background:var(--paper2);border:2px solid var(--ink);box-shadow:8px 8px 0 rgba(38,34,28,.2)}#portraitNotice span{display:block;color:var(--red);font-size:52px;line-height:1;margin-bottom:12px}#portraitNotice strong{font-size:26px}#portraitNotice p{margin-top:8px;color:var(--ink2);font-size:17px;line-height:1.5}body>*:not(#portraitNotice){visibility:hidden}}
 @media (max-width:600px){.authModal{padding:12px}.authBox{width:min(100%,390px);padding:24px 18px}.authBox input{font-size:16px;min-height:50px}.authActions{gap:8px}.authActions .btn{min-height:44px;width:100%;margin:0}}
+
+/* UI Pro Max readability pass: preserve the arcade style while preventing tiny or clipped text. */
+body{font-size:16px;line-height:1.45}
+.btn{font-size:14px;line-height:1.25;white-space:normal;overflow-wrap:anywhere;padding:11px 16px}
+.authActions .btn{font-size:13px;letter-spacing:.08em}
+#authState,#authMsg{font-size:14px;line-height:1.45}
+#authOpen,#authLogout{font-size:13px;letter-spacing:.08em}
+.selLabel{font-size:12px;letter-spacing:.16em}
+.selCard{min-width:0;padding:8px 9px}
+.selCard .nm{font-size:12px;line-height:1.25;letter-spacing:0}
+.selCard .meta{font-size:11px;line-height:1.35;max-width:150px}
+.account-card span{font-size:14px}
+.account-stats span,.shop-wallet span{font-size:12px;letter-spacing:.08em}
+.shop-item .meta{font-size:11px;line-height:1.35}
+.policy-links{font-size:13px;line-height:1.45;gap:12px}
+.policy-links a{padding:4px 0}
+#homeLbStatus,.lbStatus,#reviveStatus{font-size:14px;line-height:1.45}
+@media (max-width:460px){.selCard .meta,.shop-item .meta{font-size:12px}.account-stats span{font-size:11px}.home-actions .btn{min-height:48px;padding-inline:10px}.policy-links{font-size:14px}}
