@@ -3,4 +3,5 @@
   <url><loc>https://sky.norat.click/</loc><changefreq>weekly</changefreq><priority>1.0</priority></url>
   <url><loc>https://sky.norat.click/privacy-policy.html</loc><changefreq>monthly</changefreq><priority>0.5</priority></url>
   <url><loc>https://sky.norat.click/terms-of-use.html</loc><changefreq>monthly</changefreq><priority>0.5</priority></url>
+  <url><loc>https://sky.norat.click/game-guide.html</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
 </urlset>

@@ -25,7 +25,7 @@
       <div id="homeLeaderboard"><h3 data-i18n="onlineLeaderboard">bảng trực tuyến</h3><div class="lbWrap" id="homeLb"></div><div id="homeLbStatus" data-i18n="preparing">đang chuẩn bị…</div></div>
       <div id="localeSuggest" class="hidden"><span id="localeSuggestText"></span><button class="btn ghost" id="localeSuggestApply" data-i18n="apply">áp dụng</button><button class="btn ghost" id="localeSuggestDismiss" data-i18n="dismiss">bỏ qua</button></div>
 
-      <div class="keys"><kbd>SPACE</kbd>hoặc chạm màn hình</div><div id="authPanel"><div id="authState" data-i18n="offlineLogin">chơi offline — đăng nhập để lưu điểm online</div><button class="btn ghost" id="authOpen" data-i18n="login">đăng nhập</button><button class="btn ghost hidden" id="authLogout" data-i18n="logout">đăng xuất</button></div><nav class="policy-links" aria-label="Chính sách website"><a href="privacy-policy.html">Privacy Policy</a><a href="terms-of-use.html">Terms of Use</a></nav>
+      <div class="keys"><kbd>SPACE</kbd>hoặc chạm màn hình</div><div id="authPanel"><div id="authState" data-i18n="offlineLogin">chơi offline — đăng nhập để lưu điểm online</div><button class="btn ghost" id="authOpen" data-i18n="login">đăng nhập</button><button class="btn ghost hidden" id="authLogout" data-i18n="logout">đăng xuất</button></div><nav class="policy-links" aria-label="Thông tin website"><a href="game-guide.html">Hướng dẫn chơi</a><a href="privacy-policy.html">Privacy Policy</a><a href="terms-of-use.html">Terms of Use</a></nav>
     </aside>
   </div>
 </div>

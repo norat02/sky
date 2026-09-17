@@ -14,6 +14,7 @@ const files = [
   'player-sync.js',
   'privacy-policy.html',
   'terms-of-use.html',
+  'game-guide.html',
   'og-image.png',
   'robots.txt',
   'sitemap.xml',
