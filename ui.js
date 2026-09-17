@@ -11,12 +11,11 @@
 <div id="evBanner"><span class="kanji" id="evKanji">風</span><div><b id="evName"></b><i id="evDesc"></i><div id="evBar"><i id="evBarI"></i></div></div></div>
 <div id="hint" class="hidden"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 14l7-7 7 7"/></svg><span data-i18n="touchHint">chạm để vỗ cánh</span></div>
 <div class="screen" id="titleScreen">
-  <div class="kanjiBg" aria-hidden="true">飛</div>
   <div class="panel home-panel">
     <div class="home-primary">
       <div class="kana">CHUYẾN BAY BẦU TRỜI</div><h1 data-i18n="title">SKY BIRD</h1><div class="rule"><i></i><b></b><i></i></div><p class="sub" data-i18n="subtitle">một chuyến bay qua trời hoa anh đào</p>
       <div class="hero-stats"><div class="hero-stat"><span class="stat-label" data-i18n="recordLabel">kỷ lục</span><span class="stat-value best" id="bestTitle" data-i18n="noRecord">chưa có</span></div><div class="hero-stat"><span class="stat-label" data-i18n="flightsLabel">ván đã bay</span><span class="stat-value best" id="runsTitle"></span></div><div class="hero-stat coin-stat"><span class="stat-label" data-i18n="walletLabel">ví coin</span><span class="stat-value" id="coinWallet" aria-live="polite"><b id="coinCount">0</b> <span data-i18n="coinsLabel">coin</span></span></div></div>
-      <div class="selector"><div class="selLabel" data-i18n="bird">chim / cửa hàng</div><div class="selGrid" id="charGrid"></div><div id="shopMsg" class="shop-msg" aria-live="polite"></div></div>
+
       <div class="selector"><div class="selLabel" data-i18n="sky">trời</div><div class="selGrid" id="mapGrid"></div></div>
       <div class="home-actions"><button class="btn solid" id="startBtn" data-i18n="start">bắt đầu bay</button><button class="btn ghost" id="lbBtn" data-i18n="leaderboard">bảng thiên hạ</button><button class="btn ghost" id="shopBtn" data-i18n="shop">cửa hàng</button><button class="btn ghost" id="settingsBtn" data-i18n="settings">cài đặt</button><button class="btn ghost" id="accountBtn" data-i18n="account">tài khoản</button></div>
     </div>

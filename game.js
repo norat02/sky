@@ -58,7 +58,7 @@ var nameRow=$('nameRow'),nameInput=$('nameInput'),sendBtn=$('sendBtn');
 var miniLb=$('miniLb'),lbStatus=$('lbStatus'),fullLb=$('fullLb'),fullStatus=$('fullStatus'),homeLb=$('homeLb'),homeLbStatus=$('homeLbStatus');
 var runTag=$('runTag'),runNoEl=$('runNo'),runKjEl=$('runKj'),runVnEl=$('runVn');
 var overRunK=$('overRunKj'),overRunV=$('overRunVn'),runsTitle=$('runsTitle'),coinWallet=$('coinWallet'),coinCount=$('coinCount');
-var charGrid=$('charGrid'),mapGrid=$('mapGrid'),shopMsg=$('shopMsg'),shopGrid=$('shopGrid'),shopScreenMsg=$('shopScreenMsg'),shopCoinCount=$('shopCoinCount');
+var charGrid=null,mapGrid=$('mapGrid'),shopMsg=$('shopScreenMsg'),shopGrid=$('shopGrid'),shopScreenMsg=$('shopScreenMsg'),shopCoinCount=$('shopCoinCount');
 var accountStatus=$('accountStatus'),accountEmail=$('accountEmail'),accountPlan=$('accountPlan'),accountAvatar=$('accountAvatar'),accountBest=$('accountBest'),accountRuns=$('accountRuns'),accountCoins=$('accountCoins');
 var authSignupMode=false,authReturnScreen='title';
 
@@ -72,7 +72,7 @@ if(!Array.isArray(unlockedChars))unlockedChars=[];
 function updateCoinWallet(){if(coinCount)coinCount.textContent=String(coinsBank);if(coinWallet)coinWallet.setAttribute('aria-label','coin '+coinsBank);}
 function normalizeWallet(){var seen={};unlockedChars=unlockedChars.filter(function(id){if(typeof id!=='string'||seen[id]||id==='tit')return false;seen[id]=true;return CHARS.some(function(c){return c.id===id;});}).slice(0,CHARS.length);coinsBank=Number.isSafeInteger(coinsBank)?Math.max(0,Math.min(1000000,coinsBank)):0;}
 function saveWallet(){normalizeWallet();store.set(COINS_KEY,String(coinsBank));writeJson(UNLOCKED_CHARS_KEY,unlockedChars);updateCoinWallet();if(typeof syncWalletGuard==='function')syncWalletGuard();}
-function showShopMessage(text){if(shopMsg)shopMsg.textContent=text||'';}
+function showShopMessage(text){if(shopMsg)shopMsg.textContent=text||'';if(shopScreenMsg&&shopScreenMsg!==shopMsg)shopScreenMsg.textContent=text||'';}
 function isCharUnlocked(id){return id==='tit'||unlockedChars.indexOf(id)>=0;}
 function earnCoins(amount){if(typeof guardWalletIntegrity==='function'&&!guardWalletIntegrity())return;var n=Math.max(0,Math.floor(Number(amount)||0));if(!n)return;coinsBank=Math.min(1000000,coinsBank+n);RUN.coinsEarned=(RUN.coinsEarned||0)+n;saveWallet();}
 function unlockChar(id){if(typeof guardWalletIntegrity==='function'&&!guardWalletIntegrity())return false;if(isCharUnlocked(id))return true;var ch=CHARS.find(function(c){return c.id===id;});if(!ch||!Number.isSafeInteger(ch.cost)||ch.cost<0||ch.cost>1000000){showShopMessage('nhân vật không hợp lệ');return false;}if(coinsBank<ch.cost){showShopMessage('cần thêm '+(ch.cost-coinsBank)+' coin để mở '+ch.vn);return false;}coinsBank-=ch.cost;unlockedChars.push(id);saveWallet();showShopMessage(ch.vn+' đã được mở — sẵn sàng cất cánh');return true;}
@@ -776,8 +776,7 @@ document.addEventListener('visibilitychange',function(){if(document.hidden&&stat
 function purchaseCharacter(ch,onDone){if(!authUser||!DB.online){showShopMessage('hãy đăng nhập để mua và đồng bộ nhân vật');return;}showShopMessage('đang xác nhận giao dịch…');DB.unlockCharacter(ch.id).then(function(profile){applyServerProfile(profile);charId=ch.id;store.set('chimse.char',ch.id);applyChar();buildSelectors();buildShop();updateAccountScreen();showShopMessage(ch.vn+' đã được mở trên tài khoản');if(onDone)onDone(true);}).catch(function(e){showShopMessage(e.apiCode==='insufficient_coins'?'không đủ coin':e.apiCode==='invalid_character'?'nhân vật không hợp lệ':'giao dịch thất bại — thử lại');if(onDone)onDone(false);});}
 function buildShop(){if(!shopGrid)return;shopGrid.innerHTML='';if(shopCoinCount)shopCoinCount.textContent=String(coinsBank);CHARS.forEach(function(ch){var open=isCharUnlocked(ch.id),selected=ch.id===charId,d=document.createElement('div');d.className='selCard shop-item'+(selected?' on ':' ')+(open?'':' locked');d.setAttribute('role','button');d.setAttribute('tabindex','0');d.setAttribute('aria-pressed',selected?'true':'false');var k=document.createElement('span');k.className='kj';k.textContent=open?ch.kj:'?';var n=document.createElement('span');n.className='nm';n.textContent=selected?ch.vn+' · đang chọn':(open?ch.vn:'mở với '+ch.cost+' coin');var meta=document.createElement('span');meta.className='meta';meta.textContent=open?'đã mở · '+ch.adv+' · '+ch.dis:'giá '+ch.cost+' coin · '+ch.adv;d.appendChild(k);d.appendChild(n);d.appendChild(meta);d.addEventListener('click',function(){if(!isCharUnlocked(ch.id)){purchaseCharacter(ch);return;}charId=ch.id;store.set('chimse.char',ch.id);applyChar();buildSelectors();updateAccountScreen();if(shopScreenMsg)shopScreenMsg.textContent=ch.vn+' đang được chọn';});d.addEventListener('keydown',function(e){if(e.key==='Enter'||e.key===' '){e.preventDefault();d.click();}});shopGrid.appendChild(d);});}
 function buildSelectors(){
-  charGrid.innerHTML='';mapGrid.innerHTML='';updateCoinWallet();
-  CHARS.forEach(function(ch){
+  if(charGrid){charGrid.innerHTML='';CHARS.forEach(function(ch){
     var open=isCharUnlocked(ch.id),selected=ch.id===charId,d=document.createElement('div');d.className='selCard'+(selected?' on ':' ')+(open?'':'locked');d.setAttribute('role','button');d.setAttribute('tabindex','0');d.setAttribute('data-character-id',ch.id);d.setAttribute('aria-pressed',selected?'true':'false');d.setAttribute('aria-label',open?(selected?ch.vn+' đang được chọn':'chọn '+ch.vn):'mua '+ch.vn+' với '+ch.cost+' coin');
     var k=document.createElement('span');k.className='kj';k.textContent=open?ch.kj:'?';
     var n=document.createElement('span');n.className='nm';n.textContent=selected?ch.vn+' · đang chọn':(open?ch.vn:'mở với '+ch.cost+' coin');
@@ -786,7 +785,8 @@ function buildSelectors(){
     d.addEventListener('click',function(){if(!isCharUnlocked(ch.id)){purchaseCharacter(ch);return;}charId=ch.id;store.set('chimse.char',ch.id);applyChar();showShopMessage(ch.vn+' đang được chọn');buildSelectors();});
     d.addEventListener('keydown',function(e){if(e.key==='Enter'||e.key===' '){e.preventDefault();d.click();}});
     charGrid.appendChild(d);
-  });
+  });}
+  mapGrid.innerHTML='';updateCoinWallet();
   MAPS.forEach(function(m){
     var d=document.createElement('div');d.className='selCard'+(m.id===mapId?' on':'');
     var k=document.createElement('span');k.className='kj';k.textContent=m.kj;
