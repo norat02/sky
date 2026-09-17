@@ -56,7 +56,6 @@ var netDot=$('netDot'),netTxt=$('netTxt');
 var evBanner=$('evBanner'),evK=$('evKanji'),evName=$('evName'),evDesc=$('evDesc'),evBarI=$('evBarI');
 var nameRow=$('nameRow'),nameInput=$('nameInput'),sendBtn=$('sendBtn');
 var miniLb=$('miniLb'),lbStatus=$('lbStatus'),fullLb=$('fullLb'),fullStatus=$('fullStatus'),homeLb=$('homeLb'),homeLbStatus=$('homeLbStatus');
-var exportBtn=$('exportBtn'),importBtn=$('importBtn'),importFile=$('importFile'),dataMsg=$('dataMsg');
 var runTag=$('runTag'),runNoEl=$('runNo'),runKjEl=$('runKj'),runVnEl=$('runVn');
 var overRunK=$('overRunKj'),overRunV=$('overRunVn'),runsTitle=$('runsTitle'),coinWallet=$('coinWallet'),coinCount=$('coinCount');
 var charGrid=$('charGrid'),mapGrid=$('mapGrid'),shopMsg=$('shopMsg'),shopGrid=$('shopGrid'),shopScreenMsg=$('shopScreenMsg'),shopCoinCount=$('shopCoinCount');
@@ -744,7 +743,6 @@ function closeLb(){lbSc.classList.add('hidden');if(titleSc.classList.contains('h
  $('accountClose').addEventListener('click',function(e){closeAccount();e.currentTarget.blur();});
  $('accountLogin').addEventListener('click',function(){authReturnScreen='account';closeAccount();openAuth(false);});
  $('accountRegister').addEventListener('click',function(){authReturnScreen='account';closeAccount();openAuth(true);});
- $('accountExport').addEventListener('click',function(){exportBackup();});
  $('accountScreen').addEventListener('click',function(e){if(e.target===accountSc)closeAccount();});
  settingsBtn.addEventListener('click',function(){settingsOverlay.classList.add('show');});
  settingsClose.addEventListener('click',function(){settingsOverlay.classList.remove('show');});
@@ -766,9 +764,6 @@ function closeLb(){lbSc.classList.add('hidden');if(titleSc.classList.contains('h
  authRecover.addEventListener('click',authRecoverPassword);
  $('googleLogin').addEventListener('click',authGoogle);
  authModal.addEventListener('click',function(e){if(e.target===authModal)closeAuth();});
- exportBtn.addEventListener('click',function(){exportBackup();});
- importBtn.addEventListener('click',function(){importFile.click();});
- importFile.addEventListener('change',function(e){importBackupFile(e.target.files&&e.target.files[0]);e.target.value='';});
  volumeRange.addEventListener('input',function(){AU.unlock();AU.setVolume(Number(volumeRange.value)/100);syncAudioControls();});
  muteToggle.addEventListener('click',function(){AU.unlock();AU.setMute(!AU.muted);syncAudioControls();});
  function syncAudioControls(){if(!volumeRange)return;volumeRange.value=String(Math.round(AU.volume*100));if(volumeValue)volumeValue.textContent=volumeRange.value+'%';if(muteToggle)muteToggle.textContent=tx(AU.muted?'unmute':'mute');}
