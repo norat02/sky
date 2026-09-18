@@ -12,7 +12,7 @@ const gameJs = readFileSync('game.js', 'utf8');
 const integrityJs = readFileSync('security-integrity.js', 'utf8');
 const vercelApi = readFileSync('api/v1/[...path].mjs', 'utf8');
 const source = `${html}\n${uiJs}\n${consentGate}\n${gameJs}`;
-assert(source.includes('homeLeaderboard'));
+assert(!html.includes('id="homeLeaderboard"'), 'Home leaderboard prompt must remain removed');
 assert(html.includes('styles.css'), 'External stylesheet link missing');
 assert(html.includes('consent-gate.js'), 'Consent gate script missing');
 assert(html.includes('security-integrity.js'), 'Security integrity script missing');

@@ -21,9 +21,6 @@
     </div>
     <aside class="home-side">
       <section class="rules-card" aria-labelledby="rulesTitle"><div class="rail-kicker">luật bay / fair play</div><h3 id="rulesTitle">Bay sạch, bay xa</h3><ul class="rules-list"><li><span class="rule-icon" aria-hidden="true">01</span><span>Chạm hoặc nhấn Space để vỗ cánh; vượt mỗi cặp ống được cộng 1 điểm.</span></li><li><span class="rule-icon" aria-hidden="true">02</span><span>Thu coin trên đường bay; cuối ván nhận thêm <b>1 coin / 10 điểm</b>, chỉ tính một lần.</span></li><li><span class="rule-icon" aria-hidden="true">03</span><span>Mỗi ván chỉ có một lượt hồi sinh hợp lệ; điểm online được máy chủ kiểm tra.</span></li></ul><div class="protection-status" id="protectionStatus"><i aria-hidden="true"></i><span>lớp bảo vệ phiên đang hoạt động</span></div></section>
-      <div id="homeLeaderboard"><h3 data-i18n="onlineLeaderboard">bảng trực tuyến</h3><div class="lbWrap" id="homeLb"></div><div id="homeLbStatus" data-i18n="preparing">đang chuẩn bị…</div></div>
-      <div id="localeSuggest" class="hidden"><span id="localeSuggestText"></span><button class="btn ghost" id="localeSuggestApply" data-i18n="apply">áp dụng</button><button class="btn ghost" id="localeSuggestDismiss" data-i18n="dismiss">bỏ qua</button></div>
-
       <div class="keys"><kbd>SPACE</kbd>hoặc chạm màn hình</div><nav class="policy-links" aria-label="Thông tin website"><a href="game-guide.html">Hướng dẫn chơi</a><a href="privacy-policy.html">Privacy Policy</a><a href="terms-of-use.html">Terms of Use</a></nav>
     </aside>
   </div>
