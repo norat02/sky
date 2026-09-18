@@ -164,7 +164,7 @@ kbd{font-style:normal;border:1px solid var(--ink2);padding:1px 6px;font-size:11p
 .home-side{min-width:0;padding-left:clamp(18px,3vw,30px);border-left:1px solid rgba(38,34,28,.2);display:grid;gap:14px;align-content:start}.home-side>section{min-width:0}
 .hero-stats{display:grid;grid-template-columns:1fr 1fr 1.18fr;gap:7px;margin:12px 0 14px}.hero-stat{min-height:54px;padding:8px 10px;border:1px solid rgba(38,34,28,.2);background:rgba(240,231,211,.5);text-align:left}.hero-stat .stat-label{display:block;font-size:9px;letter-spacing:.16em;text-transform:uppercase;color:var(--ink2)}.hero-stat .stat-value{display:block;margin-top:3px;font-size:17px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.hero-stat.coin-stat .stat-value{color:#9c6d18}
 .rules-card{padding:14px 15px;border:1px solid rgba(38,34,28,.2);background:rgba(240,231,211,.5)}.rules-card .rail-kicker{font-size:9px;color:var(--red);font-weight:700;letter-spacing:.2em;text-transform:uppercase}.rules-card h3{margin:4px 0 9px;font-size:22px;letter-spacing:.08em}.rules-list{display:grid;gap:7px;padding:0;margin:0;list-style:none;color:var(--ink2);font-size:13px}.rules-list li{display:grid;grid-template-columns:20px 1fr;gap:7px;align-items:start;line-height:1.25}.rules-list .rule-icon{color:var(--red);font-weight:700}.protection-status{display:flex;align-items:center;gap:8px;margin-top:12px;padding-top:9px;border-top:1px solid rgba(38,34,28,.17);font-size:11px;color:var(--ink2)}.protection-status i{width:8px;height:8px;border-radius:50%;background:#3f7d4e;box-shadow:0 0 0 3px rgba(63,125,78,.12);flex:none}.protection-status.blocked{color:var(--red)}.protection-status.blocked i{background:var(--red);box-shadow:0 0 0 3px rgba(199,62,58,.12)}
-.selector{text-align:left}.selGrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(86px,1fr));gap:6px;max-height:192px;overflow-y:auto;padding:2px;overscroll-behavior:contain}.selCard{min-width:0;padding:8px 7px}.selCard .meta{max-width:none}.shop-msg{min-height:18px;margin-top:5px;color:var(--red);font-size:11px;font-style:italic;text-align:left}.home-actions{text-align:center}.home-actions .btn{margin-left:2px;margin-right:2px}#homeLeaderboard,#authPanel{margin-top:0;padding-top:12px;border-top:1px solid rgba(38,34,28,.2)}#homeLeaderboard h3{font-size:12px}#authPanel{text-align:center}#authPanel .btn{margin:2px}#coinWallet{margin:0;padding:0;border:0;background:transparent;display:block}#coinWallet b{font-size:17px}
+.selector{text-align:left}.selGrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(86px,1fr));gap:6px;max-height:192px;overflow-y:auto;padding:2px;overscroll-behavior:contain}.selCard{min-width:0;padding:8px 7px}.selCard .meta{max-width:none}.shop-msg{min-height:18px;margin-top:5px;color:var(--red);font-size:11px;font-style:italic;text-align:left}.home-actions{text-align:center}.home-actions .btn{margin-left:2px;margin-right:2px}#homeLeaderboard{margin-top:0;padding-top:12px;border-top:1px solid rgba(38,34,28,.2)}#homeLeaderboard h3{font-size:12px}#coinWallet{margin:0;padding:0;border:0;background:transparent;display:block}#coinWallet b{font-size:17px}
 @media (max-width:760px){.home-panel{grid-template-columns:1fr;max-width:560px;gap:18px}.home-side{padding-left:0;padding-top:16px;border-left:0;border-top:1px solid rgba(38,34,28,.2)}.hero-stats{grid-template-columns:repeat(3,1fr)}}
 @media (max-width:460px){#titleScreen{padding:8px}.home-panel{padding:20px 16px;box-shadow:6px 6px 0 rgba(38,34,28,.13)}.hero-stats{gap:4px}.hero-stat{padding:7px 6px}.hero-stat .stat-label{font-size:8px;letter-spacing:.08em}.hero-stat .stat-value{font-size:15px}.selGrid{grid-template-columns:repeat(2,minmax(0,1fr));max-height:174px}.home-actions .btn{width:100%;margin:3px 0}.keys{font-size:12px}}
 
@@ -194,7 +194,7 @@ kbd{font-style:normal;border:1px solid var(--ink2);padding:1px 6px;font-size:11p
 .android-app .home-actions .btn{width:100%;margin:0}
 .android-app #coinWallet{color:#a8bed3;border-color:rgba(151,219,255,.16)}
 .android-app #coinWallet b{color:#ffd477}
-.android-app #homeLeaderboard,.android-app #authPanel{border-top-color:rgba(151,219,255,.15)}
+.android-app #homeLeaderboard{border-top-color:rgba(151,219,255,.15)}
 .android-app #netDot{top:calc(13px + env(safe-area-inset-top));left:14px;color:#a8bed3}
 .android-app #muteBtn,.android-app #pauseBtn{top:calc(13px + env(safe-area-inset-top));background:rgba(11,26,45,.9);border-color:rgba(151,219,255,.35);border-radius:12px;color:#d9f5ff;box-shadow:0 5px 18px rgba(0,0,0,.2)}
 .android-app #muteBtn{right:14px}
@@ -285,7 +285,7 @@ button,.btn,.selCard,#muteBtn,#pauseBtn{touch-action:manipulation}
   .home-side{padding-top:18px;gap:16px}
   .rules-card{padding:14px}
   .rules-list{font-size:13px;line-height:1.45}
-  #homeLeaderboard,#authPanel{padding-top:14px}
+  #homeLeaderboard{padding-top:14px}
   .policy-links{display:flex;justify-content:center;gap:16px;flex-wrap:wrap}
   #netDot{top:calc(10px + env(safe-area-inset-top));left:12px;font-size:9px}
   #muteBtn,#pauseBtn{top:calc(10px + env(safe-area-inset-top));width:44px;height:44px}

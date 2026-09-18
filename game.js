@@ -50,7 +50,7 @@ var settingsOverlay=$('settingsOverlay'),settingsBtn=$('settingsBtn'),settingsCl
 var localeSuggest=$('localeSuggest'),localeSuggestText=$('localeSuggestText'),localeSuggestApply=$('localeSuggestApply'),localeSuggestDismiss=$('localeSuggestDismiss');
 var pauseBtn=$('pauseBtn'),pauseOverlay=$('pauseOverlay'),resumeBtn=$('resumeBtn');
 var reviveOverlay=$('reviveOverlay'),reviveAdBtn=$('reviveAdBtn'),reviveSkip=$('reviveSkip'),reviveAdBox=$('reviveAdBox'),reviveStatus=$('reviveStatus');
-var authModal=$('authModal'),authEmail=$('authEmail'),authPassword=$('authPassword'),authMsg=$('authMsg'),authState=$('authState'),authOpen=$('authOpen'),authLogout=$('authLogout'),authMode=$('authMode'),authIntro=$('authIntro'),authModeSwitch=$('authModeSwitch'),authRecover=$('authRecover'),emailLogin=$('emailLogin'),emailSignup=$('emailSignup');
+var authModal=$('authModal'),authEmail=$('authEmail'),authPassword=$('authPassword'),authMsg=$('authMsg'),authState=null,authOpen=null,authLogout=null,authMode=$('authMode'),authIntro=$('authIntro'),authModeSwitch=$('authModeSwitch'),authRecover=$('authRecover'),emailLogin=$('emailLogin'),emailSignup=$('emailSignup');
 var finalScore=$('finalScore'),finalBest=$('finalBest'),newBestEl=$('newBest'),securityOverlay=$('securityOverlay'),securityMessage=$('securityMessage');
 var netDot=$('netDot'),netTxt=$('netTxt');
 var evBanner=$('evBanner'),evK=$('evKanji'),evName=$('evName'),evDesc=$('evDesc'),evBarI=$('evBarI');
@@ -59,7 +59,7 @@ var miniLb=$('miniLb'),lbStatus=$('lbStatus'),fullLb=$('fullLb'),fullStatus=$('f
 var runTag=$('runTag'),runNoEl=$('runNo'),runKjEl=$('runKj'),runVnEl=$('runVn');
 var overRunK=$('overRunKj'),overRunV=$('overRunVn'),runsTitle=$('runsTitle'),coinWallet=$('coinWallet'),coinCount=$('coinCount');
 var charGrid=null,mapGrid=$('mapGrid'),shopMsg=$('shopScreenMsg'),shopGrid=$('shopGrid'),shopScreenMsg=$('shopScreenMsg'),shopCoinCount=$('shopCoinCount');
-var accountStatus=$('accountStatus'),accountEmail=$('accountEmail'),accountPlan=$('accountPlan'),accountAvatar=$('accountAvatar'),accountBest=$('accountBest'),accountRuns=$('accountRuns'),accountCoins=$('accountCoins');
+var accountStatus=$('accountStatus'),accountEmail=$('accountEmail'),accountPlan=$('accountPlan'),accountAvatar=$('accountAvatar'),accountBest=$('accountBest'),accountRuns=$('accountRuns'),accountCoins=$('accountCoins'),accountLogin=$('accountLogin'),accountRegister=$('accountRegister'),accountLogout=$('accountLogout');
 var authSignupMode=false,authReturnScreen='title';
 
 /* ═══ STORE ═══ */
@@ -262,8 +262,8 @@ var AU={
 function withTimeout(p,ms){return new Promise(function(res,rej){var to=setTimeout(function(){rej(new Error('timeout'));},ms);p.then(function(v){clearTimeout(to);res(v);},function(e){clearTimeout(to);rej(e);});});}
 function setNet(on,txt){netDot.classList.toggle('on',!!on);netTxt.textContent=txt||tx(on?'online':'offline');}
 function authMessage(e){var m=(e&&e.message)||'request_failed';return m.replace('Invalid login credentials',tx('invalidCredentials')).replace('Email not confirmed',tx('notConfirmed')).replace('User already registered',tx('registered'));}
-function updateAccountScreen(){if(!accountStatus)return;var email=authUser&&authUser.email||'Khách';accountEmail.textContent=email;accountAvatar.textContent=authUser?(email.charAt(0)||'G').toUpperCase():'?';accountStatus.textContent=authUser?tx('loggedIn')+email:(DB.online?tx('onlineNoAuth'):tx('offline'));accountPlan.textContent=authUser?'tài khoản đã đồng bộ':'chơi cục bộ';accountBest.textContent=String(Math.max(0,Number(best)||0));accountRuns.textContent=String(runHistory.length);accountCoins.textContent=String(coinsBank);if(shopCoinCount)shopCoinCount.textContent=String(coinsBank);}
-function updateAuthUI(){if(!authState)return;if(authUser){authState.textContent=tx('loggedIn')+(authUser.email||'Google');authOpen.classList.add('hidden');authLogout.classList.remove('hidden');}else{authState.textContent=DB.online?tx('onlineNoAuth'):tx('offline');authOpen.classList.remove('hidden');authLogout.classList.add('hidden');}updateAccountScreen();}
+function updateAccountScreen(){if(!accountStatus)return;var email=authUser&&authUser.email||'Khách';accountEmail.textContent=email;accountAvatar.textContent=authUser?(email.charAt(0)||'G').toUpperCase():'?';accountStatus.textContent=authUser?tx('loggedIn')+email:(DB.online?tx('onlineNoAuth'):tx('offline'));accountPlan.textContent=authUser?'tài khoản đã đồng bộ':'chơi cục bộ';accountBest.textContent=String(Math.max(0,Number(best)||0));accountRuns.textContent=String(runHistory.length);accountCoins.textContent=String(coinsBank);if(accountLogin)accountLogin.classList.toggle('hidden',!!authUser);if(accountRegister)accountRegister.classList.toggle('hidden',!!authUser);if(accountLogout)accountLogout.classList.toggle('hidden',!authUser);if(shopCoinCount)shopCoinCount.textContent=String(coinsBank);}
+function updateAuthUI(){if(!authState){updateAccountScreen();return;}if(authUser){authState.textContent=tx('loggedIn')+(authUser.email||'Google');authOpen.classList.add('hidden');authLogout.classList.remove('hidden');}else{authState.textContent=DB.online?tx('onlineNoAuth'):tx('offline');authOpen.classList.remove('hidden');authLogout.classList.add('hidden');}updateAccountScreen();}
 function closeAuth(){authModal.classList.add('hidden');authMsg.textContent='';authEmail.value='';authPassword.value='';if(authReturnScreen==='account'){accountSc.classList.remove('hidden');titleSc.classList.add('hidden');}authReturnScreen='title';}
 function setAuthMode(signup){authSignupMode=!!signup;authMode.textContent=tx(signup?'signup':'login');authIntro.textContent=LANG[locale][signup?'authSignupIntro':'authLoginIntro'];emailLogin.classList.toggle('hidden',signup);emailSignup.classList.toggle('hidden',!signup);authModeSwitch.textContent=LANG[locale][signup?'switchToLogin':'switchToSignup'];authPassword.autocomplete=signup?'new-password':'current-password';authPassword.setAttribute('aria-describedby','authMsg');}
 function openAuth(signup){authMsg.textContent='';setAuthMode(!!signup);authModal.classList.remove('hidden');setTimeout(function(){authEmail.focus();},0);}
@@ -743,6 +743,7 @@ function closeLb(){lbSc.classList.add('hidden');if(titleSc.classList.contains('h
  $('accountClose').addEventListener('click',function(e){closeAccount();e.currentTarget.blur();});
  $('accountLogin').addEventListener('click',function(){authReturnScreen='account';closeAccount();openAuth(false);});
  $('accountRegister').addEventListener('click',function(){authReturnScreen='account';closeAccount();openAuth(true);});
+ accountLogout.addEventListener('click',function(){if(authClient)authClient.auth.signOut().catch(function(){});});
  $('accountScreen').addEventListener('click',function(e){if(e.target===accountSc)closeAccount();});
  settingsBtn.addEventListener('click',function(){settingsOverlay.classList.add('show');});
  settingsClose.addEventListener('click',function(){settingsOverlay.classList.remove('show');});
@@ -755,8 +756,6 @@ function closeLb(){lbSc.classList.add('hidden');if(titleSc.classList.contains('h
   reviveAdBtn.addEventListener('click',watchReviveAd);
   reviveSkip.addEventListener('click',function(){if(!reviveBusy){reviveUsed=true;finishGame();}});
 
- authOpen.addEventListener('click',function(){openAuth(false);});
- authLogout.addEventListener('click',function(){if(authClient)authClient.auth.signOut().catch(function(){});});
  $('authClose').addEventListener('click',closeAuth);
  emailLogin.addEventListener('click',function(){authEmailAction(false);});
  emailSignup.addEventListener('click',function(){authEmailAction(true);});
@@ -789,9 +788,8 @@ function buildSelectors(){
   mapGrid.innerHTML='';updateCoinWallet();
   MAPS.forEach(function(m){
     var d=document.createElement('div');d.className='selCard'+(m.id===mapId?' on':'');
-    var k=document.createElement('span');k.className='kj';k.textContent=m.kj;
     var n=document.createElement('span');n.className='nm';n.textContent=m.vn;
-    d.appendChild(k);d.appendChild(n);
+    d.appendChild(n);
     d.addEventListener('click',function(){mapId=m.id;store.set('chimse.map',m.id);applyMap();genScenery();buildSelectors();});
     mapGrid.appendChild(d);
   });
