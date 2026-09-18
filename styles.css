@@ -442,3 +442,19 @@ body{font-size:16px;line-height:1.45}
 .policy-links a{padding:4px 0}
 #homeLbStatus,.lbStatus,#reviveStatus{font-size:14px;line-height:1.45}
 @media (max-width:460px){.selCard .meta,.shop-item .meta{font-size:12px}.account-stats span{font-size:11px}.home-actions .btn{min-height:48px;padding-inline:10px}.policy-links{font-size:14px}}
+
+/* Complete leaderboard presentation */
+.leaderboard-panel{width:min(94vw,680px)}
+.lbTable{width:min(100%,560px);margin:0 auto;border:1px solid var(--border-soft);background:rgba(255,255,255,.025);padding:8px 12px 12px}
+.lbHeader{display:grid;grid-template-columns:52px minmax(0,1fr) 88px;gap:10px;padding:8px 6px;border-bottom:1px solid var(--border-soft);color:var(--ink2);font-size:12px;letter-spacing:.12em;text-transform:uppercase;text-align:left}
+.lbHeader span:last-child{text-align:right}
+.leaderboard-panel .lbWrap{max-width:none;margin-top:4px}
+.leaderboard-panel .lbRow{display:grid;grid-template-columns:52px minmax(0,1fr) 88px;gap:10px;align-items:center;min-height:48px;padding:8px 6px;border-bottom:1px solid rgba(170,183,214,.12);font-size:16px}
+.leaderboard-panel .lbRow:last-child{border-bottom:0}
+.leaderboard-panel .lbRow .rank{width:auto;font-size:16px}
+.leaderboard-panel .lbRow .nm{max-width:none;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.leaderboard-panel .lbRow .dots{display:none}
+.leaderboard-panel .lbRow b{text-align:right;font-size:20px}
+.leaderboard-panel .lbEmpty{padding:24px 8px;text-align:center;font-size:15px}
+#lbRefresh:disabled{opacity:.55;cursor:wait}
+@media (max-width:460px){.leaderboard-panel{padding-inline:12px}.lbTable{padding-inline:6px}.lbHeader,.leaderboard-panel .lbRow{grid-template-columns:42px minmax(0,1fr) 72px;gap:7px}.lbHeader{font-size:11px}.leaderboard-panel .lbRow{font-size:15px;min-height:46px}}
