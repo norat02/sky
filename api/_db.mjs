@@ -59,10 +59,12 @@ export async function insertScore({ name, score, userId }) {
   if (error) throw error;
 }
 
-export async function getLeaderboard(limit = 10) {
+export async function getLeaderboard(limit = 10, now = new Date()) {
+  const since = new Date(new Date(now).getTime() - 24 * 60 * 60 * 1000).toISOString();
   const { data, error } = await requireDatabase()
     .from('scores')
     .select('player_name, score, created_at')
+    .gte('created_at', since)
     .order('score', { ascending: false })
     .order('created_at', { ascending: true })
     .order('id', { ascending: true })
