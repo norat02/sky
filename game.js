@@ -139,6 +139,14 @@ Object.assign(LANG.vi,{volume:'âm lượng',mute:'tắt âm thanh',unmute:'bậ
 LOCALES.forEach(function(item){var code=item[0];if(!LANG[code])LANG[code]=Object.assign({},LANG.en,{title:'SKY BIRD'});if(!MSG[code])MSG[code]=Object.assign({},MSG.en);});
 function buildLanguageOptions(){if(!languageSelect)return;languageSelect.innerHTML='';LOCALES.forEach(function(item){var option=document.createElement('option');option.value=item[0];option.textContent=item[1];languageSelect.appendChild(option);});}
 function tx(key){return(MSG[locale]&&MSG[locale][key])||MSG.en[key]||key;}
+function autoPlayerName(){
+  var meta=authUser&&authUser.user_metadata||{};
+  var candidate=meta.full_name||meta.name||meta.user_name||meta.username||'';
+  if(!candidate&&authUser&&authUser.email)candidate=authUser.email.split('@')[0];
+  if(!candidate){candidate=store.get('chimse.guestName');if(!candidate){var seed=Math.floor(Math.random()*1679616).toString(36).toUpperCase().padStart(6,'0');candidate='user'+seed;store.set('chimse.guestName',candidate);}}
+  candidate=String(candidate).replace(/[^\p{L}\p{N}_-]/gu,'').slice(0,10);
+  return candidate||'user000001';
+}
 function detectLocale(){var saved=normalizeLocale(store.get('chimse.lang'));var browser=browserLocale();if(saved)setLocale(saved,false);else setLocale(browser,false);return fetch('/api/locale',{headers:{Accept:'application/json'}}).then(function(r){return r.ok?r.json():null;}).then(function(data){var ip=data&&normalizeLocale(data.locale);if(ip){if(saved)suggestLocale(ip);else setLocale(ip,false);}return locale;}).catch(function(){return locale;});}
 
 /* ═══ RNG ═══ */
@@ -503,7 +511,7 @@ function cr(cx,cy,r,x,y,w,h){var nx=clamp(cx,x,x+w),ny=clamp(cy,y,y+h);var dx=cx
 function hitPipes(){for(var i=0;i<pipes.length;i++){var p=pipes[i];if(p.x-20>bird.x+CFG.R||p.x+BASE.PW+20<bird.x-CFG.R)continue;var tB=p.gy-p.gap/2,bT=p.gy+p.gap/2;if(cr(bird.x,bird.y,CFG.R,p.x-15,bT-8,BASE.PW+30,34))return true;if(cr(bird.x,bird.y,CFG.R,p.x-15,tB-27,BASE.PW+30,34))return true;if(cr(bird.x,bird.y,CFG.R,p.x,bT+27,BASE.PW,groundY-bT-18))return true;if(cr(bird.x,bird.y,CFG.R,p.x,-90,BASE.PW,tB-27+90))return true;}return false;}
 function startDying(){if(state!=='PLAY')return;state='DYING';freeze=0.09;dyingT=0;shake(0.3,9);splat(bird.x,bird.y);AU.hit();AU.fall();speed=0;bird.vy=Math.min(bird.vy,-240);}
 function offerRevive(){state='REVIVE';pauseBtn.classList.remove('show');pauseOverlay.classList.remove('show');reviveBusy=false;var adBlocked=window.SKY_ADS&&window.SKY_ADS.blocked;var ready=!adBlocked&&window.SKY_REWARDED_AD&&typeof window.SKY_REWARDED_AD.show==='function';reviveAdBtn.disabled=!ready;reviveSkip.disabled=false;reviveAdBtn.textContent=LANG[locale].watchAd;reviveStatus.textContent=ready?(locale==='ja'?'この飛行であと1回復活できます':locale==='en'?'you have one revive left this flight':'bạn còn một cơ hội trong ván này'):adBlocked?tx('adBlocked'):(locale==='ja'?'復活にはrewarded-adの設定が必要です':locale==='en'?'configure a rewarded-ad provider to revive':'cần cấu hình rewarded-ad provider để hồi sinh');reviveOverlay.classList.add('show');}
- if(window.__SKY_E2E__)window.SKY_TEST_HOOKS={startDying:startDying,finishGame:finishGame,startGame:startGame,setScore:function(value){score=value;},getCharacterCatalog:function(){return CHARS.map(function(ch){return{id:ch.id,vn:ch.vn,cost:ch.cost,advantage:ch.adv,disadvantage:ch.dis};});},getWallet:function(){return{coins:coinsBank,unlocked:unlockedChars.slice(),selected:charId};},unlockChar:unlockChar,renderLb:renderLb,shareScore:shareScore,createBackupWatermark:createBackupWatermark,validateBackupWatermark:validateBackupWatermark,encryptBackup:encryptBackup,decryptBackup:decryptBackup,deriveBackupKey:deriveBackupKey,b64Bytes:b64Bytes,restoreBackupData:restoreBackupData};
+ if(window.__SKY_E2E__)window.SKY_TEST_HOOKS={startDying:startDying,finishGame:finishGame,showOver:showOver,startGame:startGame,setScore:function(value){score=value;},autoPlayerName:autoPlayerName,getCharacterCatalog:function(){return CHARS.map(function(ch){return{id:ch.id,vn:ch.vn,cost:ch.cost,advantage:ch.adv,disadvantage:ch.dis};});},getWallet:function(){return{coins:coinsBank,unlocked:unlockedChars.slice(),selected:charId};},unlockChar:unlockChar,renderLb:renderLb,shareScore:shareScore,createBackupWatermark:createBackupWatermark,validateBackupWatermark:validateBackupWatermark,encryptBackup:encryptBackup,decryptBackup:decryptBackup,deriveBackupKey:deriveBackupKey,b64Bytes:b64Bytes,restoreBackupData:restoreBackupData};
 function applyServerProfile(profile){if(profile)window.dispatchEvent(new CustomEvent('sky-profile-sync',{detail:{profile:profile,source:'economy-api'}}));}
 function finishGame(){state='OVER';reviveOverlay.classList.remove('show');pauseBtn.classList.remove('show');pauseOverlay.classList.remove('show');overAt=nowMs;shake(0.18,5);dust();AU.thud();prevRunFirstGap=firstGapThisRun;if(!RUN.coinPaid){var reward=Math.floor(score/10);if(authUser&&DB.online&&runTicket){DB.economy('score_reward',{referenceId:runTicket,score:score}).then(applyServerProfile).catch(function(){lbStatus.textContent='phần thưởng sẽ đồng bộ lại khi có mạng';});}else{earnCoins(reward);}RUN.coinPaid=true;}if(score>best){best=score;isNewBest=true;store.set('chimse.best',best);}}
 function endGame(){if(!reviveUsed){offerRevive();return;}finishGame();}
@@ -516,14 +524,15 @@ function showOver(){
   overRunK.textContent=RUN.kj;overRunV.textContent=currentChar.vn+' · '+currentMap.vn+' · ván '+RUN.total;
   hud.classList.add('hidden');overSc.classList.remove('hidden');
   nameRow.style.display='none';miniLb.innerHTML='';lbStatus.textContent='';
+  if(score>0){nameRow.style.display='flex';nameInput.value=autoPlayerName();sendBtn.disabled=!DB.online;sendBtn.textContent=LANG[locale].submitScore;}
   if(DB.online){
-    if(score>0){nameRow.style.display='flex';nameInput.value=store.get('chimse.name')||'';sendBtn.disabled=false;sendBtn.textContent=LANG[locale].submitScore;}else{lbStatus.textContent='cần ít nhất 1 điểm để ghi danh';}
+    if(score<=0)lbStatus.textContent='cần ít nhất 1 điểm để ghi danh';
     if(score>0&&DB.cache)renderLb(miniLb,DB.cache,5,null);
     DB.refreshTop().then(function(rows){if(state!=='OVER')return;if(rows){renderLb(miniLb,rows,5,null);if(score>0&&!scoreSent)lbStatus.textContent='';}else if(score>0)lbStatus.textContent='không tải được bảng';});
   }else{lbStatus.textContent='ngoại tuyến — kỷ lục chỉ lưu trên máy';}
 }
 function sendScore(){
-  if(scoreSent)return;var name=(nameInput.value||'').trim().slice(0,10);
+  if(scoreSent)return;var name=autoPlayerName();nameInput.value=name;
   if(!name){lbStatus.textContent=tx('nameRequired');try{nameInput.focus();}catch(e){}return;}
   if(/[<>]/.test(name)||name.length>10){lbStatus.textContent=tx('invalidName');return;}
   if(!Number.isFinite(score)||score<0||score>100000){lbStatus.textContent=tx('invalidScore');return;}
