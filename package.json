@@ -17,6 +17,7 @@
     "express": "^5.2.1",
     "helmet": "^8.3.0",
     "ioredis": "^6.0.0",
+    "nodemailer": "^7.0.13",
     "pg": "^8.23.0",
     "zod": "^4.5.4"
   },
@@ -50,7 +51,8 @@
     "cap:open": "npx cap open android",
     "cap:open:ios": "npx cap open ios",
     "cap:build:apk": "npm run cap:sync && cd android && ./gradlew assembleDebug --no-daemon",
-    "cap:build:aab": "npm run cap:sync && cd android && ./gradlew bundleDebug --no-daemon"
+    "cap:build:aab": "npm run cap:sync && cd android && ./gradlew bundleDebug --no-daemon",
+    "test:mailer": "node scripts/test-mailer.mjs"
   },
   "build": {
     "appId": "com.norat02.skybird.desktop",
