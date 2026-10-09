@@ -36,6 +36,12 @@ Supabase cung cấp cả Auth và Database. API kiểm tra identity bằng Supab
 
 Trong **Authentication → Providers**, bật **Email** để sử dụng đăng ký/đăng nhập bằng email và mật khẩu. Có thể bật email confirmation theo chính sách của project.
 
+### SMTP email
+
+Email xác nhận và khôi phục mật khẩu hiện do **Supabase Auth** gửi. Cấu hình SMTP production tại **Supabase Dashboard → Authentication → SMTP Settings**; không đặt SMTP password trong `VITE_*`, `env.js`, Android, iOS hoặc GitHub Actions Variables. File [`.env.example`](.env.example) đã có mẫu `SMTP_*` server-only cho trường hợp triển khai mailer riêng ở backend. Các biến này không được build loader đưa vào frontend.
+
+Nếu dùng mailer riêng, đặt các biến `SMTP_ENABLED`, `SMTP_HOST`, `SMTP_PORT`, `SMTP_SECURE`, `SMTP_USER`, `SMTP_PASSWORD` và `SMTP_FROM` trong Vercel **Server/Runtime Environment Variables**, sau đó redeploy. Không commit `.env.local` hoặc giá trị SMTP thật.
+
 Để bật Google, tạo OAuth Client loại **Web application** trong Google Cloud Console. Đặt URL ứng dụng Vercel vào **Authorized JavaScript origins**. Đặt callback của Supabase theo dạng sau vào **Authorized redirect URIs**:
 
 ```text

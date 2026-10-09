@@ -105,3 +105,7 @@ Nếu Google trả lỗi `redirect_uri_mismatch`, đối chiếu chính xác cal
 Không commit `.env`, `env.js`, service-role key hoặc Google client secret. Chỉ public anon/publishable key được phép xuất hiện ở client. Không tin điểm số từ client; API phải xác thực JWT, run ticket, rate limit và schema trước khi ghi database.
 
 Locale theo IP chỉ là gợi ý giao diện, không dùng cho phân quyền hoặc quyết định bảo mật. Nếu Vercel không cung cấp country header, ứng dụng fallback sang `navigator.language`, rồi dùng English nếu không nhận diện được. Database runtime của API là Neon; Supabase không còn là database của game.
+
+## SMTP
+
+Email Auth hiện do Supabase Auth gửi; cấu hình SMTP tại Supabase Dashboard → Authentication → SMTP Settings. Không đưa SMTP password vào frontend.
