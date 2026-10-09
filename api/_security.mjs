@@ -40,8 +40,8 @@ function envList(name) {
 
 export function isAdminUser(user) {
   if (!user) return false;
-  const appMetadata = user.app_metadata || {};
-  if (appMetadata.role === 'admin' || appMetadata.is_admin === true) return true;
+  // Admin authority is an explicit server-side allowlist. User-editable or
+  // provider metadata must never grant privilege by itself.
   const userIds = envList('ADMIN_USER_IDS');
   const emails = envList('ADMIN_EMAILS');
   return userIds.includes(String(user.id || '').toLowerCase())

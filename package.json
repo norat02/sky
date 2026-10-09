@@ -25,7 +25,7 @@
     "build": "node scripts/generate-config.mjs && node scripts/build-web.mjs",
     "env:check": "go run ./tools/envcheck/main.go",
     "verify": "node scripts/verify.mjs",
-    "test": "node scripts/test-flows.mjs && node scripts/test-security-rewarded.mjs && node scripts/test-admin-auth.mjs",
+    "test": "node scripts/test-flows.mjs && node scripts/test-security-rewarded.mjs && node scripts/test-admin-auth.mjs && node scripts/test-security-controls.mjs",
     "test:e2e": "node e2e/game.e2e.mjs",
     "test:e2e:admin": "node e2e/admin.e2e.mjs",
     "test:e2e:backup": "node e2e/backup-watermark.e2e.mjs",
@@ -52,7 +52,8 @@
     "cap:open:ios": "npx cap open ios",
     "cap:build:apk": "npm run cap:sync && cd android && ./gradlew assembleDebug --no-daemon",
     "cap:build:aab": "npm run cap:sync && cd android && ./gradlew bundleDebug --no-daemon",
-    "test:mailer": "node scripts/test-mailer.mjs"
+    "test:mailer": "node scripts/test-mailer.mjs",
+    "test:security:controls": "node scripts/test-security-controls.mjs"
   },
   "build": {
     "appId": "com.norat02.skybird.desktop",

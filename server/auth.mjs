@@ -1,6 +1,6 @@
 import crypto from 'node:crypto';
 
-const secret = process.env.JWT_SECRET || (process.env.NODE_ENV === 'production' ? '' : 'local-development-secret-change-me-32chars');
+const secret = process.env.JWT_SECRET || (process.env.NODE_ENV === 'production' ? '' : crypto.randomBytes(32).toString('hex'));
 const ttlSeconds = Number(process.env.JWT_TTL_SECONDS || 60 * 60 * 24);
 const issuer = process.env.JWT_ISSUER || 'sky-bird-api';
 const audience = process.env.JWT_AUDIENCE || 'sky-bird-client';

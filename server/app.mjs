@@ -7,6 +7,7 @@ import { hashPassword, verifyPassword, issueToken, requireAuth, requireRole, has
 import { getJson, setJson, rateLimit, cacheCircuitState } from './cache.mjs';
 import { requestId, versionHeaders, validateSession, noStore, encodeCursor, decodeCursor } from './security.mjs';
 import { isScorePlausible } from './game-rules.mjs';
+import { verifyCaptchaToken } from './captcha.mjs';
 
 export const app = express();
 app.disable('x-powered-by');
@@ -18,6 +19,7 @@ app.use(express.json({ limit: '64kb', strict: true }));
 app.use(requestId);
 
 const credentials = z.object({ email: z.string().email().max(254), password: z.string().min(12).max(128) }).strict();
+const registerCredentials = credentials.extend({ captchaToken: z.string().max(4096).optional() });
 const nameSchema = z.string().trim().min(1).max(32).regex(/^[\p{L}\p{N} _-]+$/u);
 const scoreSchema = z.object({ playerName: nameSchema, score: z.number().int().min(0).max(100000) }).strict();
 const paginationSchema = z.object({ limit: z.coerce.number().int().min(1).max(100).default(10), cursor: z.string().max(512).optional() });
@@ -57,7 +59,8 @@ api.use(versionHeaders('v1'));
 
 api.post('/auth/register', noStore, async (req, res, next) => {
   try {
-    const { email, password } = credentials.parse(req.body);
+    const { email, password, captchaToken } = registerCredentials.parse(req.body);
+    await verifyCaptchaToken(captchaToken, { expectedAction: 'register', expectedHostname: process.env.CAPTCHA_EXPECTED_HOSTNAME || '' });
     const result = await withTransaction(async (client) => {
       const passwordHash = await hashPassword(password);
       const { rows } = await client.query('INSERT INTO users(email, password_hash) VALUES ($1, $2) RETURNING id, email, role', [email.toLowerCase(), passwordHash]);

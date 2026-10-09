@@ -130,3 +130,29 @@ Các điểm đã được kiểm thử trong repository gồm API versioning, c
 [3]: https://cheatsheetseries.owasp.org/cheatsheets/Database_Security_Cheat_Sheet.html "OWASP Database Security Cheat Sheet"
 
 [4]: https://cheatsheetseries.owasp.org/cheatsheets/Logging_Cheat_Sheet.html "OWASP Logging Cheat Sheet"
+
+
+## Security review TDD — CAPTCHA, PII, admin và secrets
+
+### CAPTCHA chống spam đăng ký
+
+Route đăng ký của Express (`POST /api/v1/auth/register`) gọi `verifyCaptchaToken()` trước transaction tạo tài khoản. Khi `CAPTCHA_ENABLED=true`, thiếu token, token sai, action/hostname sai hoặc nhà cung cấp CAPTCHA không phản hồi đều bị từ chối; secret Turnstile chỉ nằm ở server.
+
+Nếu production dùng Supabase Auth trực tiếp cho UI hiện tại, cần bật CAPTCHA trong **Supabase Dashboard → Authentication → Bot and Abuse Protection** và cấu hình site key/widget theo tài liệu Supabase. Không coi CAPTCHA của route Express là tự động bảo vệ flow Supabase nếu client chưa đi qua route đó.
+
+### PII và profile
+
+- Leaderboard chỉ trả `name` và `score` đã giới hạn độ dài.
+- Admin data chỉ cho allowlist admin và không dùng dữ liệu user-editable để cấp quyền.
+- `player_profiles` bật `FORCE ROW LEVEL SECURITY`; policy SELECT/UPDATE dùng `auth.uid()`.
+- Không trả email/profile đầy đủ cho endpoint công khai.
+
+### Phân quyền admin
+
+`isAdminUser()` chỉ chấp nhận `ADMIN_EMAILS` hoặc `ADMIN_USER_IDS` ở server. `app_metadata.role`, `app_metadata.is_admin` và `user_metadata` không tự cấp admin; cần thay đổi allowlist server hoặc secret manager.
+
+### Secrets và AI-assisted audit
+
+AI/code scanning nên tìm: service-role key, JWT/signing secret, SMTP password, private key, token trong source/bundle/log; endpoint trả email/user ID; policy `USING (true)` trên bảng riêng tư; kiểm tra role chỉ ở frontend; thiếu rate limit/CAPTCHA; và lỗi phân biệt account tồn tại. Kết quả AI phải được xác nhận bằng test runtime, review migration/RLS và kiểm tra deployment artifact — không coi việc frontend “ẩn” code là boundary bảo mật.
+
+Chạy các kiểm thử: `npm run test:security:controls`, `npm run test:api:integration`, `npm run verify` và audit dependency CI trước release.
