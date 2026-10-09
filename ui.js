@@ -5,7 +5,7 @@
   if (!app) return;
 
   app.innerHTML = `
-<div id="netDot"><i></i><span id="netTxt" data-i18n="connecting">đang kết nối…</span></div>
+<div id="netDot" data-state="connecting" role="status" aria-live="polite" aria-atomic="true" aria-label="đang kết nối"><i aria-hidden="true"></i><span id="netTxt" data-i18n="connecting">đang kết nối…</span></div>
 <div id="hud" class="hidden"><div id="score">0</div><div id="bestHud">kỷ lục · —</div><div id="combo" aria-live="polite"></div></div>
 <div id="runTag" class="hidden"><span id="runNo">ván 01</span><span id="runKj">霧朝</span><span id="runVn">sương sớm</span></div>
 <div id="evBanner"><span class="kanji" id="evKanji">風</span><div><b id="evName"></b><i id="evDesc"></i><div id="evBar"><i id="evBarI"></i></div></div></div>
