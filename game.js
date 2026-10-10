@@ -295,7 +295,7 @@ function authEmailAction(signup){
   if(!authClient){authMsg.textContent=tx('authOffline');return;}
   var email=(authEmail.value||'').trim(),password=authPassword.value||'';
   if(!email||!/\S+@\S+\.\S+/.test(email)){authMsg.textContent='hãy nhập email hợp lệ';authEmail.focus();return;}
-  if(password.length<8){authMsg.textContent='mật khẩu phải có ít nhất 8 ký tự';authPassword.focus();return;}
+  if(password.length<12){authMsg.textContent='mật khẩu phải có ít nhất 12 ký tự';authPassword.focus();return;}
   emailLogin.disabled=true;emailSignup.disabled=true;authModeSwitch.disabled=true;authRecover.disabled=true;$('googleLogin').disabled=true;
   authMsg.textContent=signup?tx('creating'):tx('signing');
   var action=signup?getCaptchaToken().then(function(token){return fetch(apiUrl('/api/v1/auth/register-supabase'),{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email:email,password:password,captchaToken:token})});}).then(function(response){return response.json().then(function(data){if(!response.ok){var error=new Error(data.error||'registration_failed');error.code=data.error;throw error;}return data;});}):authClient.auth.signInWithPassword({email:email,password:password});
