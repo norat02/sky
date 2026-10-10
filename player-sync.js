@@ -37,7 +37,7 @@
   }
   function load() {
     if (!client || !userId) return Promise.resolve();
-    return client.from('player_profiles').select('*').eq('user_id', userId).maybeSingle().then(function (result) {
+    return client.from('player_profiles').select('user_id,display_name,best_score,flights,coins,unlocked_characters,selected_character,selected_map,language,volume,muted,updated_at').eq('user_id', userId).maybeSingle().then(function (result) {
       if (result.error) throw result.error;
       if (result.data) apply(result.data); else return upload(true);
     }).catch(function () {});

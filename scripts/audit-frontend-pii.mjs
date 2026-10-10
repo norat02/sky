@@ -38,6 +38,7 @@ requireMatch(leaderboardHandler, /return res\.status\(200\)\.json\(\{ rows \}\)/
 const sync = source('player-sync.js');
 requireMatch(sync, /\.eq\(['"]user_id['"],\s*userId\)/, 'F2-PROFILE-SCOPE', 'profile read must be scoped to the authenticated user id');
 if (/\.select\(['"]\*['"]\)/.test(sync)) finding('F2-PROFILE-WILDCARD', 'frontend profile sync uses select(*) instead of an explicit least-privilege column list');
+requireMatch(sync, /\.select\(['"]user_id,display_name,best_score,flights,coins,unlocked_characters,selected_character,selected_map,language,volume,muted,updated_at['"]\)/, 'F2-PROFILE-COLUMNS', 'profile sync must select only the approved profile columns');
 
 const profiles = source('server/migrations/004_player_profiles.sql');
 requireMatch(profiles, /ENABLE ROW LEVEL SECURITY/i, 'F2-RLS-ENABLED', 'player_profiles must enable RLS');
