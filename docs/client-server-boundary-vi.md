@@ -32,3 +32,8 @@ Supabase client trong frontend chỉ phục vụ **Auth session/OAuth**. Service
 - `degraded`: màu hổ phách, mạng có thể hoạt động nhưng API tạm thời không phản hồi.
 
 Bảng xếp hạng không dùng fallback đọc trực tiếp từ database. Khi API lỗi, giao diện giữ cache hiển thị nếu có và thông báo trạng thái thay vì phá vỡ ranh giới phân quyền.
+
+
+### Đăng ký có CAPTCHA
+
+Flow đăng ký email/mật khẩu của frontend không gọi Supabase Auth trực tiếp. Client render Turnstile và gửi `captchaToken` tới `POST /api/v1/auth/register-supabase`; Express xác minh CAPTCHA bằng secret server-only, sau đó gọi Supabase Admin API để tạo user với `email_confirm=false`. Email xác thực vẫn do Supabase Auth/SMTP gửi. Đăng nhập, Google OAuth và refresh session tiếp tục dùng Supabase client sau khi tài khoản đã được xác thực.

@@ -57,6 +57,8 @@ await sendNotificationEmail({
 
 Chạy kiểm thử mailer không cần kết nối SMTP thật bằng `npm run test:mailer`.
 
+Đăng ký email/mật khẩu trên game đi qua `POST /api/v1/auth/register-supabase`. Frontend hiển thị Cloudflare Turnstile và gửi `captchaToken` tới Express; Express xác minh token bằng `TURNSTILE_SECRET_KEY` rồi tạo user qua Supabase service-role. Cấu hình `VITE_TURNSTILE_SITE_KEY` (public) ở build/client và `CAPTCHA_ENABLED=true`, `TURNSTILE_SECRET_KEY` (server-only) ở runtime. Nếu thiếu site key hoặc CAPTCHA token, đăng ký bị từ chối.
+
 Để bật Google, tạo OAuth Client loại **Web application** trong Google Cloud Console. Đặt URL ứng dụng Vercel vào **Authorized JavaScript origins**. Đặt callback của Supabase theo dạng sau vào **Authorized redirect URIs**:
 
 ```text
@@ -95,7 +97,7 @@ Build loader JavaScript đọc `.env.local` khi chạy local và chỉ sinh các
 
 Hướng dẫn chi tiết về Supabase Database, Vercel Environment Variables và Supabase Auth nằm tại [`docs/android-setup-vi.md`](docs/android-setup-vi.md). Migration chính thức là [`supabase/schema.sql`](supabase/schema.sql); tài liệu Neon cũ chỉ giữ để tham khảo lịch sử.
 
-Tại **Vercel Project → Settings → Environment Variables**, thêm `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY` và `SCORE_SIGNING_SECRET` cho server; `VITE_PUBLIC_SITE_URL`, `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`, `VITE_API_BASE_URL` và `VITE_SUPABASE_REDIRECT_URL` cho build/client. Sau khi thay đổi biến, bắt buộc tạo deployment mới vì `env.js`, `robots.txt` và `sitemap.xml` được sinh trong bước build:
+Tại **Vercel Project → Settings → Environment Variables**, thêm `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY` và `SCORE_SIGNING_SECRET` cho server; `VITE_PUBLIC_SITE_URL`, `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`, `VITE_API_BASE_URL`, `VITE_SUPABASE_REDIRECT_URL` và `VITE_TURNSTILE_SITE_KEY` cho build/client. Sau khi thay đổi biến, bắt buộc tạo deployment mới vì `env.js`, `robots.txt` và `sitemap.xml` được sinh trong bước build:
 
 | Biến | Giá trị |
 |---|---|

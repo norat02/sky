@@ -43,7 +43,7 @@ export async function verifyCaptchaToken(token, {
   let result;
   try { result = await response.json(); } catch { throw captchaError('captcha_unavailable', 503); }
   if (!result?.success) throw captchaError('captcha_failed');
-  if (expectedAction && result.action && result.action !== expectedAction) throw captchaError('captcha_action_mismatch');
-  if (expectedHostname && result.hostname && result.hostname !== expectedHostname) throw captchaError('captcha_hostname_mismatch');
+  if (expectedAction && result.action !== expectedAction) throw captchaError('captcha_action_mismatch');
+  if (expectedHostname && result.hostname !== expectedHostname) throw captchaError('captcha_hostname_mismatch');
   return { ok: true, skipped: false };
 }

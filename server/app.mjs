@@ -8,6 +8,8 @@ import { getJson, setJson, rateLimit, cacheCircuitState } from './cache.mjs';
 import { requestId, versionHeaders, validateSession, noStore, encodeCursor, decodeCursor } from './security.mjs';
 import { isScorePlausible } from './game-rules.mjs';
 import { verifyCaptchaToken } from './captcha.mjs';
+import { registerSupabaseUser } from './supabase-registration.mjs';
+import { createClient } from '@supabase/supabase-js';
 
 export const app = express();
 app.disable('x-powered-by');
@@ -25,6 +27,23 @@ const scoreSchema = z.object({ playerName: nameSchema, score: z.number().int().m
 const paginationSchema = z.object({ limit: z.coerce.number().int().min(1).max(100).default(10), cursor: z.string().max(512).optional() });
 const userSchema = z.object({ id: z.string().uuid(), email: z.string().email(), role: z.enum(['player', 'admin']) });
 const authResponseSchema = z.object({ user: userSchema, token: z.string().min(32), expiresIn: z.number().int().positive() });
+let supabaseAdminClient;
+function requireProductionCaptcha() {
+  if (process.env.NODE_ENV === 'production' && String(process.env.CAPTCHA_ENABLED || '').toLowerCase() !== 'true') {
+    const error = new Error('captcha_not_configured');
+    error.code = 'captcha_not_configured';
+    error.status = 500;
+    throw error;
+  }
+}
+function getSupabaseAdminClient() {
+  if (supabaseAdminClient) return supabaseAdminClient;
+  const url = process.env.SUPABASE_URL;
+  const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  if (!url || !key) { const error = new Error('supabase_auth_not_configured'); error.status = 500; throw error; }
+  supabaseAdminClient = createClient(url, key, { auth: { autoRefreshToken: false, persistSession: false } });
+  return supabaseAdminClient;
+}
 const leaderboardResponseSchema = z.object({ rows: z.array(z.object({ id: z.number().int(), playerName: nameSchema, score: z.number().int(), createdAt: z.coerce.date().transform((value) => value.toISOString()) })), pagination: z.object({ limit: z.number().int(), hasMore: z.boolean(), nextCursor: z.string().nullable() }) });
 
 function auditIp(req) { return hashRequest(req.ip || 'unknown'); }
@@ -56,6 +75,17 @@ app.get('/live', (_req, res) => res.json({ status: 'alive', service: 'sky-bird-a
 
 const api = express.Router();
 api.use(versionHeaders('v1'));
+
+api.post('/auth/register-supabase', noStore, async (req, res, next) => {
+  try {
+    const { email, password, captchaToken } = registerCredentials.parse(req.body);
+    requireProductionCaptcha();
+    await verifyCaptchaToken(captchaToken, { expectedAction: 'register', expectedHostname: process.env.CAPTCHA_EXPECTED_HOSTNAME || '' });
+    const result = await registerSupabaseUser({ email, password, adminClient: getSupabaseAdminClient() });
+    await audit(req, 'account.registered_supabase', null, { emailDomain: email.split('@')[1]?.toLowerCase() || '' });
+    res.status(201).json(result);
+  } catch (error) { if (error.code === 'email_already_exists') return res.status(409).json({ error: error.code }); next(error); }
+});
 
 api.post('/auth/register', noStore, async (req, res, next) => {
   try {

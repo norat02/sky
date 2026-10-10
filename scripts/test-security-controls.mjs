@@ -27,6 +27,7 @@ assert.match(String(captchaCalls[0].options.body), /secret=server-secret/);
 assert.match(String(captchaCalls[0].options.body), /response=token-1/);
 await assert.rejects(() => verifyCaptchaToken('', { fetchImpl: async () => { throw new Error('must not call'); } }), /captcha_required/);
 await assert.rejects(() => verifyCaptchaToken('bad', { fetchImpl: async () => ({ ok: true, async json() { return { success: false }; } }) }), /captcha_failed/);
+await assert.rejects(() => verifyCaptchaToken('missing-claims', { fetchImpl: async () => ({ ok: true, async json() { return { success: true }; } }), expectedAction: 'register', expectedHostname: 'sky.norat.click' }), /captcha_action_mismatch/);
 
 const authSource = await readFile('server/auth.mjs', 'utf8');
 assert.doesNotMatch(authSource, /local-development-secret-change-me/);
