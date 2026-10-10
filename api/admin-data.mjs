@@ -1,13 +1,12 @@
-import { authenticate, json, requireAdmin } from './_security.mjs';
+import { authenticate, authorizeAdminRequest, json } from './_security.mjs';
 import { getAdminSnapshot } from './_db.mjs';
 
 export function createAdminDataHandler({ authenticateFn = authenticate } = {}) {
   return async function handler(req, res) {
     if (req.method !== 'GET') return json(res, 405, { error: 'method_not_allowed' });
     try {
-      const session = await authenticateFn(req);
-      if (!session) return json(res, 401, { error: 'unauthorized' });
-      requireAdmin(session);
+      const session = await authorizeAdminRequest(req, res, { authenticateFn });
+      if (!session) return;
 
       // Compatibility seam for unit tests and local adapters; production uses Supabase.
       if (session.db && !session.supabase) {

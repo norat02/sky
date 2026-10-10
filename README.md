@@ -260,7 +260,7 @@ Loader AdSense không còn nằm trực tiếp trong phần `<head>` dưới d�
 
 Trang quản trị nằm tại [`/admin`](admin.html) và chỉ hiển thị dữ liệu sau khi tài khoản Supabase được xác thực. Dashboard hiện có thống kê tổng số điểm, số ván online, số ván đã nộp và kỷ lục hệ thống; bảng điểm gần đây hỗ trợ tìm theo tên hoặc user ID và không có thao tác xóa/sửa trực tiếp.
 
-Quyền quản trị được kiểm tra ở server-side trong [`api/admin-data.mjs`](api/admin-data.mjs). Tài khoản được cấp quyền nếu thỏa một trong các điều kiện sau: `user.app_metadata.role` là `admin`, `user.app_metadata.is_admin` là `true`, email có trong `ADMIN_EMAILS`, hoặc UUID có trong `ADMIN_USER_IDS`. Các danh sách nhiều giá trị phân tách bằng dấu phẩy.
+Quyền quản trị được kiểm tra ở server-side trong [`api/admin-data.mjs`](api/admin-data.mjs). Middleware `authorizeAdminRequest()` xác thực Bearer session trước rồi áp dụng allowlist server-only. Tài khoản chỉ được cấp quyền nếu email có trong `ADMIN_EMAILS` hoặc UUID có trong `ADMIN_USER_IDS`; `user_metadata` và `app_metadata` không thể tự cấp quyền. Các danh sách nhiều giá trị phân tách bằng dấu phẩy.
 
 ### Cấu hình `ADMIN_EMAILS` trên Vercel
 
@@ -283,13 +283,13 @@ ADMIN_USER_IDS=
 
 ### Cấu hình tài khoản trong Supabase
 
-Tạo hoặc xác nhận tài khoản tại **Authentication → Users** trước. Cách đơn giản nhất là dùng email trong `ADMIN_EMAILS`. Cách thay thế là dùng **user UUID** trong `ADMIN_USER_IDS`. Mã nguồn cũng chấp nhận `app_metadata.role = admin` hoặc `app_metadata.is_admin = true`; không dùng `user_metadata` để cấp quyền, vì metadata này có thể do người dùng tự chỉnh sửa. Nếu chỉnh `app_metadata`, hãy refresh phiên đăng nhập hoặc đăng xuất/đăng nhập lại để access token nhận claim mới.
+Tạo hoặc xác nhận tài khoản tại **Authentication → Users** trước. Cách đơn giản nhất là dùng email trong `ADMIN_EMAILS`. Cách thay thế là dùng **user UUID** trong `ADMIN_USER_IDS`. Mã nguồn không đọc `app_metadata` hoặc `user_metadata` để cấp quyền. Sau khi thay đổi allowlist, cần redeploy để middleware server nhận giá trị mới.
 
 Nếu dùng Google OAuth, thêm URL đầy đủ của trang admin, ví dụ `https://your-domain.vercel.app/admin`, vào **Supabase → Authentication → URL Configuration → Redirect URLs**. Sau đó đăng nhập tại `/admin` và kiểm tra email hiển thị trên dashboard.
 
 ### Checklist xác minh sau cấu hình
 
-Mở `/admin` ở deployment mới và thử lần lượt bằng một tài khoản không có trong allowlist, một tài khoản có email trong `ADMIN_EMAILS`, và nếu có thể một tài khoản được cấp qua `app_metadata`. Kết quả đúng là tài khoản thường không được trả dữ liệu và endpoint `/api/admin-data` trả `403`; tài khoản admin thấy dashboard và endpoint trả `200`; request không có hoặc có Bearer token không hợp lệ trả `401`. Có thể xem chi tiết request trong **Vercel → Deployments → Functions/Runtime Logs**. Không ghi access token hoặc service role key vào log.
+Mở `/admin` ở deployment mới và thử lần lượt bằng một tài khoản không có trong allowlist, một tài khoản có email trong `ADMIN_EMAILS`, và một tài khoản có metadata admin nhưng không nằm trong allowlist. Kết quả đúng là tài khoản thường không được trả dữ liệu và endpoint `/api/admin-data` trả `403`; tài khoản admin thấy dashboard và endpoint trả `200`; request không có hoặc có Bearer token không hợp lệ trả `401`. Có thể xem chi tiết request trong **Vercel → Deployments → Functions/Runtime Logs**. Không ghi access token hoặc service role key vào log.
 
 ### Cấu hình Google OAuth cho `/admin`
 
@@ -340,7 +340,7 @@ Trong production, ưu tiên URL cụ thể thay vì wildcard rộng. Redirect UR
 
 #### 4. Kiểm tra flow trên trang admin
 
-Sau khi lưu cấu hình, redeploy Vercel để các biến môi trường mới có hiệu lực. Mở `https://your-domain.vercel.app/admin`, nhấn **Tiếp tục với Google**, hoàn tất consent và xác nhận trình duyệt quay lại đúng `/admin`. Sau khi quay lại, email phải xuất hiện ở góc phải và dashboard chỉ hiển thị nếu email đó có trong `ADMIN_EMAILS`, UUID có trong `ADMIN_USER_IDS`, hoặc user có `app_metadata` admin.
+Sau khi lưu cấu hình, redeploy Vercel để các biến môi trường mới có hiệu lực. Mở `https://your-domain.vercel.app/admin`, nhấn **Tiếp tục với Google**, hoàn tất consent và xác nhận trình duyệt quay lại đúng `/admin`. Sau khi quay lại, email phải xuất hiện ở góc phải và dashboard chỉ hiển thị nếu email đó có trong `ADMIN_EMAILS`, UUID có trong `ADMIN_USER_IDS`, ; metadata admin không nằm trong allowlist phải nhận `403`.
 
 Nếu gặp lỗi `redirect_uri_mismatch`, sửa **Authorized redirect URIs** trên Google Cloud về callback Supabase, không sửa thành `/admin`. Nếu gặp lỗi redirect không được phép từ Supabase, bổ sung URL `/admin` tương ứng trong **Authentication → URL Configuration**. Nếu đăng nhập thành công nhưng nhận `403`, kiểm tra email thực tế trong session, dấu cách trong `ADMIN_EMAILS`, environment của deployment và việc đã redeploy sau khi lưu biến.
 

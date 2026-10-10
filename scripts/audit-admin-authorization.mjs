@@ -16,9 +16,10 @@ requireMatch(security, /export function isAdminUser\(user\)/, 'F3-ADMIN-FUNCTION
 requireMatch(security, /const userIds = envList\('ADMIN_USER_IDS'\)/, 'F3-ID-ALLOWLIST', 'admin user IDs must come from server environment');
 requireMatch(security, /const emails = envList\('ADMIN_EMAILS'\)/, 'F3-EMAIL-ALLOWLIST', 'admin emails must come from server environment');
 requireMatch(security, /export function requireAdmin\(session\)/, 'F3-REQUIRE-ADMIN', 'server must have a reusable deny-by-default admin guard');
+requireMatch(security, /export async function authorizeAdminRequest\(req, res/, 'F3-MIDDLEWARE', 'server must expose centralized admin request middleware');
 requireNoMatch(security, /app_metadata\.(?:role|is_admin)\s*===|user_metadata\.(?:role|is_admin)\s*===/, 'F3-METADATA-PRIVILEGE', 'editable/provider metadata must not independently grant admin');
-requireMatch(adminEndpoint, /const session = await authenticateFn\(req\)/, 'F3-AUTHENTICATION', 'admin endpoint must authenticate the bearer session');
-requireMatch(adminEndpoint, /requireAdmin\(session\)/, 'F3-AUTHORIZATION', 'admin endpoint must authorize the authenticated session on the server');
+requireMatch(adminEndpoint, /authorizeAdminRequest\(req, res/, 'F3-AUTHENTICATION', 'admin endpoint must authenticate through the centralized middleware');
+requireMatch(adminEndpoint, /authorizeAdminRequest\(req, res/, 'F3-AUTHORIZATION', 'admin endpoint must use the centralized server authorization middleware');
 requireNoMatch(frontend, /SUPABASE_SERVICE_ROLE_KEY|SCORE_SIGNING_SECRET|JWT_SECRET|DATABASE_URL|SMTP_PASSWORD/, 'F3-FRONTEND-CONFIG', 'server secrets must not be embedded in admin.html');
 
 assert.equal(isAdminUser({ id: 'not-allowlisted', email: 'user@example.com', app_metadata: { role: 'admin' } }), false, 'metadata role bypassed admin allowlist');

@@ -48,7 +48,7 @@ requireMatch(profiles, /FOR UPDATE USING \(user_id = auth\.uid\(\)\) WITH CHECK 
 requireNoMatch(profiles, /USING \(true\)/, 'F2-RLS-PUBLIC', 'private profile table contains a public allow policy');
 
 const adminEndpoint = source('api/admin-data.mjs');
-requireMatch(adminEndpoint, /requireAdmin\(session\)/, 'F2-ADMIN-AUTHZ', 'admin data endpoint must authorize on the server');
+requireMatch(adminEndpoint, /authorizeAdminRequest\(req, res/, 'F2-ADMIN-AUTHZ', 'admin data endpoint must authorize through the server middleware');
 
 if (findings.length) {
   console.error(`F-2 frontend PII audit failed (${findings.length} finding(s))`);

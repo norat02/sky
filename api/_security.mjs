@@ -57,6 +57,23 @@ export function requireAdmin(session) {
   return session;
 }
 
+export async function authorizeAdminRequest(req, res, { authenticateFn = authenticate } = {}) {
+  const session = await authenticateFn(req);
+  if (!session) {
+    json(res, 401, { error: 'unauthorized' });
+    return null;
+  }
+  try {
+    return requireAdmin(session);
+  } catch (error) {
+    if (error.status === 403) {
+      json(res, 403, { error: 'forbidden' });
+      return null;
+    }
+    throw error;
+  }
+}
+
 function base64url(value) {
   return Buffer.from(value).toString('base64url');
 }

@@ -27,7 +27,7 @@ assert(gameJs.includes('ADSENSE_PUBLISHER_ID'), 'AdSense publisher ID must come 
 assert(adminHtml.includes('id="appView"'), 'Admin dashboard markup missing');
 assert(adminHtml.includes('/api/admin-data'), 'Admin API integration missing');
 assert(adminHtml.includes('noindex,nofollow'), 'Admin page must not be indexed');
-assert(adminApi.includes('requireAdmin'), 'Admin API must enforce server-side authorization');
+assert(adminApi.includes('authorizeAdminRequest'), 'Admin API must enforce server-side authorization');
 assert(adminE2E.includes('ADMIN_E2E_BASE_URL'), 'Admin E2E must support a configurable Vercel URL');
 assert(adminE2E.includes('meta[name="robots"]'), 'Admin E2E must check robots metadata');
 assert(adminE2E.includes('/api/admin-data'), 'Admin E2E must check unauthenticated admin API access');
