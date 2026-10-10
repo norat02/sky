@@ -56,7 +56,8 @@
     "test:security:controls": "node scripts/test-security-controls.mjs",
     "test:supabase-registration": "node scripts/test-supabase-registration.mjs",
     "audit:f2": "node scripts/audit-frontend-pii.mjs",
-    "audit:f3": "node scripts/audit-admin-authorization.mjs"
+    "audit:f3": "node scripts/audit-admin-authorization.mjs",
+    "audit:f4": "node scripts/audit-hardcoded-secrets.mjs"
   },
   "build": {
     "appId": "com.norat02.skybird.desktop",

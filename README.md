@@ -59,6 +59,8 @@ Chạy kiểm thử mailer không cần kết nối SMTP thật bằng `npm run 
 
 
 
+Audit F-4 chống hardcode thông tin nhạy cảm có thể chạy bằng `npm run audit:f4`. Audit quét source production, credential-bearing connection URL, private key, literal token/API key, fallback của biến secret và public config allowlist. Audit không quét `.env.example`, test fixture hoặc tài liệu hướng dẫn chứa placeholder.
+
 Audit F-2 chống lộ PII/frontend có thể chạy bằng `npm run audit:f2`. Audit quét bundle public tìm server secret, kiểm tra contract leaderboard chỉ trả tên/điểm, xác nhận profile có scope user + RLS, và yêu cầu admin endpoint authorize phía server. Audit hiện cố ý fail nếu profile sync dùng `select(*)`, để buộc chuyển sang danh sách cột tối thiểu trước release.
 Đăng ký email/mật khẩu trên game đi qua `POST /api/v1/auth/register-supabase`. Frontend hiển thị Cloudflare Turnstile và gửi `captchaToken` tới Express; Express xác minh token bằng `TURNSTILE_SECRET_KEY` rồi tạo user qua Supabase service-role. Cấu hình `VITE_TURNSTILE_SITE_KEY` (public) ở build/client và `CAPTCHA_ENABLED=true`, `TURNSTILE_SECRET_KEY` (server-only) ở runtime. Nếu thiếu site key hoặc CAPTCHA token, đăng ký bị từ chối.
 
