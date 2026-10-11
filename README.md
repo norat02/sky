@@ -59,6 +59,8 @@ Chạy kiểm thử mailer không cần kết nối SMTP thật bằng `npm run 
 
 
 
+Audit F-8 kiểm tra an toàn document MongoDB có thể chạy bằng `npm run audit:f8`. Audit xác nhận giới hạn document, prototype-pollution guard, sanitizer cho write/filter, không ghi raw request/PII/credential vào MongoDB hoặc log.
+
 Audit F-7 chống NoSQL injection có thể chạy bằng `npm run audit:f7`. Audit quét Mongo operation nhận trực tiếp request input, operator nguy hiểm (`$where`, `$function`, `$expr`), dynamic operator keys, dynamic code execution và log chứa credential/header/body nhạy cảm.
 
 Audit F-6 kiểm tra boundary MongoDB–API có thể chạy bằng `npm run audit:f6`. Audit yêu cầu MongoDB chỉ được truy cập qua server adapter, URI chỉ ở runtime environment, collection phải allowlist, query phải được validate và frontend không được chứa driver/credential MongoDB.
