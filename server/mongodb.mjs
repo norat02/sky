@@ -44,9 +44,16 @@ export function getMongoClient() {
   if (!clientPromise) {
     const client = new MongoClient(mongoUri(), {
       appName: 'sky-bird-api',
+      tls: true,
+      tlsAllowInvalidCertificates: false,
+      tlsAllowInvalidHostnames: false,
       serverSelectionTimeoutMS: 5_000,
+      waitQueueTimeoutMS: 5_000,
       maxPoolSize: 10,
+      maxConnecting: 2,
       retryWrites: true,
+      retryReads: true,
+      serverApi: { version: '1', strict: true, deprecationErrors: true },
     });
     clientPromise = client.connect().catch((error) => {
       clientPromise = undefined;
