@@ -65,7 +65,8 @@
     "audit:f5": "node scripts/audit-rls-access-control.mjs",
     "audit:f6": "node scripts/audit-mongodb-boundary.mjs",
     "audit:f7": "node scripts/audit-nosql-injection.mjs",
-    "audit:f8": "node scripts/audit-mongodb-document-safety.mjs"
+    "audit:f8": "node scripts/audit-mongodb-document-safety.mjs",
+    "audit:f9": "node scripts/audit-mongodb-connection-security.mjs"
   },
   "build": {
     "appId": "com.norat02.skybird.desktop",
