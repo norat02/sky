@@ -17,6 +17,7 @@
     "express": "^5.2.1",
     "helmet": "^8.3.0",
     "ioredis": "^6.0.0",
+    "mongodb": "^6.21.0",
     "nodemailer": "^7.0.13",
     "pg": "^8.23.0",
     "zod": "^4.5.4"
@@ -25,7 +26,7 @@
     "build": "node scripts/generate-config.mjs && node scripts/build-web.mjs",
     "env:check": "go run ./tools/envcheck/main.go",
     "verify": "node scripts/verify.mjs",
-    "test": "node scripts/test-flows.mjs && node scripts/test-security-rewarded.mjs && node scripts/test-admin-auth.mjs && node scripts/test-security-controls.mjs && node scripts/test-supabase-registration.mjs",
+    "test": "node scripts/test-flows.mjs && node scripts/test-security-rewarded.mjs && node scripts/test-admin-auth.mjs && node scripts/test-security-controls.mjs && node scripts/test-supabase-registration.mjs && node scripts/test-mongodb-boundary.mjs",
     "test:e2e": "node e2e/game.e2e.mjs",
     "test:e2e:admin": "node e2e/admin.e2e.mjs",
     "test:e2e:backup": "node e2e/backup-watermark.e2e.mjs",
@@ -56,6 +57,7 @@
     "test:security:controls": "node scripts/test-security-controls.mjs",
     "test:supabase-registration": "node scripts/test-supabase-registration.mjs",
     "test:db:config": "node scripts/test-db-config.mjs",
+    "test:mongodb:boundary": "node scripts/test-mongodb-boundary.mjs",
     "audit:f2": "node scripts/audit-frontend-pii.mjs",
     "audit:f3": "node scripts/audit-admin-authorization.mjs",
     "audit:f4": "node scripts/audit-hardcoded-secrets.mjs",
@@ -65,11 +67,34 @@
   "build": {
     "appId": "com.norat02.skybird.desktop",
     "productName": "Sky Bird",
-    "files": ["electron/**/*", "dist/**/*", "package.json"],
-    "win": { "target": ["nsis", "portable"] },
-    "mac": { "target": ["dmg", "zip"] },
-    "nsis": { "oneClick": false, "allowToChangeInstallationDirectory": true },
-    "linux": { "target": ["AppImage", "deb"], "category": "Game" }
+    "files": [
+      "electron/**/*",
+      "dist/**/*",
+      "package.json"
+    ],
+    "win": {
+      "target": [
+        "nsis",
+        "portable"
+      ]
+    },
+    "mac": {
+      "target": [
+        "dmg",
+        "zip"
+      ]
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true
+    },
+    "linux": {
+      "target": [
+        "AppImage",
+        "deb"
+      ],
+      "category": "Game"
+    }
   },
   "devDependencies": {
     "@capacitor/android": "^8.5.1",
