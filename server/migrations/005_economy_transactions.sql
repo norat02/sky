@@ -11,6 +11,8 @@ CREATE TABLE IF NOT EXISTS economy_transactions (
   UNIQUE (user_id, operation, reference_id)
 );
 CREATE INDEX IF NOT EXISTS economy_transactions_user_created_idx ON economy_transactions(user_id, created_at DESC);
+ALTER TABLE economy_transactions ENABLE ROW LEVEL SECURITY;
+ALTER TABLE economy_transactions FORCE ROW LEVEL SECURITY;
 
 CREATE OR REPLACE FUNCTION public.complete_score_reward(p_user_id UUID, p_reference_id TEXT, p_score INTEGER)
 RETURNS TABLE(coins INTEGER, best_score INTEGER, flights INTEGER)
