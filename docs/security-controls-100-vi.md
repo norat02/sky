@@ -156,3 +156,7 @@ Nếu production dùng Supabase Auth trực tiếp cho UI hiện tại, cần b�
 AI/code scanning nên tìm: service-role key, JWT/signing secret, SMTP password, private key, token trong source/bundle/log; endpoint trả email/user ID; policy `USING (true)` trên bảng riêng tư; kiểm tra role chỉ ở frontend; thiếu rate limit/CAPTCHA; và lỗi phân biệt account tồn tại. Kết quả AI phải được xác nhận bằng test runtime, review migration/RLS và kiểm tra deployment artifact — không coi việc frontend “ẩn” code là boundary bảo mật.
 
 Chạy các kiểm thử: `npm run test:security:controls`, `npm run test:api:integration`, `npm run verify` và audit dependency CI trước release.
+
+### MongoDB authentication và least privilege
+
+MongoDB chỉ được truy cập từ server adapter bằng `MONGODB_URI` và `MONGODB_DATABASE` ở runtime. Production phải dùng database user riêng cho Sky Bird, chỉ được cấp quyền trên database/collection cần thiết; không dùng `root`, user quản trị hoặc credential dùng chung. Adapter không gọi MongoDB administrative API, không chứa credential mặc định và bắt buộc TLS/certificate validation. Quyền thực tế của user phải được xác nhận bằng `usersInfo`/role review trong MongoDB deployment, không chỉ dựa trên source scan.
