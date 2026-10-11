@@ -1,4 +1,5 @@
 import { MongoClient } from 'mongodb';
+export { sanitizeMongoDocument, sanitizeMongoFilter } from './mongodb-sanitize.mjs';
 
 const MONGO_COLLECTIONS = Object.freeze({
   GAME_LOGS: 'game_logs',

@@ -28,6 +28,7 @@ for (const path of sourceFiles) if (existsSync(path)) scan(path, readFileSync(pa
 const adapter = readFileSync('server/mongodb.mjs', 'utf8');
 requireMatch(adapter, /export function assertAllowedMongoCollection\(collectionName\)/, 'F7-COLLECTION-GUARD', 'MongoDB adapter must validate collection names before access');
 requireMatch(adapter, /const ALLOWED_COLLECTIONS = new Set\(Object\.values\(MONGO_COLLECTIONS\)\)/, 'F7-COLLECTION-ALLOWLIST', 'MongoDB adapter must use a fixed collection allowlist');
+requireMatch(adapter, /export \{ sanitizeMongoDocument, sanitizeMongoFilter \} from ['"]\.\/mongodb-sanitize\.mjs['"]/, 'F7-SANITIZER', 'MongoDB adapter must expose the shared input sanitizer for every future query/document write');
 requireNoMatch(adapter, /\beval\s*\(|new\s+Function\s*\(/, 'F7-CODE-EVAL', 'MongoDB boundary must not use dynamic code execution');
 requireNoMatch(adapter, /\$where|\$function|\$accumulator|\$expr|\$jsonSchema/, 'F7-ADAPTER-OPERATOR', 'MongoDB adapter must not expose dangerous query operators');
 
