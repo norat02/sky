@@ -4,6 +4,7 @@ import request from 'supertest';
 process.env.NODE_ENV = 'test';
 process.env.RATE_LIMIT = '2';
 process.env.JWT_SECRET = 'integration-test-secret-that-is-at-least-32-chars';
+process.env.DATABASE_URL = 'postgres://integration:integration@example.invalid/sky?sslmode=require';
 
 const { app } = await import('../server/app.mjs');
 const { maxPlausibleScore, isScorePlausible } = await import('../server/game-rules.mjs');

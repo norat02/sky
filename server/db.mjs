@@ -3,8 +3,14 @@ import dotenv from 'dotenv';
 dotenv.config();
 
 const { Pool } = pg;
+const connectionString = process.env.DATABASE_URL || process.env.NEON_DATABASE_URL;
+if (!connectionString) {
+  const error = new Error('DATABASE_URL or NEON_DATABASE_URL is required');
+  error.code = 'DATABASE_CONFIG_MISSING';
+  throw error;
+}
 export const pool = new Pool({
-  connectionString: process.env.DATABASE_URL || process.env.NEON_DATABASE_URL || 'postgres://sky:sky@localhost:5432/sky',
+  connectionString,
   max: Number(process.env.DB_POOL_MAX || 10),
   idleTimeoutMillis: 30_000,
   connectionTimeoutMillis: 5_000,
