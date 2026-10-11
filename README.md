@@ -59,6 +59,8 @@ Chạy kiểm thử mailer không cần kết nối SMTP thật bằng `npm run 
 
 
 
+Audit F-6 kiểm tra boundary MongoDB–API có thể chạy bằng `npm run audit:f6`. Audit yêu cầu MongoDB chỉ được truy cập qua server adapter, URI chỉ ở runtime environment, collection phải allowlist, query phải được validate và frontend không được chứa driver/credential MongoDB.
+
 Audit F-5 kiểm tra RLS và database access boundary có thể chạy bằng `npm run audit:f5`. Audit xác nhận policy `auth.uid()`, `FORCE ROW LEVEL SECURITY`, quyền của `anon`/`authenticated`, quyền gọi economy RPC và các cột kinh tế server-owned.
 
 Audit F-4 chống hardcode thông tin nhạy cảm có thể chạy bằng `npm run audit:f4`. Audit quét source production, credential-bearing connection URL, private key, literal token/API key, fallback của biến secret và public config allowlist. Audit không quét `.env.example`, test fixture hoặc tài liệu hướng dẫn chứa placeholder.
