@@ -58,7 +58,8 @@
     "test:db:config": "node scripts/test-db-config.mjs",
     "audit:f2": "node scripts/audit-frontend-pii.mjs",
     "audit:f3": "node scripts/audit-admin-authorization.mjs",
-    "audit:f4": "node scripts/audit-hardcoded-secrets.mjs"
+    "audit:f4": "node scripts/audit-hardcoded-secrets.mjs",
+    "audit:f5": "node scripts/audit-rls-access-control.mjs"
   },
   "build": {
     "appId": "com.norat02.skybird.desktop",
