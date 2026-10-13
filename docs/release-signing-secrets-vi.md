@@ -4,6 +4,34 @@ Tài liệu này áp dụng cho repository `norat02/sky`, đặc biệt workflow
 
 > Không commit keystore, certificate, provisioning profile, private key hoặc file `.env` vào Git. Chỉ lưu nội dung đã mã hóa Base64 trong GitHub Actions Secrets.
 
+## Script tự động mã hóa Base64
+
+Repository có script fail-closed để chuẩn bị các file secret mà không in nội dung nhạy cảm ra terminal:
+
+```bash
+chmod +x scripts/encode-signing-secrets.sh
+scripts/encode-signing-secrets.sh \
+  --android-keystore /path/to/sky-release.jks \
+  --ios-p12 /path/to/distribution.p12 \
+  --output-dir .signing-secrets
+```
+
+Nếu cần chuẩn bị thêm App Store Connect private key:
+
+```bash
+scripts/encode-signing-secrets.sh \
+  --appstore-p8 /path/to/AuthKey_ABC123.p8 \
+  --output-dir .signing-secrets
+```
+
+Script kiểm tra file đầu vào là file thường, tạo output với quyền `0600`, giải mã ngược và so sánh byte để xác nhận Base64 hợp lệ. Output nằm trong `.signing-secrets/`, thư mục đã được gitignore. Chỉ copy nội dung file vào GitHub Secret, không commit thư mục này.
+
+Các file được tạo:
+
+- `ANDROID_KEYSTORE_BASE64.txt` → secret `ANDROID_KEYSTORE_BASE64`.
+- `IOS_CERTIFICATE_P12_BASE64.txt` → secret `IOS_CERTIFICATE_P12_BASE64`.
+- `APPSTORE_API_PRIVATE_KEY_BASE64.txt` là bản Base64 tùy chọn; secret `APPSTORE_API_PRIVATE_KEY` cần **nội dung PEM gốc của `.p8`**, không phải chuỗi Base64. Có thể xem hướng dẫn xử lý `.p8` ở phần App Store Connect bên dưới.
+
 ## 1. Mở trang Repository Secrets
 
 1. Mở repository `https://github.com/norat02/sky`.
