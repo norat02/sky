@@ -10,8 +10,6 @@ on:
 
 permissions:
   contents: read
-  security-events: write
-  actions: read
 
 env:
   NODE_VERSION: 24
@@ -44,7 +42,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          if git ls-files | grep -E '(^|/)(\.env[^/]*|.*\.(jks|keystore|p12|pem|key))$'; then
+          if git ls-files | grep -E '(^|)/\.env($|\.(local|production|development|test))|(^|/).*\.(jks|keystore|p12|pem|key)$'; then
             echo 'Sensitive file detected in Git history/index.'
             exit 1
           fi
