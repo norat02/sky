@@ -18,7 +18,7 @@
     "helmet": "^8.3.0",
     "ioredis": "^6.0.0",
     "mongodb": "^6.21.0",
-    "nodemailer": "^7.0.13",
+    "nodemailer": "^10.1.0",
     "pg": "^8.23.0",
     "zod": "^4.5.4"
   },
@@ -26,6 +26,7 @@
     "build": "node scripts/generate-config.mjs && node scripts/build-web.mjs",
     "env:check": "go run ./tools/envcheck/main.go",
     "verify": "node scripts/verify.mjs",
+    "ci:security": "node scripts/ci-security-pipeline.mjs",
     "test": "node scripts/test-flows.mjs && node scripts/test-security-rewarded.mjs && node scripts/test-admin-auth.mjs && node scripts/test-security-controls.mjs && node scripts/test-supabase-registration.mjs && node scripts/test-mongodb-boundary.mjs && node scripts/test-mongodb-sanitizer.mjs",
     "test:e2e": "node e2e/game.e2e.mjs",
     "test:e2e:admin": "node e2e/admin.e2e.mjs",

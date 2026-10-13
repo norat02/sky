@@ -1,0 +1,58 @@
+name: Security TDD Gate
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+  workflow_call:
+
+permissions:
+  contents: read
+  security-events: write
+  actions: read
+
+env:
+  NODE_VERSION: 24
+
+jobs:
+  security-regression:
+    name: Security TDD F-2 to F-10 and regression
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run complete security and regression pipeline
+        run: npm run ci:security
+
+      - name: Dependency audit
+        run: npm audit --omit=dev --audit-level=high
+
+      - name: Check sensitive files are not tracked
+        shell: bash
+        run: |
+          set -euo pipefail
+          if git ls-files | grep -E '(^|/)(\.env[^/]*|.*\.(jks|keystore|p12|pem|key))$'; then
+            echo 'Sensitive file detected in Git history/index.'
+            exit 1
+          fi
+
+      - name: Upload generated web artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: security-gate-web
+          path: dist
+          if-no-files-found: error
+          retention-days: 7

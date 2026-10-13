@@ -10,7 +10,11 @@ permissions:
   contents: read
 
 jobs:
+  security-gate:
+    uses: ./.github/workflows/security-gate.yml
+
   build:
+    needs: security-gate
     runs-on: ubuntu-latest
 
     steps:

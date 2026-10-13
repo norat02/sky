@@ -33,8 +33,12 @@ jobs:
             echo "value=${{ inputs.tag }}" >> "$GITHUB_OUTPUT"
           fi
 
-  web:
+  security-gate:
     needs: prepare
+    uses: ./.github/workflows/security-gate.yml
+
+  web:
+    needs: [prepare, security-gate]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
@@ -54,7 +58,7 @@ jobs:
           path: sky-bird-web-*.tar.gz
 
   android:
-    needs: prepare
+    needs: [prepare, security-gate]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
@@ -97,7 +101,7 @@ jobs:
           if-no-files-found: error
 
   desktop:
-    needs: prepare
+    needs: [prepare, security-gate]
     name: Desktop ${{ matrix.name }}
     strategy:
       fail-fast: false
@@ -139,7 +143,7 @@ jobs:
           if-no-files-found: error
 
   ios:
-    needs: prepare
+    needs: [prepare, security-gate]
     runs-on: macos-latest
     steps:
       - uses: actions/checkout@v7
@@ -202,7 +206,7 @@ jobs:
           if-no-files-found: error
 
   macos-swiftui:
-    needs: prepare
+    needs: [prepare, security-gate]
     runs-on: macos-latest
     steps:
       - uses: actions/checkout@v7
@@ -216,7 +220,7 @@ jobs:
           if-no-files-found: error
 
   github-release:
-    needs: [prepare, web, android, desktop, ios, macos-swiftui]
+    needs: [prepare, security-gate, web, android, desktop, ios, macos-swiftui]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/download-artifact@v7
