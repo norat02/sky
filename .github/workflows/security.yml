@@ -15,7 +15,7 @@ permissions:
 jobs:
   dependency-and-sast:
     name: Dependency audit and CodeQL
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - name: Checkout
         uses: actions/checkout@v7
@@ -42,7 +42,7 @@ jobs:
 
   api-security-smoke:
     name: API security smoke checks
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - name: Checkout
         uses: actions/checkout@v7

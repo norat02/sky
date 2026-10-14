@@ -17,7 +17,7 @@ env:
 jobs:
   security-regression:
     name: Security TDD F-2 to F-10 and regression
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 15
     steps:
       - name: Checkout
