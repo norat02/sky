@@ -10,7 +10,7 @@ permissions:
 
 jobs:
   web:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v7
       - uses: actions/setup-node@v7
@@ -39,7 +39,7 @@ jobs:
             runner: macos-latest
             target: mac
           - name: Linux
-            runner: ubuntu-latest
+            runner: ubuntu-24.04
             target: linux
     runs-on: ${{ matrix.runner }}
     steps:

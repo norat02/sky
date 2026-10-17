@@ -8,6 +8,7 @@ env.js
 node_modules/
 .vercel/
 dist/
+.signing-secrets/
 android/local.properties
 android/**/*.jks
 android/**/*.keystore

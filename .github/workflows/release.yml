@@ -20,7 +20,7 @@ env:
 
 jobs:
   prepare:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     outputs:
       tag: ${{ steps.tag.outputs.value }}
     steps:
@@ -39,7 +39,7 @@ jobs:
 
   web:
     needs: [prepare, security-gate]
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v7
       - uses: actions/setup-node@v7
@@ -59,7 +59,7 @@ jobs:
 
   android:
     needs: [prepare, security-gate]
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v7
       - uses: actions/setup-node@v7
@@ -118,7 +118,7 @@ jobs:
               dist/*.dmg
               dist/*.zip
           - name: Linux
-            runner: ubuntu-latest
+            runner: ubuntu-24.04
             target: linux
             files: |
               dist/*.AppImage
@@ -221,7 +221,7 @@ jobs:
 
   github-release:
     needs: [prepare, security-gate, web, android, desktop, ios, macos-swiftui]
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/download-artifact@v7
         with:
