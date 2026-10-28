@@ -33,6 +33,7 @@
     "test:e2e:backup": "node e2e/backup-watermark.e2e.mjs",
     "test:e2e:backup:attack": "node e2e/backup-attack.e2e.mjs",
     "test:e2e:characters-xss": "node e2e/characters-xss.e2e.mjs",
+    "test:e2e:auth": "node e2e/auth.e2e.mjs",
     "test:e2e:purchase": "node e2e/character-purchase.e2e.mjs",
     "benchmark:backup": "node scripts/benchmark-backup.mjs",
     "api:dev": "node --env-file=.env server/index.mjs",
