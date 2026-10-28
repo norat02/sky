@@ -11,6 +11,23 @@
   var listeners = [];
   var settled = false;
 
+  /* Google ad crawlers must be able to load adsense.js, otherwise the page
+     looks like it has no ad code and Google cannot match an ad to it.
+     A crawler has no cookie jar and no personal data, and the CMP banner is
+     not shown to it, so it is treated as "granted, non-personalized".
+     The decision lives in memory only: it is never persisted, so a real
+     visitor can never inherit it. The token list mirrors
+     server/adsense-crawler.mjs and is checked by scripts/test-adsense-crawler.mjs. */
+  var ADSENSE_CRAWLER_TOKENS = ['Mediapartners-Google', 'Google-Display-Ads-Bot', 'AdsBot-Google-Mobile', 'AdsBot-Google'];
+  function isAdsenseCrawler(ua) {
+    ua = String(ua || '');
+    for (var i = 0; i < ADSENSE_CRAWLER_TOKENS.length; i++) {
+      if (ua.indexOf(ADSENSE_CRAWLER_TOKENS[i]) !== -1) return true;
+    }
+    return false;
+  }
+  var isCrawler = isAdsenseCrawler(navigator.userAgent);
+
   function publish(nextState, nextMode) {
     if (settled && state === nextState && mode === nextMode) return;
     state = nextState;
@@ -82,6 +99,7 @@
   };
 
   if (window.__SKY_E2E__) publish('granted', 'non-personalized');
+  else if (isCrawler) publish('granted', 'non-personalized');
   else {
     loadCmp();
     watchTcfApi();

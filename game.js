@@ -3,11 +3,19 @@
   var adsensePublisherId=String((window.SKY_ENV&&window.SKY_ENV.ADSENSE_PUBLISHER_ID)||'').trim().replace(/^ca-pub-/,'');
   function markBlocked(provider){window.SKY_ADS.blocked=true;window.SKY_ADS.blockedProvider=provider;window.dispatchEvent(new CustomEvent('sky-ad-blocked',{detail:{provider:provider}}));}
   function loadScript(src,id){return new Promise(function(resolve,reject){if(document.getElementById(id)){resolve();return;}var s=document.createElement('script');s.id=id;s.async=true;s.src=src;s.crossOrigin='anonymous';s.onload=resolve;s.onerror=function(){reject(new Error('blocked-or-unavailable'));};document.head.appendChild(s);});}
-  window.SKY_ADS={blocked:false,blockedProvider:'',loadAdSense:function(){if(!window.SKY_CONSENT||!window.SKY_CONSENT.canRequestAds())return Promise.reject(new Error('consent_required'));if(!adsensePublisherId)return Promise.reject(new Error('adsense_publisher_id_missing'));if(!adsensePromise)adsensePromise=loadScript('https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-'+encodeURIComponent(adsensePublisherId),'sky-adsense-loader').then(function(){window.adsbygoogle=window.adsbygoogle||[];window.adsbygoogle.pauseAdRequests=0;return window.adsbygoogle;}).catch(function(e){adsensePromise=null;markBlocked('adsense');throw e;});return adsensePromise;},loadGPT:function(){if(!gptPromise)gptPromise=loadScript('https://securepubads.g.doubleclick.net/tag/js/gpt.js','sky-gpt-loader').then(function(){window.googletag=window.googletag||{cmd:[]};return window.googletag;}).catch(function(e){gptPromise=null;markBlocked('gpt');throw e;});return gptPromise;}};
+  /* Ask adsense.js to fill every configured ad unit. Google only crawls pages
+     where ad tags are implemented, so the unit must be pushed once the
+     library is ready or the slot stays empty. */
+  function pushAdSlots(){var slots=document.querySelectorAll('ins.adsbygoogle');for(var i=0;i<slots.length;i++){if(!slots[i].getAttribute('data-ad-slot'))continue;try{(window.adsbygoogle=window.adsbygoogle||[]).push({});}catch(e){}}}
+  window.SKY_ADS={blocked:false,blockedProvider:'',loadAdSense:function(){if(!window.SKY_CONSENT||!window.SKY_CONSENT.canRequestAds())return Promise.reject(new Error('consent_required'));if(!adsensePublisherId)return Promise.reject(new Error('adsense_publisher_id_missing'));if(!adsensePromise)adsensePromise=loadScript('https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-'+encodeURIComponent(adsensePublisherId),'sky-adsense-loader').then(function(){window.adsbygoogle=window.adsbygoogle||[];window.adsbygoogle.pauseAdRequests=0;pushAdSlots();return window.adsbygoogle;}).catch(function(e){adsensePromise=null;markBlocked('adsense');throw e;});return adsensePromise;},loadGPT:function(){if(!gptPromise)gptPromise=loadScript('https://securepubads.g.doubleclick.net/tag/js/gpt.js','sky-gpt-loader').then(function(){window.googletag=window.googletag||{cmd:[]};return window.googletag;}).catch(function(e){gptPromise=null;markBlocked('gpt');throw e;});return gptPromise;}};
   /* Keep ad failures non-fatal: gameplay and non-ad rewards must continue safely. */
   window.SKY_ADS.showUnavailable=function(){return window.SKY_ADS.blocked;};
   function loadAfterConsent(){if(window.SKY_CONSENT&&window.SKY_CONSENT.wait)window.SKY_CONSENT.wait(function(){window.SKY_ADS.loadAdSense().catch(function(){});});}
   window.addEventListener('load',loadAfterConsent,{once:true});
+  /* Google ad crawlers have no consent flow, so the gate is already settled
+     when this script runs. Start the ad request right away instead of waiting
+     for the load event, so the crawler sees the ad unit as early as possible. */
+  if(window.SKY_CONSENT&&window.SKY_CONSENT.isReady&&window.SKY_CONSENT.isReady())loadAfterConsent();
 })();
 
 window.addEventListener('error',function(e){
@@ -826,7 +834,7 @@ document.addEventListener('visibilitychange',function(){if(document.hidden&&stat
 
 /* ═══ SELECTOR UI ═══ */
 function purchaseCharacter(ch,onDone){if(!authUser||!DB.online){showShopMessage('hãy đăng nhập để mua và đồng bộ nhân vật');return;}showShopMessage('đang xác nhận giao dịch…');DB.unlockCharacter(ch.id).then(function(profile){applyServerProfile(profile);charId=ch.id;store.set('chimse.char',ch.id);applyChar();buildSelectors();buildShop();updateAccountScreen();showShopMessage(ch.vn+' đã được mở trên tài khoản');if(onDone)onDone(true);}).catch(function(e){showShopMessage(e.apiCode==='insufficient_coins'?'không đủ coin':e.apiCode==='invalid_character'?'nhân vật không hợp lệ':'giao dịch thất bại — thử lại');if(onDone)onDone(false);});}
-function buildShop(){if(!shopGrid)return;shopGrid.innerHTML='';if(shopCoinCount)shopCoinCount.textContent=String(coinsBank);CHARS.forEach(function(ch){var open=isCharUnlocked(ch.id),selected=ch.id===charId,d=document.createElement('div');d.className='selCard shop-item'+(selected?' on ':' ')+(open?'':' locked');d.setAttribute('role','button');d.setAttribute('tabindex','0');d.setAttribute('aria-pressed',selected?'true':'false');var k=document.createElement('span');k.className='kj';k.textContent=open?ch.kj:'?';var n=document.createElement('span');n.className='nm';n.textContent=selected?ch.vn+' · đang chọn':(open?ch.vn:'mở với '+ch.cost+' coin');var meta=document.createElement('span');meta.className='meta';meta.textContent=open?'đã mở · '+ch.adv+' · '+ch.dis:'giá '+ch.cost+' coin · '+ch.adv;d.appendChild(k);d.appendChild(n);d.appendChild(meta);d.addEventListener('click',function(){if(!isCharUnlocked(ch.id)){purchaseCharacter(ch);return;}charId=ch.id;store.set('chimse.char',ch.id);applyChar();buildSelectors();updateAccountScreen();if(shopScreenMsg)shopScreenMsg.textContent=ch.vn+' đang được chọn';});d.addEventListener('keydown',function(e){if(e.key==='Enter'||e.key===' '){e.preventDefault();d.click();}});shopGrid.appendChild(d);});}
+function buildShop(){if(!shopGrid)return;shopGrid.innerHTML='';if(shopCoinCount)shopCoinCount.textContent=String(coinsBank);CHARS.forEach(function(ch){var open=isCharUnlocked(ch.id),selected=ch.id===charId,d=document.createElement('div');d.className='selCard shop-item'+(selected?' on ':' ')+(open?'':' locked');d.setAttribute('role','button');d.setAttribute('tabindex','0');d.setAttribute('aria-pressed',selected?'true':'false');d.setAttribute('data-character-id',ch.id);d.setAttribute('aria-label',open?(selected?ch.vn+' đang được chọn':'chọn '+ch.vn):'mua '+ch.vn+' với '+ch.cost+' coin');var k=document.createElement('span');k.className='kj';k.textContent=open?ch.kj:'?';var n=document.createElement('span');n.className='nm';n.textContent=selected?ch.vn+' · đang chọn':(open?ch.vn:'mở với '+ch.cost+' coin');var meta=document.createElement('span');meta.className='meta';meta.textContent=open?'đã mở · '+ch.adv+' · '+ch.dis:'giá '+ch.cost+' coin · '+ch.adv;d.appendChild(k);d.appendChild(n);d.appendChild(meta);d.addEventListener('click',function(){if(!isCharUnlocked(ch.id)){purchaseCharacter(ch);return;}charId=ch.id;store.set('chimse.char',ch.id);applyChar();buildSelectors();updateAccountScreen();if(shopScreenMsg)shopScreenMsg.textContent=ch.vn+' đang được chọn';});d.addEventListener('keydown',function(e){if(e.key==='Enter'||e.key===' '){e.preventDefault();d.click();}});shopGrid.appendChild(d);});}
 function buildSelectors(){
   if(charGrid){charGrid.innerHTML='';CHARS.forEach(function(ch){
     var open=isCharUnlocked(ch.id),selected=ch.id===charId,d=document.createElement('div');d.className='selCard'+(selected?' on ':' ')+(open?'':'locked');d.setAttribute('role','button');d.setAttribute('tabindex','0');d.setAttribute('data-character-id',ch.id);d.setAttribute('aria-pressed',selected?'true':'false');d.setAttribute('aria-label',open?(selected?ch.vn+' đang được chọn':'chọn '+ch.vn):'mua '+ch.vn+' với '+ch.cost+' coin');
@@ -841,9 +849,16 @@ function buildSelectors(){
   mapGrid.innerHTML='';updateCoinWallet();
   MAPS.forEach(function(m){
     var d=document.createElement('div');d.className='selCard'+(m.id===mapId?' on':'');
+    // Render the kanji label like the character cards do. The CSS already
+    // styles .selCard .kj, and every MAPS entry carries a kj value.
+    var k=document.createElement('span');k.className='kj';k.textContent=m.kj;
     var n=document.createElement('span');n.className='nm';n.textContent=m.vn;
-    d.appendChild(n);
+    d.setAttribute('role','button');d.setAttribute('tabindex','0');
+    d.setAttribute('aria-pressed',m.id===mapId?'true':'false');
+    d.setAttribute('aria-label','chọn trời '+m.vn);
+    d.appendChild(k);d.appendChild(n);
     d.addEventListener('click',function(){mapId=m.id;store.set('chimse.map',m.id);applyMap();genScenery();buildSelectors();});
+    d.addEventListener('keydown',function(e){if(e.key==='Enter'||e.key===' '){e.preventDefault();d.click();}});
     mapGrid.appendChild(d);
   });
   buildShop();

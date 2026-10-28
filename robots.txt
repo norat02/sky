@@ -1,3 +1,20 @@
+# Google ad and search crawlers must be able to read pages that carry ad tags.
+User-agent: Mediapartners-Google
+Allow: /
+
+User-agent: Google-Display-Ads-Bot
+Allow: /
+
+User-agent: AdsBot-Google-Mobile
+Allow: /
+
+User-agent: AdsBot-Google
+Allow: /
+
+User-agent: Googlebot
+Allow: /
+
 User-agent: *
 Allow: /
+
 Sitemap: https://sky.norat.click/sitemap.xml

@@ -33,4 +33,25 @@
 <div class="screen hidden" id="overScreen"><div class="panel"><div class="hanko" aria-hidden="true">終</div><div class="kana">旅の終わり</div><h2 data-i18n="complete">HOÀN TẤT</h2><div class="rows"><div class="row"><span data-i18n="score">điểm</span><span class="dots"></span><b id="finalScore">0</b></div><div class="row"><span data-i18n="record">kỷ lục</span><span class="dots"></span><b id="finalBest">0</b></div></div><div class="newbest hidden" id="newBest" data-i18n="newRecord">— kỷ lục mới —</div><div class="runLine" id="overRun"><span class="kj" id="overRunKj"></span><span id="overRunVn"></span></div><div class="nameRow" id="nameRow"><label class="sr-only" for="nameInput">tên ghi danh</label><input id="nameInput" maxlength="10" placeholder="tên người bay" data-i18n-placeholder="namePlaceholder" autocomplete="off" spellcheck="false" readonly aria-readonly="true"><button class="btn solid small" id="sendBtn" data-i18n="submitScore">ghi danh</button></div><div class="lbWrap" id="miniLb"></div><div class="lbStatus" id="lbStatus"></div><div><button class="btn solid" id="retryBtn" data-i18n="retry">bay lại</button><br><button class="btn ghost" id="homeBtn" data-i18n="home">màn chính</button></div></div></div>
 <button id="pauseBtn" aria-label="tạm dừng game">Ⅱ</button><div id="pauseOverlay"><div class="pauseCard"><div class="kana">休止</div><h2 data-i18n="pauseTitle"> TẠM DỪNG</h2><p data-i18n="pauseHint">Nhấn P hoặc nút tiếp tục để bay lại</p><button class="btn solid" id="resumeBtn" data-i18n="resume">tiếp tục</button></div></div><div id="reviveOverlay"><div class="reviveCard"><div class="kana">再生</div><h2 data-i18n="reviveTitle">HỒI SINH?</h2><p data-i18n="reviveHint">Xem quảng cáo hợp lệ để tiếp tục ván này một lần.</p><div id="reviveAdBox" data-i18n="adArea">khu vực quảng cáo</div><button class="btn solid" id="reviveAdBtn" data-i18n="watchAd">xem quảng cáo</button><button class="btn ghost" id="reviveSkip" data-i18n="endFlight">kết thúc ván</button><div id="reviveStatus"></div></div></div><div id="securityOverlay" role="alertdialog" aria-modal="true" aria-labelledby="securityTitle"><div class="securityCard"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3 4 6v5c0 5 3.4 8.4 8 10 4.6-1.6 8-5 8-10V6l-8-3z"/><path d="M12 8v4M12 16h.01"/></svg><h2 id="securityTitle">Phiên chơi đã bị khóa</h2><p id="securityMessage">Phát hiện môi trường không an toàn. Hãy đóng công cụ debug và tải lại trang.</p></div></div>
 `;
+
+  /* Move the static ad unit into the home panel so it renders on the title
+     screen. The markup deliberately lives outside #app in index.html: Google's
+     ad crawlers must be able to read the ad code from the served HTML without
+     executing JavaScript. */
+  var adHost = document.getElementById('skyAdHost');
+  var homePrimary = document.querySelector('#titleScreen .home-primary');
+  if (adHost && homePrimary) {
+    var heroStats = homePrimary.querySelector('.hero-stats');
+    if (heroStats && heroStats.nextSibling) homePrimary.insertBefore(adHost, heroStats.nextSibling);
+    else homePrimary.appendChild(adHost);
+    var slot = adHost.querySelector('ins.adsbygoogle');
+    if (slot) {
+      var envSlot = String((window.SKY_ENV && window.SKY_ENV.ADSENSE_AD_SLOT) || '').trim();
+      if (!slot.getAttribute('data-ad-slot') && envSlot) slot.setAttribute('data-ad-slot', envSlot);
+      /* No slot id is configured: drop the empty unit so Google never sees a
+         broken ad slot and no request is made for it. */
+      if (!slot.getAttribute('data-ad-slot')) adHost.remove();
+      else adHost.removeAttribute('hidden');
+    }
+  }
 })();
