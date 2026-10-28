@@ -22,6 +22,41 @@ Vercel được hỗ trợ qua adapter [`api/v1/[...path].mjs`](api/v1/%5B...pat
 
 Ma trận 100 lớp bảo mật và các mục còn cần triển khai nằm tại [`docs/security-controls-100-vi.md`](docs/security-controls-100-vi.md).
 
+Ma trận 19 lớp trong chuỗi `Auth → Token Expiration → Authorization → API Validation → Rate Limiting → Session Validation → Score Validation → Anti-Cheat → Replay Protection → Idempotency → Database Transactions → PostgreSQL Permissions → Secrets Management → HTTPS → Logging → Monitoring → Backup` (kèm Pagination và Versioning) đối chiếu với code thực tế nằm tại [`docs/security-pipeline-layers-vi.md`](docs/security-pipeline-layers-vi.md).
+
+## Phát hành: Android Keystore và iOS Signing
+
+Workflow `Release all platforms` cần 11 Repository Secrets. Hướng dẫn từng bước, danh sách secret còn thiếu và cách chạy lại release nằm tại [`docs/release-signing-secrets-vi.md`](docs/release-signing-secrets-vi.md).
+
+Script [`scripts/encode-signing-secrets.sh`](scripts/encode-signing-secrets.sh) chuẩn bị và mã hóa Base64 keystore/certificate, kiểm tra secret nào còn thiếu, và upload thẳng lên GitHub:
+
+```bash
+scripts/encode-signing-secrets.sh --check --repo norat02/sky
+scripts/encode-signing-secrets.sh --self-test
+```
+
+## AdSense và bot Google
+
+Bot quảng cáo của Google phải đọc được trang mang mã quảng cáo thì mới phân phối được quảng cáo. Mã quảng cáo được phục vụ tĩnh trong HTML, `robots.txt` có nhóm `Allow: /` riêng cho `Mediapartners-Google`, `Google-Display-Ads-Bot`, `AdsBot-Google`, `AdsBot-Google-Mobile`, và consent gate không chặn bot. Hướng dẫn đầy đủ nằm tại [`docs/adsense-crawler-vi.md`](docs/adsense-crawler-vi.md).
+
+```bash
+npm run check:adsense-crawl -- --url https://sky.norat.click   # kiểm tra như bot
+npm run test:adsense-crawler                                  # kiểm tra tĩnh trong CI
+```
+
+Cần đặt biến môi trường `ADSENSE_AD_SLOT` (id ad unit) trong Vercel; chưa có thì quảng cáo không hiển thị.
+
+## DMARC và email domain
+
+Báo cáo DMARC tổng hợp do Google gửi về được đọc và phân tích bằng code trong repo, kèm audit DNS cho SPF/DKIM/DMARC. Hướng dẫn ở [`docs/dmarc-vi.md`](docs/dmarc-vi.md).
+
+```bash
+npm run check:dmarc-report -- ~/Downloads/google.com!norat.click!1792886400!1792972799.zip
+npm run audit:domain-email -- norat.click --suggest
+```
+
+Parser DMARC không phụ thuộc ngoài, chặn XXE và billion laughs, fail-closed với XML/ZIP hỏng.
+
 ## Quy chuẩn giao diện
 
 Mọi biểu tượng trong giao diện phải dùng **SVG inline hoặc SVG sprite**, không dùng emoji hoặc ký tự biểu tượng thay thế. Icon tương tác cần có `aria-label` hoặc nhãn văn bản đi kèm, trạng thái trang trí dùng `aria-hidden="true"`, và SVG phải kế thừa màu giao diện qua `currentColor` khi phù hợp.
