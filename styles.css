@@ -26,9 +26,9 @@ input{-webkit-user-select:text;user-select:text}
 .authModal.hidden{opacity:0;visibility:hidden;pointer-events:none}
 .authBox{width:min(92vw,360px);background:var(--paper2);border:2px solid var(--ink);box-shadow:8px 8px 0 rgba(38,34,28,.2);padding:26px;text-align:center}
 .authBox h2{font-size:25px;margin-bottom:8px}
-.authBox input{display:block;width:100%;margin:8px 0;padding:10px;border:2px solid var(--ink);background:var(--paper);color:var(--ink);font:16px inherit}
-.authActions{display:flex;gap:6px;justify-content:center;flex-wrap:wrap;margin-top:10px}
-.authActions .btn{padding:9px 12px;font-size:11px}
+
+
+
 #authCaptcha{min-height:0;margin-top:8px;display:flex;justify-content:center}#authMsg{min-height:18px;margin-top:10px;font-size:12px;color:var(--ink2);font-style:italic}
 #netDot{position:fixed;top:24px;left:20px;z-index:20;display:flex;align-items:center;gap:8px;max-width:min(86vw,320px);padding:6px 10px;border:1px solid rgba(38,34,28,.22);border-radius:999px;background:rgba(240,231,211,.9);font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink2);pointer-events:none;box-shadow:2px 3px 0 rgba(38,34,28,.08);transition:color .2s,border-color .2s,background .2s}
 #netDot i{width:9px;height:9px;border-radius:50%;background:#9a917c;display:block;flex:0 0 auto}#netDot[data-state='online']{color:#2f6c3b;border-color:rgba(63,125,78,.35)}#netDot[data-state='offline']{color:var(--red);border-color:rgba(199,62,58,.38);background:rgba(255,247,238,.94)}#netDot[data-state='degraded']{color:#9a641d;border-color:rgba(154,100,29,.38);background:rgba(255,250,232,.94)}#netDot[data-state='connecting']{color:var(--ink2);border-color:rgba(38,34,28,.22)}#netDot[data-state='offline'] i{background:var(--red)}#netDot[data-state='degraded'] i{background:#c1872d}
@@ -211,7 +211,7 @@ kbd{font-style:normal;border:1px solid var(--ink2);padding:1px 6px;font-size:11p
 .android-app .authModal,.android-app #settingsOverlay,.android-app #pauseOverlay,.android-app #reviveOverlay{background:rgba(3,10,19,.78);padding:14px}
 .android-app .authBox,.android-app #settingsOverlay .settingsCard,.android-app #pauseOverlay .pauseCard,.android-app #reviveOverlay .reviveCard{width:min(100%,420px);border:1px solid rgba(151,219,255,.3);border-radius:20px;background:#0e2239;color:#f4f7fb;box-shadow:0 18px 50px rgba(0,0,0,.4);padding:24px 18px}
 .android-app .authBox input,.android-app #settingsOverlay select,.android-app .nameRow input{background:#081827;color:#f4f7fb;border:1px solid rgba(151,219,255,.35);border-radius:10px;min-height:48px}
-.android-app .authActions{display:grid;gap:8px}.android-app .authActions .btn{width:100%;margin:0}
+
 .android-app #hint{bottom:calc(12% + env(safe-area-inset-bottom));color:#e5f7ff}
 .android-app #hint span{color:#b9eaff}
 @media (max-width:460px){.android-app .home-panel{padding:22px 14px}.android-app .hero-stats{gap:6px}.android-app .hero-stat{min-height:62px}.android-app .home-side{padding-top:18px}}
@@ -312,7 +312,7 @@ button,.btn,.selCard,#muteBtn,#pauseBtn{touch-action:manipulation}
 .ios-app .selCard.on{background:linear-gradient(135deg,#e05275,#a72f55);border-color:#ffb0bf;box-shadow:0 8px 20px rgba(224,82,117,.25)}
 .ios-app .btn{min-height:50px;border-radius:15px;border:1px solid rgba(255,255,255,.18);font-family:inherit;letter-spacing:.08em}.ios-app .btn.solid{background:linear-gradient(135deg,#ff6685,#b9355c);color:#fff;box-shadow:0 8px 20px rgba(255,102,133,.22)}.ios-app .btn.ghost{background:rgba(255,255,255,.06);color:#ffdce4}
 .ios-app .home-actions{display:grid;gap:9px;margin-top:20px}.ios-app .home-actions .btn{width:100%;margin:0}.ios-app #netDot{top:calc(14px + env(safe-area-inset-top))}.ios-app #muteBtn,.ios-app #pauseBtn{top:calc(14px + env(safe-area-inset-top));border-radius:14px;background:rgba(18,28,45,.9);color:#fff}.ios-app #hint{bottom:calc(12% + env(safe-area-inset-bottom))}
-.ios-app .authModal,.ios-app #settingsOverlay,.ios-app #pauseOverlay,.ios-app #reviveOverlay{background:rgba(4,8,15,.76);padding:16px}.ios-app .authBox,.ios-app #settingsOverlay .settingsCard,.ios-app #pauseOverlay .pauseCard,.ios-app #reviveOverlay .reviveCard{width:min(100%,420px);border:1px solid rgba(255,255,255,.16);border-radius:22px;background:#121c2d;box-shadow:0 20px 60px rgba(0,0,0,.5);padding:24px 18px}.ios-app .authActions{display:grid;gap:8px}.ios-app .authActions .btn{width:100%;margin:0}.ios-app .authBox input,.ios-app #settingsOverlay select,.ios-app .nameRow input{min-height:50px;border:1px solid rgba(255,255,255,.2);border-radius:12px;background:#0b1422;color:#fff}
+.ios-app .authModal,.ios-app #settingsOverlay,.ios-app #pauseOverlay,.ios-app #reviveOverlay{background:rgba(4,8,15,.76);padding:16px}.ios-app .authBox,.ios-app #settingsOverlay .settingsCard,.ios-app #pauseOverlay .pauseCard,.ios-app #reviveOverlay .reviveCard{width:min(100%,420px);border:1px solid rgba(255,255,255,.16);border-radius:22px;background:#121c2d;box-shadow:0 20px 60px rgba(0,0,0,.5);padding:24px 18px}ios-app .authBox input,.ios-app #settingsOverlay select,.ios-app .nameRow input{min-height:50px;border:1px solid rgba(255,255,255,.2);border-radius:12px;background:#0b1422;color:#fff}
 
 /* Reduced motion and keyboard quality gates */
 @media (prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.001ms!important;animation-iteration-count:1!important;scroll-behavior:auto!important;transition-duration:.001ms!important}}
@@ -329,10 +329,10 @@ button,.btn,.selCard,#muteBtn,#pauseBtn{touch-action:manipulation}
 .account-avatar{width:54px;height:54px;display:grid;place-items:center;border-radius:50%;background:var(--red);color:var(--paper2);font-size:24px;font-weight:700}.account-card strong,.account-card span{display:block}.account-card span{color:var(--ink2);font-size:12px;margin-top:4px}
 .account-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.account-stats>div{padding:12px 8px;border:1px solid rgba(234,246,255,.14);background:rgba(234,246,255,.05)}.account-stats span,.account-stats b{display:block}.account-stats span{font-size:10px;letter-spacing:.15em;text-transform:uppercase;color:var(--ink2)}.account-stats b{margin-top:4px;font-size:22px}
 .shop-heading{display:flex;align-items:center;justify-content:space-between;gap:16px;text-align:left;margin:12px 0 18px}.shop-heading .sub{margin:4px 0 0}.shop-wallet{min-width:82px;padding:9px 12px;text-align:center;border:1px solid rgba(234,246,255,.16);background:rgba(234,246,255,.06)}.shop-wallet span,.shop-wallet b{display:block}.shop-wallet span{font-size:10px;color:var(--ink2);text-transform:uppercase;letter-spacing:.12em}.shop-wallet b{font-size:22px;color:#ffd477}.shop-grid{grid-template-columns:repeat(3,minmax(0,1fr));max-height:none;overflow:visible;gap:8px}.shop-item{min-height:92px;padding:10px 7px}.shop-item .meta{font-size:9px}.feature-panel .lbWrap{max-width:420px}.feature-panel .lbRow{padding:9px 4px;font-size:15px}.feature-panel .lbRow b{font-size:20px}
-.authBox{border-radius:14px}.authBox .authActions{display:grid;grid-template-columns:1fr 1fr}.authBox .authActions .btn{min-height:44px;margin:0}.authBox .authActions .btn:first-child,.authBox .authActions .btn:nth-child(2){grid-column:span 2}.authBox #authModeSwitch{font-size:10px;letter-spacing:.08em}.authBox input{min-height:48px;border-radius:8px}
+.authBox{border-radius:14px}
 .home-actions{display:flex;flex-wrap:wrap;justify-content:center;gap:8px}.home-actions br{display:none}.home-actions .btn{margin:0}
 @media (max-width:760px){.feature-panel{width:100%;max-width:560px}.shop-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.home-actions{display:grid;grid-template-columns:1fr 1fr}.home-actions #startBtn{grid-column:1/-1}.home-actions .btn{width:100%}}
-@media (max-width:460px){.feature-screen{padding:calc(12px + env(safe-area-inset-top)) 10px calc(18px + env(safe-area-inset-bottom))}.feature-panel{padding:26px 14px;max-height:calc(100dvh - 24px);border-radius:14px}.account-stats{gap:5px}.account-stats>div{padding:10px 4px}.account-stats span{font-size:8px;letter-spacing:.06em}.account-stats b{font-size:19px}.shop-grid{gap:7px}.shop-item{min-height:90px}.feature-actions{display:grid}.feature-actions .btn{width:100%}.authBox .authActions{grid-template-columns:1fr}.authBox .authActions .btn:first-child,.authBox .authActions .btn:nth-child(2){grid-column:auto}}
+@media (max-width:460px){.feature-screen{padding:calc(12px + env(safe-area-inset-top)) 10px calc(18px + env(safe-area-inset-bottom))}.feature-panel{padding:26px 14px;max-height:calc(100dvh - 24px);border-radius:14px}.account-stats{gap:5px}.account-stats>div{padding:10px 4px}.account-stats span{font-size:8px;letter-spacing:.06em}.account-stats b{font-size:19px}.shop-grid{gap:7px}.shop-item{min-height:90px}.feature-actions{display:grid}.feature-actions .btn{width:100%}}
 .android-app .feature-panel,.android-app .authBox{border-radius:22px;background:#0e2239;border:1px solid rgba(151,219,255,.28);box-shadow:0 18px 50px rgba(0,0,0,.4)}.android-app .account-avatar{background:#27a8d4;color:#fff}.android-app .account-card,.android-app .account-stats>div,.android-app .shop-wallet{border-color:rgba(151,219,255,.18);background:rgba(116,202,244,.07)}.android-app .shop-wallet b{color:#ffd477}
 .ios-app .feature-panel,.ios-app .authBox{border-radius:24px;background:#121c2d;border:1px solid rgba(255,255,255,.16);box-shadow:0 20px 60px rgba(0,0,0,.5)}.ios-app .account-card,.ios-app .account-stats>div,.ios-app .shop-wallet{border-color:rgba(255,255,255,.14);background:rgba(255,255,255,.06)}.ios-app .account-avatar{background:#ff6685;color:#fff}.ios-app .shop-wallet b{color:#ffd477}
 @media (prefers-reduced-motion:reduce){.feature-screen *{transition:none!important;animation:none!important}}
@@ -425,16 +425,16 @@ body{font-family:'Cormorant',Georgia,serif}
 
 /* Portrait-only experience for phones, tablets, and iPad; desktop remains responsive. */
 .sr-only{position:absolute!important;width:1px!important;height:1px!important;padding:0!important;margin:-1px!important;overflow:hidden!important;clip:rect(0,0,0,0)!important;white-space:nowrap!important;border:0!important}
-.authActions .btn:disabled{opacity:.5;cursor:wait;transform:none;box-shadow:none}
+
 #portraitNotice{display:none}
 @media (max-width:1024px) and (orientation:landscape){#portraitNotice{position:fixed;inset:0;z-index:100;display:grid;place-items:center;padding:24px;background:var(--paper);color:var(--ink);text-align:center}#portraitNotice .portraitNoticeCard{width:min(90vw,420px);padding:30px 24px;background:var(--paper2);border:2px solid var(--ink);box-shadow:8px 8px 0 rgba(38,34,28,.2)}#portraitNotice span{display:block;color:var(--red);font-size:48px;line-height:1;margin-bottom:12px}#portraitNotice strong{font-size:24px}#portraitNotice p{margin-top:8px;color:var(--ink2);font-size:16px;line-height:1.5}body>*:not(#portraitNotice){visibility:hidden}}
 @media (orientation:landscape){#portraitNotice{position:fixed;inset:0;z-index:100;display:grid;place-items:center;padding:24px;background:var(--paper);color:var(--ink);text-align:center}#portraitNotice .portraitNoticeCard{width:min(90vw,460px);padding:32px 26px;background:var(--paper2);border:2px solid var(--ink);box-shadow:8px 8px 0 rgba(38,34,28,.2)}#portraitNotice span{display:block;color:var(--red);font-size:52px;line-height:1;margin-bottom:12px}#portraitNotice strong{font-size:26px}#portraitNotice p{margin-top:8px;color:var(--ink2);font-size:17px;line-height:1.5}body>*:not(#portraitNotice){visibility:hidden}}
-@media (max-width:600px){.authModal{padding:12px}.authBox{width:min(100%,390px);padding:24px 18px}.authBox input{font-size:16px;min-height:50px}.authActions{gap:8px}.authActions .btn{min-height:44px;width:100%;margin:0}}
+@media (max-width:600px){.authModal{padding:12px}.authBox{width:min(100%,390px);padding:24px 18px}.authBox input{font-size:16px;min-height:50px}}
 
 /* UI Pro Max readability pass: preserve the arcade style while preventing tiny or clipped text. */
 body{font-size:16px;line-height:1.45}
 .btn{font-size:14px;line-height:1.25;white-space:normal;overflow-wrap:anywhere;padding:11px 16px}
-.authActions .btn{font-size:13px;letter-spacing:.08em}
+
 #authState,#authMsg{font-size:14px;line-height:1.45}
 #authOpen,#authLogout{font-size:13px;letter-spacing:.08em}
 .selLabel{font-size:12px;letter-spacing:.16em}
@@ -466,3 +466,108 @@ body{font-size:16px;line-height:1.45}
 .leaderboard-panel .lbEmpty{padding:24px 8px;text-align:center;font-size:15px}
 #lbRefresh:disabled{opacity:.55;cursor:wait}
 @media (max-width:460px){.leaderboard-panel{padding-inline:12px}.lbTable{padding-inline:6px}.lbHeader,.leaderboard-panel .lbRow{grid-template-columns:34px minmax(0,1fr) 58px 64px;gap:5px}.lbHeader{font-size:10px}.leaderboard-panel .lbRow{font-size:14px;min-height:46px}.lbShare{font-size:11px;padding-inline:4px}}
+
+
+/* ══ Account access — the traveler's pass ═══════════════════════════════
+   A paper slip: a postmark seal, ruled fields, one ink action, and a
+   two-stop stamp strip torn along a perforation. The perforation is the
+   single idea the screen is built around; everything else stays quiet. */
+
+.authModal{background:rgba(38,34,28,.46);backdrop-filter:blur(2px);-webkit-backdrop-filter:blur(2px);align-items:flex-start;padding:26px 16px;overflow-y:auto}
+.authModal .authBox{position:relative;width:min(94vw,432px);max-width:432px;margin:auto;max-height:none;overflow:visible;padding:30px clamp(20px,5vw,32px) 26px;text-align:center;border:2px solid var(--ink);background:var(--paper2);color:var(--ink);box-shadow:10px 10px 0 rgba(38,34,28,.16);animation:authRise .34s cubic-bezier(.2,.85,.25,1) both}
+@keyframes authRise{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+
+.authBox .authClose{position:absolute;top:9px;right:9px;display:grid;place-items:center;width:38px;height:38px;padding:0;background:transparent;border:1.5px solid transparent;color:var(--ink2);cursor:pointer;transition:color .16s,border-color .16s,background .16s}
+.authBox .authClose:hover{color:var(--ink);border-color:var(--ink);background:rgba(38,34,28,.05)}
+.authBox .authClose:focus-visible{outline:2px solid var(--red);outline-offset:2px}
+.authBox .authClose svg{width:19px;height:19px}
+
+.authSeal{position:relative;display:inline-grid;place-items:center;width:60px;height:60px;margin:0 auto 14px;color:var(--red)}
+.authSeal svg{position:absolute;inset:0;width:100%;height:100%}
+.authSeal b{font-family:'Shippori Mincho',serif;font-size:19px;font-weight:600;line-height:1;letter-spacing:.02em;margin-top:2px}
+.authBox h2{font-size:clamp(21px,5.2vw,26px);letter-spacing:.18em;text-transform:uppercase;margin:0}
+.authBox .rule{width:150px;margin:12px auto 10px}
+.authBox .authIntro{margin:0 0 22px;font-size:15px;line-height:1.5}
+
+/* The mode strip: two stamp faces separated by a tear line. */
+.authModes{display:grid;grid-template-columns:1fr 1fr;margin:0 0 22px;border:1.5px solid var(--ink);background:var(--paper)}
+.authMode{font:inherit;font-size:12px;font-weight:700;line-height:1;letter-spacing:.13em;text-transform:uppercase;color:var(--ink2);background:transparent;border:0;padding:12px 6px;cursor:pointer;transition:background .18s,color .18s}
+.authMode + .authMode{border-left:2px dotted rgba(38,34,28,.3)}
+.authMode{position:relative;padding-bottom:11px}
+.authMode:hover{color:var(--ink)}
+.authMode[aria-pressed="true"]{color:var(--ink)}
+.authMode[aria-pressed="true"]::after{content:'';position:absolute;left:12%;right:12%;bottom:6px;height:3px;background:var(--red)}
+.authMode:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
+
+.authForm{display:grid;gap:15px;text-align:left}
+.authField{display:grid;gap:7px}
+.authLabel{font-size:10px;font-weight:700;letter-spacing:.2em;text-transform:uppercase;color:var(--ink2)}
+.authInput{display:flex;align-items:center;gap:10px;padding:0 12px;border:1.5px solid rgba(38,34,28,.3);background:var(--paper);transition:border-color .16s,box-shadow .16s}
+.authInput:focus-within{border-color:var(--ink);box-shadow:0 2px 0 var(--red)}
+.authIcon{flex:none;width:18px;height:18px;color:var(--ink2)}
+.authBox .authInput input{flex:1;min-width:0;width:100%;min-height:46px;margin:0;padding:0;border:0;border-radius:0;background:transparent;color:var(--ink);font:inherit;font-size:17px;font-weight:600;line-height:1.3;letter-spacing:.01em}
+.authBox .authInput input:focus{outline:none}
+.authBox .authInput input::placeholder{color:rgba(92,84,69,.62);font-weight:500}
+
+.authPeek{flex:none;display:grid;place-items:center;width:38px;height:38px;margin-right:-8px;padding:0;background:transparent;border:0;color:var(--ink2);cursor:pointer;transition:color .16s}
+.authPeek:hover{color:var(--ink)}
+.authPeek:focus-visible{outline:2px solid var(--red);outline-offset:1px}
+.authPeek svg{width:19px;height:19px}
+.authPeek .authPeekOff{display:none}
+.authPeek[aria-pressed="true"] .authPeekOn{display:none}
+.authPeek[aria-pressed="true"] .authPeekOff{display:block}
+
+.authHint{margin:0;font-size:12px;line-height:1.4;letter-spacing:.02em;color:var(--ink2)}
+.authHint.ok{color:var(--accent-green)}
+
+#authCaptcha{min-height:0;margin:0;display:flex;justify-content:center}
+.authBox .authSubmit{width:100%;min-height:48px;margin-top:2px}
+.authBox .authSubmit:disabled{opacity:.55;cursor:wait;transform:none;box-shadow:none}
+
+#authMsg{min-height:18px;margin:14px 0 0;font-size:13px;line-height:1.5;font-style:normal;text-align:center;color:var(--ink2)}
+#authMsg:not(:empty){padding:10px 13px;border-left:2px solid var(--red);background:rgba(199,62,58,.08);text-align:left}
+
+.authOr{display:flex;align-items:center;gap:12px;margin:20px 0 14px}
+.authOr i{flex:1;height:1px;background:rgba(38,34,28,.22)}
+.authOr span{font-size:10px;font-weight:700;letter-spacing:.2em;text-transform:uppercase;color:var(--ink2)}
+
+.authBox .authGoogle{width:100%;min-height:48px;display:flex;align-items:center;justify-content:center;gap:10px;margin-top:0;padding:10px 16px}
+.authGoogleMark{flex:none;width:18px;height:18px}
+
+.authForgot{display:block;margin:16px auto 0;padding:8px 10px;background:transparent;border:0;font:inherit;font-size:14px;font-weight:600;letter-spacing:.01em;color:var(--ink2);text-decoration:underline;text-underline-offset:4px;cursor:pointer;transition:color .16s}
+.authForgot:hover{color:var(--red)}
+.authForgot:focus-visible{outline:2px solid var(--red);outline-offset:2px}
+
+@media (max-width:600px){
+  .authModal{padding:14px 12px}
+  .authModal .authBox{width:min(100%,432px);padding:26px 17px 22px}
+  .authBox .authMode{font-size:11px;letter-spacing:.09em;padding:11px 4px}
+  .authBox .authInput input{font-size:16px;min-height:48px}
+}
+
+/* The native builds share the paper card, so the light-on-dark text their
+   dark theme used for headings and ghost buttons has to follow the ink
+   palette as well — otherwise the title is unreadable on cream. */
+.android-app .authBox h2,.ios-app .authBox h2{color:var(--ink)}
+.android-app .authBox .sub,.ios-app .authBox .sub{color:var(--ink2)}
+.android-app .authBox .authLabel,.ios-app .authBox .authLabel,
+.android-app .authBox .authHint,.ios-app .authBox .authHint,
+.android-app .authBox .authOr span,.ios-app .authBox .authOr span,
+.android-app .authBox .authForgot,.ios-app .authBox .authForgot,
+.android-app .authBox .authClose,.ios-app .authBox .authClose,
+.android-app .authBox .authMode,.ios-app .authBox .authMode,
+.android-app .authBox .authIcon,.ios-app .authBox .authIcon{color:var(--ink2)}
+.android-app .authBox .authMode[aria-pressed="true"],.ios-app .authBox .authMode[aria-pressed="true"]{color:var(--ink)}
+.android-app .authBox .authInput,.ios-app .authBox .authInput{border-color:rgba(38,34,28,.3);border-radius:0;background:var(--paper)}
+.android-app .authBox .authInput input,.ios-app .authBox .authInput input{background:transparent;border:0;border-radius:0;color:var(--ink)}
+.android-app .authBox .authInput input::placeholder,.ios-app .authBox .authInput input::placeholder{color:rgba(92,84,69,.62)}
+.android-app .authBox .btn,.ios-app .authBox .btn{border-radius:0;font-family:inherit}
+.android-app .authBox .btn.ghost,.ios-app .authBox .btn.ghost{color:var(--ink);background:transparent;border-color:var(--ink)}
+.android-app .authBox .btn.solid,.ios-app .authBox .btn.solid{background:var(--ink);color:var(--paper2);border-color:var(--ink);box-shadow:5px 5px 0 rgba(38,34,28,.25)}
+
+/* .hidden only ever faded elements, so hidden buttons stayed visible and
+   clickable. These rules sit last on purpose: .hidden shares its
+   specificity with the plain display rules of the elements it hides. */
+.hidden{display:none}
+.screen.hidden,.authModal.hidden{display:flex;opacity:0;visibility:hidden;pointer-events:none}
+#hud.hidden,#runTag.hidden,#hint.hidden{display:block;opacity:0}
