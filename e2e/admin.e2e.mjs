@@ -1,5 +1,5 @@
 import { spawn } from 'node:child_process';
-import { chromium } from 'playwright';
+import { launchBrowser } from './_browser.mjs';
 
 const baseURL = (process.env.ADMIN_E2E_BASE_URL || 'http://127.0.0.1:4173').replace(/\/$/, '');
 const isLocal = /^(http:\/\/)?127\.0\.0\.1:4173$/.test(baseURL.replace(/^https?:\/\//, ''));
@@ -17,11 +17,7 @@ if (isLocal) {
   await sleep(700);
 }
 
-const browser = await chromium.launch({
-  headless: true,
-  executablePath: process.env.CHROMIUM_PATH || '/usr/bin/chromium',
-  args: ['--no-sandbox']
-});
+const browser = await launchBrowser();
 const page = await browser.newPage({ viewport: { width: 390, height: 844 }, serviceWorkers: 'block' });
 page.setDefaultTimeout(Number(process.env.ADMIN_E2E_TIMEOUT || 10000));
 page.on('pageerror', (error) => console.error('admin pageerror:', error.message));

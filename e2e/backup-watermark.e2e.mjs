@@ -1,13 +1,13 @@
 import { spawn } from 'node:child_process';
-import { chromium } from 'playwright';
+import { launchBrowser } from './_browser.mjs';
 
 const baseURL = 'http://127.0.0.1:4173';
 const server = spawn('python3', ['-m', 'http.server', '4173', '--bind', '127.0.0.1'], { cwd: process.cwd(), stdio: 'ignore' });
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 const assert = (condition, message) => { if (!condition) throw new Error(message); };
 await sleep(700);
-const browser = await chromium.launch({ headless: true, executablePath: process.env.CHROMIUM_PATH || '/usr/bin/chromium', args: ['--no-sandbox'] });
-const page = await browser.newPage({ serviceWorkers: 'block' });
+const browser = await launchBrowser();
+const page = await browser.newPage({ viewport: { width: 390, height: 844 }, serviceWorkers: 'block' });
 page.setDefaultTimeout(10000);
 await page.route('**/env.js', (route) => route.fulfill({ contentType: 'application/javascript', body: 'window.SKY_ENV={};' }));
 await page.addInitScript(() => { window.__SKY_E2E__ = true; });

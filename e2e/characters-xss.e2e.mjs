@@ -1,4 +1,4 @@
-import { chromium } from 'playwright';
+import { launchBrowser } from './_browser.mjs';
 import { spawn } from 'node:child_process';
 
 const baseURL = 'http://127.0.0.1:4173';
@@ -7,7 +7,7 @@ const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 const assert = (condition, message) => { if (!condition) throw new Error(message); };
 await sleep(700);
 
-const browser = await chromium.launch({ headless: true, executablePath: process.env.CHROMIUM_PATH || '/usr/bin/chromium', args: ['--no-sandbox'] });
+const browser = await launchBrowser();
 const page = await browser.newPage({ viewport: { width: 390, height: 844 }, serviceWorkers: 'block' });
 page.setDefaultTimeout(6000);
 const exfil = [];
@@ -26,8 +26,8 @@ try {
   assert(Array.isArray(roster) && roster.length >= 8, `Expected at least 8 characters, got ${roster?.length}`);
   assert(roster.every((c) => c.advantage && c.disadvantage && Number.isFinite(c.cost)), 'Every character needs advantage, disadvantage and coin cost');
   assert(roster.filter((c) => c.cost === 0).length >= 1, 'At least one character must remain free');
-  assert(await page.locator('#charGrid .selCard').count() >= 8, 'Expanded character roster is missing');
-  assert((await page.locator('#charGrid .meta').count()) >= 8, 'Character advantage/disadvantage metadata is missing');
+  assert(await page.locator('#shopGrid .selCard').count() >= 8, 'Expanded character roster is missing');
+  assert((await page.locator('#shopGrid .meta').count()) >= 8, 'Character advantage/disadvantage metadata is missing');
   assert(await page.locator('#mapGrid .selCard').count() >= 6, 'Existing maps must remain available');
   await page.evaluate(() => { localStorage.setItem('chimse.coins', '250'); });
   await page.reload({ waitUntil: 'domcontentloaded' });
